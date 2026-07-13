@@ -304,35 +304,22 @@ camelCase
 Completed
 
 ✔ UX
-
 ✔ Arquitectura
-
 ✔ Modelo de datos
-
 ✔ GitHub
-
 ✔ Git Local
-
 ✔ GitHub CLI
-
 ✔ Next.js
-
 ✔ Supabase
-
 ✔ Base de datos inicial
-
 ✔ Primer push
+✔ Vercel
+✔ Dominio
 
 Pending
 
-□ Vercel
-
-□ Dominio
-
 □ Conexión Supabase
-
 □ Layout
-
 □ Dashboard Mi Martes
 
 ---
