@@ -9,9 +9,6 @@ export async function getProjectTypes(): Promise<ProjectType[]> {
     .select("id, nombre")
     .order("nombre");
 
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-
   if (error) {
     throw new Error(
       `No se pudieron obtener los tipos de proyecto: ${error.message}`

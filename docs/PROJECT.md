@@ -1,3 +1,55 @@
+## Estado actual
+
+- Base de datos operativa.
+- Catálogos conectados.
+- 292 proyectos importados.
+- Primera pantalla funcional: /proyectos.
+15Jul / 09:30
+# APPLICATION ARCHITECTURE
+
+app
+
+Navegación y rutas.
+
+components
+
+Interfaz reutilizable.
+
+lib/services
+
+Reglas y decisiones del negocio.
+
+lib/repositories
+
+Lectura y escritura de datos.
+
+lib/supabase
+
+Configuración técnica de Supabase.
+
+types
+
+Definiciones compartidas de TypeScript.
+
+docs
+
+Documentación del proyecto.
+
+Flujo:
+
+app / components
+
+↓
+
+services
+
+↓
+
+repositories
+
+↓
+
+Supabase
 # MARTES
 
 > Sistema de gestión de proyectos y eventos de La Oreja Lab.
