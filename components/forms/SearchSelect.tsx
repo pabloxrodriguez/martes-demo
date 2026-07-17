@@ -14,6 +14,7 @@ type SearchSelectProps = {
   placeholder?: string;
   required?: boolean;
   onSave: (newValue: string) => Promise<void>;
+  onCreate?: (name: string) => Promise<void>;
 };
 
 export function SearchSelect({
@@ -23,6 +24,7 @@ export function SearchSelect({
   placeholder = "Sin información",
   required = false,
   onSave,
+  onCreate,
 }: SearchSelectProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [search, setSearch] = useState("");
@@ -32,6 +34,8 @@ export function SearchSelect({
   const selectedOption = options.find(
     (option) => option.value === value
   );
+
+  const cleanSearch = search.trim();
 
   const filteredOptions = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -47,6 +51,17 @@ export function SearchSelect({
       .slice(0, 10);
   }, [options, search]);
 
+  const exactMatchExists = options.some(
+    (option) =>
+      option.label.trim().toLowerCase() ===
+      cleanSearch.toLowerCase()
+  );
+
+  const canCreate =
+    Boolean(onCreate) &&
+    cleanSearch.length > 0 &&
+    !exactMatchExists;
+
   async function handleSelect(newValue: string) {
     try {
       setIsSaving(true);
@@ -61,6 +76,30 @@ export function SearchSelect({
         error instanceof Error
           ? error.message
           : "No se pudo guardar el cambio."
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleCreate() {
+    if (!onCreate || !cleanSearch) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      await onCreate(cleanSearch);
+
+      setSearch("");
+      setIsEditing(false);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo crear el registro."
       );
     } finally {
       setIsSaving(false);
@@ -92,6 +131,14 @@ export function SearchSelect({
               if (event.key === "Escape") {
                 handleCancel();
               }
+
+              if (
+                event.key === "Enter" &&
+                canCreate
+              ) {
+                event.preventDefault();
+                void handleCreate();
+              }
             }}
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-950 outline-none focus:border-zinc-500"
           />
@@ -120,7 +167,18 @@ export function SearchSelect({
               </button>
             ))}
 
-            {filteredOptions.length === 0 && (
+            {canCreate && (
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => void handleCreate()}
+                className="block w-full border-t border-zinc-200 px-3 py-3 text-left text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+              >
+                + Crear “{cleanSearch}”
+              </button>
+            )}
+
+            {filteredOptions.length === 0 && !canCreate && (
               <div className="px-3 py-3 text-sm text-zinc-400">
                 No se encontraron resultados.
               </div>

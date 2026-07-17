@@ -348,6 +348,7 @@ Toda tarea pertenece a un proyecto y permite planificar, asignar, ejecutar y con
 | fecha_comprometida | date | Sí | Fecha comprometida de ejecución. |
 | fecha_completada | date | Sí | Fecha en que la tarea fue completada. |
 | url | text | Sí | Enlace asociado a la tarea. |
+| comentario | text | Sí | Comentarios de trabajo. |
 | orden | integer | No | Orden de presentación dentro del proyecto. |
 | fecha_creacion | timestamptz | No | Fecha de creación del registro. |
 | fecha_actualizacion | timestamptz | No | Fecha de última actualización. |
@@ -369,6 +370,7 @@ Toda tarea pertenece a un proyecto y permite planificar, asignar, ejecutar y con
 - La fecha completada sólo se registra cuando la tarea finaliza.
 - El campo **orden** determina la posición de la tarea dentro del proyecto.
 - El campo **url** permite asociar documentos, formularios, archivos o recursos externos relacionados con la tarea.
+- El campo **fecha_completada** se completa automáticamente al marcar una tarea como finalizada y se limpia si vuelve a estado pendiente.
 
 ## Pendientes de migración
 

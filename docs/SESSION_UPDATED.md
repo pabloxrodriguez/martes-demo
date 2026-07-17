@@ -480,3 +480,38 @@ La infraestructura base del proyecto quedó completamente operativa:
 **GitHub → Vercel → martes.laorejalab.cl → Next.js**
 
 La siguiente etapa corresponde al diseño de la arquitectura de la aplicación.
+
+---
+
+# Sesión – 17 de julio de 2026 01:30
+
+## Objetivo
+
+Completar el primer módulo operativo (WSP) de MARTES.
+
+## Completado
+
+### Venues
+- Asociación de venues existentes.
+- Creación de nuevos venues.
+- Eliminación de venues.
+
+### Módulo Tareas
+- CRUD completo de tareas.
+- Edición inline de todos los campos.
+- Marcar completada.
+- Eliminar tarea.
+
+### Componentes
+- TaskTable
+- TaskRow
+- NewTaskRow
+
+### Supabase
+- Policies RLS para CRUD de tareas.
+- Policies para estados y plantillas.
+
+### UX
+- Ajustes de columna Enlace.
+- Truncamiento de URLs.
+- Próxima sesión dedicada al refinamiento visual.

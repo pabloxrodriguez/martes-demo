@@ -1,7 +1,10 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { StageSection } from "@/components/projects/StageSection";
-import { getProjects } from "@/lib/services/project.service";
+import {
+  getProjectEditOptions,
+  getProjects,
+} from "@/lib/services/project.service";
 
 const stages = [
   { codigo: 1, nombre: "Prospecto" },
@@ -15,10 +18,30 @@ const stages = [
 
 export default async function ProjectsPage() {
   const projects = await getProjects();
+  const editOptions = await getProjectEditOptions();
+
+  const peopleOptions = editOptions.people.map((person) => ({
+    value: person.id,
+    label: person.nombre,
+  }));
+
+  const statusOptions = editOptions.statuses.map((status) => ({
+    value: status.id,
+    label: status.nombre,
+  }));
+
+  const prospectStatus =
+    editOptions.statuses.find(
+      (status) => status.nombre === "Prospecto"
+    ) ?? editOptions.statuses[0];
 
   return (
     <>
-      <AppHeader />
+      <AppHeader
+        peopleOptions={peopleOptions}
+        statusOptions={statusOptions}
+        defaultStatusId={prospectStatus?.id ?? ""}
+      />
 
       <main className="p-8">
         <div className="space-y-10">
@@ -26,11 +49,16 @@ export default async function ProjectsPage() {
             const stageProjects = projects
               .filter(
                 (project) =>
-                  Number(project.estados_proyecto?.codigo) === stage.codigo
+                  Number(project.estados_proyecto?.codigo) ===
+                  stage.codigo
               )
               .sort((a, b) => {
-                const priorityA = Number(a.prioridad ?? 999);
-                const priorityB = Number(b.prioridad ?? 999);
+                const priorityA = Number(
+                  a.prioridad ?? 999
+                );
+                const priorityB = Number(
+                  b.prioridad ?? 999
+                );
 
                 if (priorityA !== priorityB) {
                   return priorityA - priorityB;
