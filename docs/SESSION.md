@@ -1,3 +1,20 @@
+## 2026-07-17
+
+### Autenticación
+
+- Implementado login con Google mediante Supabase Auth.
+- Protección de rutas mediante proxy.
+- Integración de usuarios autenticados con la tabla `personas`.
+- Nuevo campo `auth_user_id` en `personas`.
+- Creado helper `getCurrentPerson()`.
+- Acceso permitido únicamente a usuarios existentes y activos.
+- Implementada pantalla `Acceso no autorizado`.
+- Reutilizado `LogoutButton` para cerrar sesión desde dicha pantalla.
+- Verificado flujo completo:
+  - Usuario activo → acceso permitido.
+  - Usuario inactivo → acceso denegado.
+  - Logout desde acceso denegado → correcto.
+
 # Sesión – 16 de julio de 2026 23:56
 
 ## Objetivo

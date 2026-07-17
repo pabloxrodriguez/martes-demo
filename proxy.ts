@@ -31,7 +31,28 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const isAuthenticated = Boolean(data?.claims);
+
+  const pathname = request.nextUrl.pathname;
+
+  const isPublicRoute =
+    pathname === "/login" ||
+    pathname.startsWith("/auth/");
+
+  if (!isAuthenticated && !isPublicRoute) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (isAuthenticated && pathname === "/login") {
+    const projectsUrl = request.nextUrl.clone();
+    projectsUrl.pathname = "/proyectos";
+
+    return NextResponse.redirect(projectsUrl);
+  }
 
   return response;
 }

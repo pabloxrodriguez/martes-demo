@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-import { createProject } from "@/app/proyectos/actions";
+import { createProject } from "@/app/(app)/proyectos/actions";
 
 type SelectOption = {
   value: string;
