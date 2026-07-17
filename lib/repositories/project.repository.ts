@@ -1,5 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 
+function one<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return value ?? null;
+}
+
 export async function getProjects() {
   const supabase = await createClient();
 
@@ -41,7 +49,13 @@ export async function getProjects() {
     );
   }
 
-  return data ?? [];
+  return (data ?? []).map((project) => ({
+    ...project,
+    estados_proyecto: one(project.estados_proyecto),
+    tipos_proyecto: one(project.tipos_proyecto),
+    clientes: one(project.clientes),
+    responsable: one(project.responsable),
+  }));
 }
 
 export async function getProjectById(id: string) {
@@ -114,7 +128,26 @@ export async function getProjectById(id: string) {
     );
   }
 
-  return data;
+  return {
+    ...data!,
+    estados_proyecto: one(data!.estados_proyecto),
+    tipos_proyecto: one(data!.tipos_proyecto),
+    clientes: one(data!.clientes),
+    responsable: one(data!.responsable),
+
+    proyecto_venues:
+      data!.proyecto_venues?.map((projectVenue) => ({
+        ...projectVenue,
+        venues: one(projectVenue.venues),
+      })) ?? [],
+
+    tareas:
+      data!.tareas?.map((task) => ({
+        ...task,
+        responsable: one(task.responsable),
+        estados_tarea: one(task.estados_tarea),
+      })) ?? [],
+  };
 }
 
 export async function getProjectEditOptions() {

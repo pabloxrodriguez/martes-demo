@@ -9,8 +9,19 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Puede ejecutarse desde un Server Component,
+            // donde Next.js no permite modificar cookies.
+            // El proxy se encargará de renovar la sesión.
+          }
         },
       },
     }
