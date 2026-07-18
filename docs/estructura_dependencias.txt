@@ -1,0 +1,118 @@
+├── AGENTS.md
+├── CLAUDE.md
+├── README.md
+├── app
+│   ├── (app)
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── proyectos
+│   │       ├── [id]
+│   │       │   ├── actions.ts
+│   │       │   └── page.tsx
+│   │       ├── actions.ts
+│   │       └── page.tsx
+│   ├── acceso-denegado
+│   │   └── page.tsx
+│   ├── auth
+│   │   └── callback
+│   │       └── route.ts
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── login
+│       └── page.tsx
+├── bajadas gpt
+├── components
+│   ├── forms
+│   │   ├── EditableField.tsx
+│   │   ├── EditableValue.tsx
+│   │   └── SearchSelect.tsx
+│   ├── layout
+│   │   ├── AppHeader.tsx
+│   │   ├── LogoutButton.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── components
+│   │       └── layout
+│   ├── project-header
+│   │   ├── HeaderField.tsx
+│   │   └── HeaderSearchSelect.tsx
+│   ├── projects
+│   │   ├── CreateProjectModal.tsx
+│   │   ├── ProjectCard.tsx
+│   │   ├── ProjectHeader.tsx
+│   │   └── StageSection.tsx
+│   ├── tasks
+│   │   ├── NewTaskRow.tsx
+│   │   ├── TaskRow.tsx
+│   │   └── TaskTable.tsx
+│   └── ui
+├── docs
+│   ├── DATABASE.md
+│   ├── DATABASE_UPDATED.md
+│   ├── PROJECT.md
+│   ├── PROJECT_UPDATED.md
+│   ├── SESSION.md
+│   └── SESSION_UPDATED.md
+├── eslint.config.mjs
+├── lib
+│   ├── auth
+│   │   └── getCurrentPerson.ts
+│   ├── repositories
+│   │   ├── project-status.repository.ts
+│   │   ├── project-type.repository.ts
+│   │   └── project.repository.ts
+│   ├── services
+│   │   ├── project-status.service.ts
+│   │   ├── project-type.service.ts
+│   │   └── project.service.ts
+│   └── supabase
+│       ├── admin.ts
+│       ├── client.ts
+│       └── server.ts
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── proxy.ts
+├── public
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── scripts
+│   ├── data
+│   │   └── Tabla Proyectos.xlsx - DBOK(1).csv
+│   └── import-projects.ts
+├── tsconfig.json
+├── tsconfig.tsbuildinfo
+└── types
+    ├── project-status.ts
+    └── project-type.ts
+
+
+    Dependencias
+
+    martes@0.1.0 /Users/pablorodriguez/Documents/LAB 2026/00_Martes_2027/martes
+├── @emnapi/core@1.10.0 extraneous
+├── @emnapi/runtime@1.11.2 extraneous
+├── @emnapi/wasi-threads@1.2.1 extraneous
+├── @napi-rs/wasm-runtime@1.1.6 extraneous
+├── @supabase/ssr@0.12.3
+├── @supabase/supabase-js@2.110.7
+├── @tailwindcss/postcss@4.3.2
+├── @tybys/wasm-util@0.10.3 extraneous
+├── @types/node@20.19.43
+├── @types/react-dom@19.2.3
+├── @types/react@19.2.17
+├── csv-parse@7.0.1
+├── dotenv@17.4.2
+├── eslint-config-next@16.2.10
+├── eslint@9.39.5
+├── next@16.2.10
+├── react-dom@19.2.4
+├── react@19.2.4
+├── tailwindcss@4.3.2
+├── tsx@4.23.1
+└── typescript@5.9.3

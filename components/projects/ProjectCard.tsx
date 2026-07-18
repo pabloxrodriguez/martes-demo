@@ -17,7 +17,9 @@ type ProjectCardProps = {
       nombre: string;
     } | null;
     tareas: {
-      estado_id: string;
+      estados_tarea: {
+        nombre: string;
+      } | null;
     }[];
   };
 };
@@ -35,7 +37,10 @@ function formatDate(date: string | null) {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const totalTasks = project.tareas.length;
-  const completedTasks = 0;
+
+  const completedTasks = project.tareas.filter(
+    (task) => task.estados_tarea?.nombre === "Completada"
+  ).length;
 
   const progress =
     totalTasks > 0

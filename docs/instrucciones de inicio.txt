@@ -1,0 +1,24 @@
+AL COMENZAR LA SESION
+
+cd "/Users/pablorodriguez/Documents/LAB 2026/00_Martes_2027/martes"
+
+Paso 1
+tree -I "node_modules|.next|.git"
+
+Paso 2
+npm ls --depth=0
+
+Paso 3
+git status
+
+AL TERMINAR LA SESION
+
+git status
+
+git add .
+git status
+git commit -m "..."
+git push
+
+ACTUALIZAR 
+docs/SESSION.md

@@ -1,5 +1,19 @@
 import { HeaderField } from "@/components/project-header/HeaderField";
 import { HeaderSearchSelect } from "@/components/project-header/HeaderSearchSelect";
+import { ProjectHeaderCard } from "@/components/projects/ProjectHeaderCard";
+import {
+  Building2,
+  BriefcaseBusiness,
+  Calendar,
+  CalendarDays,
+  CalendarRange,
+  CircleAlert,
+  Clock3,
+  MapPin,
+  User,
+  Wallet,
+  CircleDollarSign,
+} from "lucide-react";
 
 type SelectOption = {
   value: string;
@@ -167,6 +181,7 @@ export function ProjectHeader({
     statusStyles[statusCode] ?? statusStyles[1];
 
   return (
+    <ProjectHeaderCard>
     <header className="border-b border-zinc-200 bg-white px-5 pb-8 pt-6 sm:px-8">
       <div className="mx-auto w-full max-w-screen-2xl">
         <a
@@ -213,7 +228,7 @@ export function ProjectHeader({
               }
               type="select"
               options={typeOptions}
-              icon="▣"
+              icon={<BriefcaseBusiness size={18} />}
               placeholder="Sin tipo"
               onSave={onSaveType}
             />
@@ -221,7 +236,7 @@ export function ProjectHeader({
             <HeaderSearchSelect
               value={project.clientes?.id ?? null}
               options={clientOptions}
-              icon="🏢"
+              icon={<Building2 size={18} />}
               placeholder="Sin cliente"
               onSave={onSaveClient}
             />
@@ -230,7 +245,7 @@ export function ProjectHeader({
               className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5"
               title="Los venues se editan en Detalles"
             >
-              <span aria-hidden="true">📍</span>
+              <MapPin size={18} aria-hidden="true" />
 
               <span>
                 {formatVenues(
@@ -242,7 +257,7 @@ export function ProjectHeader({
             <HeaderSearchSelect
               value={project.responsable?.id ?? null}
               options={peopleOptions}
-              icon="👤"
+              icon={<User size={18} />}
               placeholder="Sin responsable"
               required
               onSave={onSaveResponsible}
@@ -251,7 +266,7 @@ export function ProjectHeader({
             <HeaderField
               value={project.valor_venta}
               type="currency"
-              icon="💰"
+              icon={<Wallet size={18} />}
               placeholder="Sin monto"
               onSave={onSaveAmount}
               className="font-semibold text-zinc-900"
@@ -261,7 +276,7 @@ export function ProjectHeader({
               value={project.prioridad}
               type="select"
               options={priorityOptions}
-              icon="❗"
+              icon={<CircleAlert size={18} />}
               prefix="Prioridad"
               placeholder="Sin prioridad"
               onSave={onSavePriority}
@@ -269,7 +284,7 @@ export function ProjectHeader({
             />
 
             <span className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-zinc-500">
-              <span aria-hidden="true">🕒</span>
+              <Clock3 size={18} aria-hidden="true" />
 
               <span>
                 Actualizado{" "}
@@ -284,7 +299,7 @@ export function ProjectHeader({
             <HeaderField
               value={project.fecha_propuesta}
               type="date"
-              icon="📅"
+              icon={<Calendar size={18} />}
               prefix="Propuesta:"
               placeholder="Sin fecha"
               onSave={onSaveProposalDate}
@@ -294,7 +309,7 @@ export function ProjectHeader({
             <HeaderField
               value={project.fecha_evento_inicio}
               type="date"
-              icon="🎪"
+              icon={<CalendarDays size={18} />}
               prefix="Inicio:"
               placeholder="Sin fecha"
               onSave={onSaveEventStart}
@@ -304,6 +319,7 @@ export function ProjectHeader({
             <HeaderField
               value={project.fecha_evento_termino}
               type="date"
+              icon={<CalendarRange size={18} />}
               prefix="Término:"
               placeholder="Misma fecha de inicio"
               onSave={onSaveEventEnd}
@@ -313,5 +329,6 @@ export function ProjectHeader({
         </div>
       </div>
     </header>
+    </ProjectHeaderCard>
   );
 }

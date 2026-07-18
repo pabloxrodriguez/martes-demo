@@ -35,8 +35,10 @@ export async function getProjects() {
         nombre
       ),
       tareas (
-        estado_id
-      )
+  estados_tarea (
+    nombre
+  )
+)
     `)
     .order("fecha_evento_inicio", {
       ascending: false,
