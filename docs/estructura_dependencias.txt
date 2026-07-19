@@ -39,13 +39,16 @@
 │   │   └── HeaderSearchSelect.tsx
 │   ├── projects
 │   │   ├── CreateProjectModal.tsx
+│   │   ├── DeleteProjectButton.tsx
 │   │   ├── ProjectCard.tsx
+│   │   ├── ProjectDetails.tsx
 │   │   ├── ProjectDetailsCard.tsx
 │   │   ├── ProjectHeader.tsx
 │   │   ├── ProjectHeaderCard.tsx
 │   │   └── StageSection.tsx
 │   ├── tasks
 │   │   ├── NewTaskRow.tsx
+│   │   ├── TaskCard.tsx
 │   │   ├── TaskRow.tsx
 │   │   └── TaskTable.tsx
 │   └── ui
@@ -96,7 +99,7 @@
     ├── project-status.ts
     └── project-type.ts
 
-29 directories, 68 files
+29 directories, 71 files
 
 
 ===== DEPENDENCIAS =====

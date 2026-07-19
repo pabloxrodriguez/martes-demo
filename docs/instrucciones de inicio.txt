@@ -11,6 +11,7 @@ npm ls --depth=0
 Paso 3
 git status
 
+
 AL TERMINAR LA SESION
 
 git status
