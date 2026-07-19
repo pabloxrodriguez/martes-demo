@@ -199,7 +199,9 @@ export function EditableField({
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="mt-1 block w-full rounded-lg px-2 py-2 text-left text-zinc-950 hover:bg-zinc-100"
+          className={`mt-1 block w-full rounded-lg px-2 py-2 text-left text-zinc-950 hover:bg-zinc-100 ${
+  type === "textarea" ? "whitespace-pre-wrap" : ""
+}`}
         >
           {displayValue !== null &&
           displayValue !== undefined &&

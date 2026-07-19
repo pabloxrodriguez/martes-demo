@@ -20,5 +20,12 @@ git status
 git commit -m "..."
 git push
 
+// realizar un respaldo
+
 ACTUALIZAR 
 docs/SESSION.md
+
+ACTUALIZAR EL DOCUMENTO DE ESTRUCTURAS Y DEPENDENCIAS
+tree -I "node_modules|.next|.git" > docs/estructura_dependencias.txt
+echo "\n\n===== DEPENDENCIAS =====\n" >> docs/estructura_dependencias.txt
+npm ls --depth=0 >> docs/estructura_dependencias.txt

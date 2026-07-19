@@ -1,4 +1,16 @@
-## 2026-07-17
+# Sesión 2026-07-17 PM
+
+## Cambios
+- Se reemplazaron emojis por Lucide.
+- Se creó ProjectHeaderCard.
+- Se creó ProjectDetailsCard.
+- Se encapsularon Header y Detalles en cards.
+- Se mejoró la jerarquía visual.
+
+## Próximo paso
+- Extraer ProjectDetails.tsx.
+
+## 2026-07-17 AM
 
 ### Autenticación
 

@@ -1,4 +1,5 @@
 import { NewTaskRow } from "@/components/tasks/NewTaskRow";
+import { TaskCard } from "@/components/tasks/TaskCard";
 import {
   EditableTaskField,
   TaskRow,
@@ -100,7 +101,8 @@ export function TaskTable({
   });
 
   return (
-    <section className="mt-14 border-t border-zinc-200 pt-10">
+  <TaskCard>
+    <section>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold text-zinc-950">
           Tareas
@@ -179,9 +181,10 @@ export function TaskTable({
               defaultTaskStatusId={defaultTaskStatusId}
               onCreate={onCreate}
             />
-          </tbody>
+                    </tbody>
         </table>
       </div>
     </section>
-  );
+  </TaskCard>
+);
 }

@@ -52,12 +52,18 @@ export async function getProjects() {
   }
 
   return (data ?? []).map((project) => ({
-    ...project,
-    estados_proyecto: one(project.estados_proyecto),
-    tipos_proyecto: one(project.tipos_proyecto),
-    clientes: one(project.clientes),
-    responsable: one(project.responsable),
-  }));
+  ...project,
+  estados_proyecto: one(project.estados_proyecto),
+  tipos_proyecto: one(project.tipos_proyecto),
+  clientes: one(project.clientes),
+  responsable: one(project.responsable),
+
+  tareas:
+    project.tareas?.map((task) => ({
+      ...task,
+      estados_tarea: one(task.estados_tarea),
+    })) ?? [],
+}));
 }
 
 export async function getProjectById(id: string) {

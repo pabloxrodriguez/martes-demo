@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -531,4 +532,60 @@ export async function deleteProjectTask(
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
+}
+
+export async function deleteProject(projectId: string) {
+  const supabase = await createClient();
+
+  const cleanProjectId = projectId.trim();
+
+  if (!cleanProjectId) {
+    throw new Error("El proyecto es obligatorio.");
+  }
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("Debes iniciar sesión para borrar un proyecto.");
+  }
+
+  const { data: project, error: projectError } = await supabase
+    .from("proyectos")
+    .select(`
+      id,
+      responsable:personas!proyectos_responsable_id_fkey (
+        auth_user_id
+      )
+    `)
+    .eq("id", cleanProjectId)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error("No se encontró el proyecto.");
+  }
+
+  const responsable = Array.isArray(project.responsable)
+    ? project.responsable[0]
+    : project.responsable;
+
+  if (responsable?.auth_user_id !== user.id) {
+    throw new Error("Solo el responsable puede borrar este proyecto.");
+  }
+
+  const { error: deleteError } = await supabase
+    .from("proyectos")
+    .delete()
+    .eq("id", cleanProjectId);
+
+  if (deleteError) {
+    throw new Error(
+      `No se pudo borrar el proyecto: ${deleteError.message}`
+    );
+  }
+
+  revalidatePath("/proyectos");
+  redirect("/proyectos");
 }

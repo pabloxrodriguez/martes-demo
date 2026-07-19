@@ -2,7 +2,7 @@ import { EditableField } from "@/components/forms/EditableField";
 import { SearchSelect } from "@/components/forms/SearchSelect";
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
 import { TaskTable } from "@/components/tasks/TaskTable";
-import { ProjectDetailsCard } from "@/components/projects/ProjectDetailsCard";
+import { ProjectDetails } from "@/components/projects/ProjectDetails";
 import {
   getProjectById,
   getProjectEditOptions,
@@ -11,6 +11,7 @@ import {
   addProjectVenue,
   createProjectTask,
   createProjectVenue,
+  deleteProject,
   deleteProjectTask,
   removeProjectVenue,
   toggleTaskCompleted,
@@ -120,6 +121,7 @@ export default async function ProjectPage({
     project.id
   );
   const deleteTask = deleteProjectTask.bind(null, project.id);
+  const deleteCurrentProject = deleteProject.bind(null, project.id);
 
   return (
     <>
@@ -156,99 +158,20 @@ export default async function ProjectPage({
             onDelete={deleteTask}
           />
 
-          <ProjectDetailsCard>
-            <section className="mt-10">
-            <h2 className="text-lg font-semibold text-zinc-900">
-              Detalles del proyecto
-            </h2>
+          <ProjectDetails
+  publicoEsperado={project.publico_esperado}
+  notas={project.notas}
+  venues={project.proyecto_venues ?? []}
+  venueOptions={venueOptions}
+  onSaveAudience={saveField("publico_esperado")}
+  onSaveNotes={saveField("notas")}
+  onSaveVenue={saveVenue}
+  onCreateVenue={createVenue}
+  onRemoveVenue={removeVenue}
+  onDeleteProject={deleteCurrentProject}
+/>
 
-            <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div>
-                <EditableField
-                  label="Público esperado"
-                  value={project.publico_esperado}
-                  type="number"
-                  placeholder="Sin público esperado"
-                  onSave={saveField("publico_esperado")}
-                />
-              </div>
 
-              <div>
-                <EditableField
-                  label="Notas"
-                  value={project.notas}
-                  type="textarea"
-                  placeholder="Sin notas"
-                  onSave={saveField("notas")}
-                />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
-                  Venues
-                </h3>
-
-                {project.proyecto_venues?.length ? (
-                  <div className="mt-3 space-y-3">
-                    {project.proyecto_venues.map((item) => (
-                      <div
-                        key={item.venue_id}
-                        className="flex items-start justify-between rounded-xl border border-zinc-200 bg-white p-4"
-                      >
-                        <div>
-                          <div className="font-medium text-zinc-950">
-                            {item.venues?.nombre ?? "Venue sin nombre"}
-                          </div>
-
-                          <div className="mt-1 text-sm text-zinc-500">
-                            {[item.venues?.comuna, item.venues?.ciudad]
-                              .filter(Boolean)
-                              .join(", ") || "Sin ubicación"}
-                          </div>
-
-                          <div className="mt-2 text-xs text-zinc-400">
-                            Contacto: —
-                          </div>
-                        </div>
-
-                        <form
-                          action={removeVenue.bind(
-                            null,
-                            item.venue_id
-                          )}
-                        >
-                          <button
-                            type="submit"
-                            className="rounded-md px-2 py-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-red-600"
-                            title="Quitar del proyecto"
-                          >
-                            ✕
-                          </button>
-                        </form>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-zinc-400">
-                    Sin venues asociados.
-                  </p>
-                )}
-
-                <div className="mt-4">
-                  <SearchSelect
-                    label="Agregar venue"
-                    value={null}
-                    options={venueOptions}
-                    placeholder="Seleccionar venue"
-                    required
-                    onSave={saveVenue}
-                    onCreate={createVenue}
-                  />
-                </div>
-              </div>
-            </div>
-            </section>
-            </ProjectDetailsCard>
         </div>
       </main>
     </>

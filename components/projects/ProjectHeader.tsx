@@ -182,7 +182,7 @@ export function ProjectHeader({
 
   return (
     <ProjectHeaderCard>
-    <header className="border-b border-zinc-200 bg-white px-5 pb-8 pt-6 sm:px-8">
+    <header className="bg-white px-5 pb-8 pt-6 sm:px-8">
       <div className="mx-auto w-full max-w-screen-2xl">
         <a
           href="/proyectos"
