@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { APP_VERSION } from "@/lib/app-version";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -97,7 +98,7 @@ export default function LoginPage() {
         )}
 
         <p className="mt-8 text-center text-sm text-zinc-400">
-          Acceso exclusivo para usuarios autorizados. Versión Beta 0.1
+          Acceso exclusivo para usuarios autorizados. Versión {APP_VERSION}
         </p>
 
         <div className="mt-10 border-t pt-6 text-center text-xs text-zinc-400">

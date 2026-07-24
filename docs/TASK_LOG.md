@@ -38,6 +38,7 @@ Una tarea solo pasa a **Completada** cuando:
 | AUTH-001 | Alta | Auto-vincular `auth_user_id` durante el primer login | Pendiente | Diseñar vinculación segura mediante correo verificado y evitar reasignaciones. |
 | DB-001 | Alta | Versionar esquema, migraciones y políticas RLS | Pendiente | Recuperar el esquema actual de Supabase y auditar sus políticas. |
 | OPS-001 | Alta | Revisar deployments, runtime y functions de Vercel | Bloqueada | Obtener acceso al dashboard o vincular la carpeta con Vercel. |
+| REL-001 | Media | Mostrar versión y fecha de publicación | Lista para probar | Confirmar versión 0.2 y fecha en el menú lateral y acceso. |
 | TASK-001 | Alta | Confirmar creación de tareas sin enlace | Lista para probar | Crear una tarea real con `url = null`. |
 | TASK-002 | Alta | Corregir recuperación después de un error al crear tarea | Lista para probar | Provocar un error, modificar un campo y confirmar que el aviso desaparece. |
 | CAT-001 | Media | Excluir catálogos inactivos de los selectores | Lista para probar | Confirmar que solo aparecen personas, clientes, plantillas y estados activos. |
@@ -78,6 +79,7 @@ Una tarea solo pasa a **Completada** cuando:
   opcional.
 - Aviso temporal agregado al completar o reabrir una tarea.
 - “Ver todos” abre una tabla dedicada con todos los proyectos del estado.
+- Versión 0.2 y fecha de publicación centralizadas y visibles en el menú.
 - Borrado de tareas corregido para verificar existencia antes y ausencia
   después, sin depender de que Supabase devuelva la fila eliminada.
 - La prueba confirmó que la política RLS actual bloquea el borrado; no se
