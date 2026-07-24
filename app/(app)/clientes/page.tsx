@@ -1,5 +1,5 @@
-import ComingSoonPage from "@/components/common/ComingSoonPage";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <ComingSoonPage />;
+  redirect("/catalogos");
 }

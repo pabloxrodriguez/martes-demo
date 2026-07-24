@@ -24,8 +24,9 @@ Una tarea solo pasa a **Completada** cuando:
 2. TypeScript y la compilación pasan.
 3. Se realiza la prueba funcional correspondiente.
 4. El cambio queda registrado en Git.
-5. Se publica en Vercel.
-6. Se comprueba el resultado en producción.
+5. Se actualizan el número y la fecha visibles de la versión.
+6. Se publica en Vercel.
+7. Se comprueba el resultado en producción.
 
 ## Trabajo actual
 
@@ -38,7 +39,7 @@ Una tarea solo pasa a **Completada** cuando:
 | AUTH-001 | Alta | Auto-vincular `auth_user_id` durante el primer login | Pendiente | Diseñar vinculación segura mediante correo verificado y evitar reasignaciones. |
 | DB-001 | Alta | Versionar esquema, migraciones y políticas RLS | Pendiente | Recuperar el esquema actual de Supabase y auditar sus políticas. |
 | OPS-001 | Alta | Revisar deployments, runtime y functions de Vercel | Bloqueada | Obtener acceso al dashboard o vincular la carpeta con Vercel. |
-| REL-001 | Media | Mostrar versión y fecha de publicación | Lista para probar | Confirmar versión 0.2 y fecha en el menú lateral y acceso. |
+| REL-001 | Media | Mostrar versión y fecha de publicación | Lista para publicar | Versión 0.3 preparada; comprobarla en el menú lateral y acceso. |
 | TASK-001 | Alta | Confirmar creación de tareas sin enlace | Lista para probar | Crear una tarea real con `url = null`. |
 | TASK-002 | Alta | Corregir recuperación después de un error al crear tarea | Lista para probar | Provocar un error, modificar un campo y confirmar que el aviso desaparece. |
 | CAT-001 | Media | Excluir catálogos inactivos de los selectores | Lista para probar | Confirmar que solo aparecen personas, clientes, plantillas y estados activos. |
@@ -50,8 +51,9 @@ Una tarea solo pasa a **Completada** cuando:
 | TASK-003 | Media | Mostrar aviso al completar una tarea | Lista para probar | Completar y reabrir una tarea; confirmar ambos avisos. |
 | TASK-004 | Media | Validar funcionalmente el borrado de tareas | Lista para publicar | Prueba funcional aprobada; incluir código y migración en el próximo commit. |
 | UX-001 | Media | Definir e implementar “Ver todos” | Lista para probar | Abrir cada estado, revisar la tabla y entrar a una ficha desde una fila. |
-| CLIENT-001 | Media | Diseñar el módulo Clientes | Pendiente | Definir empresa, contactos, correos y relaciones con personas. |
-| CLIENT-002 | Media | Agregar clientes desde el menú | Bloqueada | Depende de CLIENT-001. |
+| CAT-002 | Media | Administrar catálogos operativos | Lista para probar | Probar clientes, tipos, venues y plantillas con distintos usuarios activos. |
+| CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | Pendiente | Diseñar y migrar el modelo sin mezclar contactos con el nombre del cliente. |
+| CLIENT-002 | Media | Agregar clientes desde el menú | Lista para probar | Reemplazado por Catálogos; validar el flujo de clientes con un administrador. |
 | THEME-001 | Baja | Corregir experiencia en modo nocturno | Pendiente | Definir si MARTES soportará tema oscuro o permanecerá claro. |
 | MOD-001 | Baja | Implementar Mi Martes | Pendiente | Definir alcance funcional. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
@@ -80,6 +82,19 @@ Una tarea solo pasa a **Completada** cuando:
 - Aviso temporal agregado al completar o reabrir una tarea.
 - “Ver todos” abre una tabla dedicada con todos los proyectos del estado.
 - Versión 0.2 y fecha de publicación centralizadas y visibles en el menú.
+- Menú Clientes reemplazado por Catálogos para todos los usuarios activos.
+- Catálogos implementado para clientes, tipos de proyecto, venues y plantillas
+  de tareas, con búsqueda, alta, edición, desactivación y reactivación.
+- Clientes ampliados con empresa, nombre del contacto, correo y celular.
+- Sugerencias de clientes existentes agregadas durante el alta, con bloqueo de
+  coincidencias exactas y una segunda validación en el servidor.
+- Migración RLS agregada para que cualquier persona activa pueda leer, crear y
+  actualizar clientes; el borrado físico permanece bloqueado.
+- Políticas RLS unificadas para clientes, tipos de proyecto, venues y
+  plantillas de tareas.
+- El orden de las plantillas de tareas quedó interno y automático; no se
+  solicita ni se muestra al usuario.
+- Versión 0.3 preparada para publicación el 23 de julio de 2026 a las 22:03.
 - Borrado de tareas corregido para verificar existencia antes y ausencia
   después, sin depender de que Supabase devuelva la fila eliminada.
 - La prueba confirmó que la política RLS actual bloquea el borrado; no se
@@ -102,9 +117,10 @@ Para cada sesión:
 3. Implementar un alcance pequeño y verificable.
 4. Registrar pruebas y resultados en este documento.
 5. Moverla a **Lista para probar** o **Lista para publicar**.
-6. Publicar un grupo coherente de cambios.
-7. Revisar Vercel y producción.
-8. Marcar como **Completada** solo después de la comprobación final.
+6. Actualizar versión y fecha en `lib/app-version.ts`.
+7. Publicar un grupo coherente de cambios.
+8. Revisar Vercel, la pantalla de acceso y el menú lateral.
+9. Marcar como **Completada** solo después de la comprobación final.
 
 ## Notas
 
@@ -117,3 +133,5 @@ Para cada sesión:
   de TS-001 o en tareas específicas si requieren cambios funcionales.
 - No se ejecutará `npm audit fix --force`, porque actualmente propone una
   degradación incompatible de Next.js.
+- Cada publicación debe actualizar la versión y fecha centralizadas; ambas se
+  muestran en el acceso y en el menú lateral.

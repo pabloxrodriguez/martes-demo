@@ -9,7 +9,7 @@ const menuItems = [
   { label: "Equipo", href: "/equipo" },
   { label: "Calendario", href: "/calendario" },
   { label: "Resultados", href: "/resultados" },
-  { label: "Clientes", href: "/clientes" },
+  { label: "Catálogos", href: "/catalogos" },
 ];
 
 export function SidebarNav() {
