@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type EditableValueProps = {
   label: string;
@@ -19,12 +19,6 @@ export function EditableValue({
   const [draftValue, setDraftValue] = useState(value ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isEditing) {
-      setDraftValue(value ?? "");
-    }
-  }, [value, isEditing]);
 
   async function handleSave() {
     const cleanValue = draftValue.trim();
@@ -109,7 +103,11 @@ export function EditableValue({
       ) : (
         <button
           type="button"
-          onClick={() => setIsEditing(true)}
+          onClick={() => {
+            setDraftValue(value ?? "");
+            setError(null);
+            setIsEditing(true);
+          }}
           className="mt-1 block w-full rounded-lg px-2 py-2 text-left text-zinc-950 hover:bg-zinc-100"
         >
           {value || (

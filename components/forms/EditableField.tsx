@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type SelectOption = {
   value: string;
@@ -53,12 +53,6 @@ export function EditableField({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isEditing) {
-      setDraftValue(String(value ?? ""));
-    }
-  }, [value, isEditing]);
-
   async function handleSave() {
     const cleanValue = draftValue.trim();
     const currentValue = String(value ?? "").trim();
@@ -75,12 +69,12 @@ export function EditableField({
       await onSave(cleanValue);
       setIsEditing(false);
     } catch (error) {
-  setError(
-    error instanceof Error
-      ? error.message
-      : "No se pudo guardar el cambio."
-  );
-} finally {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudo guardar el cambio."
+      );
+    } finally {
       setIsSaving(false);
     }
   }
@@ -198,10 +192,14 @@ export function EditableField({
       ) : (
         <button
           type="button"
-          onClick={() => setIsEditing(true)}
+          onClick={() => {
+            setDraftValue(String(value ?? ""));
+            setError(null);
+            setIsEditing(true);
+          }}
           className={`mt-1 block w-full rounded-lg px-2 py-2 text-left text-zinc-950 hover:bg-zinc-100 ${
-  type === "textarea" ? "whitespace-pre-wrap" : ""
-}`}
+            type === "textarea" ? "whitespace-pre-wrap" : ""
+          }`}
         >
           {displayValue !== null &&
           displayValue !== undefined &&

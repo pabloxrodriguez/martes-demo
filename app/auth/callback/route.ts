@@ -6,7 +6,21 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
 
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/proyectos";
+  const requestedPath = searchParams.get("next");
+  const fallbackUrl = new URL("/proyectos", origin);
+  let redirectUrl = fallbackUrl;
+
+  if (
+    requestedPath?.startsWith("/") &&
+    !requestedPath.startsWith("//") &&
+    !requestedPath.includes("\\")
+  ) {
+    const candidateUrl = new URL(requestedPath, origin);
+
+    if (candidateUrl.origin === origin) {
+      redirectUrl = candidateUrl;
+    }
+  }
 
   if (code) {
     const supabase = await createClient();
@@ -14,7 +28,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return NextResponse.redirect(new URL(next, origin));
+      return NextResponse.redirect(redirectUrl);
     }
   }
 

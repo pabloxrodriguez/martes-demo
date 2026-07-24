@@ -1,5 +1,3 @@
-import { EditableField } from "@/components/forms/EditableField";
-import { SearchSelect } from "@/components/forms/SearchSelect";
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";

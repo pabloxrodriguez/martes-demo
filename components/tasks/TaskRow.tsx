@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 
 type SelectOption = {
   value: string;
@@ -74,12 +75,6 @@ function EditableCell({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isEditing) {
-      setDraft(value ?? "");
-    }
-  }, [value, isEditing]);
-
   async function save() {
     const cleanValue = draft.trim();
     const currentValue = (value ?? "").trim();
@@ -115,7 +110,11 @@ function EditableCell({
     return (
       <button
         type="button"
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          setDraft(value ?? "");
+          setError(null);
+          setIsEditing(true);
+        }}
         className="block min-h-9 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-2 py-1.5 text-left transition hover:bg-zinc-100"
         title="Haz clic para editar"
       >
@@ -224,12 +223,6 @@ function EditableSelectCell({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isEditing) {
-      setDraft(value ?? "");
-    }
-  }, [value, isEditing]);
-
   const selectedOption = options.find(
     (option) => option.value === value
   );
@@ -265,7 +258,11 @@ function EditableSelectCell({
     return (
       <button
         type="button"
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          setDraft(value ?? "");
+          setError(null);
+          setIsEditing(true);
+        }}
         className="block min-h-9 w-full rounded-md px-2 py-1.5 text-left transition hover:bg-zinc-100"
         title="Haz clic para editar"
       >
@@ -366,6 +363,8 @@ export function TaskRow({
   const [isCompleting, setIsCompleting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [rowError, setRowError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] =
+    useState<string | null>(null);
 
   const completed =
     task.estados_tarea?.nombre === "Completada" ||
@@ -375,7 +374,18 @@ export function TaskRow({
     try {
       setIsCompleting(true);
       setRowError(null);
+      setSuccessMessage(null);
       await onToggleCompleted(task.id, !completed);
+
+      setSuccessMessage(
+        completed
+          ? "La tarea volvió a estado pendiente."
+          : "Tarea marcada como completada."
+      );
+
+      window.setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
     } catch (caughtError) {
       setRowError(
         caughtError instanceof Error
@@ -569,6 +579,19 @@ export function TaskRow({
           </td>
         </tr>
       )}
+
+      {successMessage &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            role="status"
+            aria-live="polite"
+            className="fixed bottom-6 right-6 z-50 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-medium text-white shadow-lg"
+          >
+            {successMessage}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

@@ -2,7 +2,6 @@ import { EditableField } from "@/components/forms/EditableField";
 import { SearchSelect } from "@/components/forms/SearchSelect";
 import { ProjectDetailsCard } from "./ProjectDetailsCard";
 import { DeleteProjectButton } from "./DeleteProjectButton";
-onDeleteProject: () => Promise<void>;
 
 type Option = {
   value: string;

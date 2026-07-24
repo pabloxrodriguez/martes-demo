@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireActivePerson } from "@/lib/auth/requireActivePerson";
 
 type CreateProjectInput = {
   nombre: string;
@@ -14,12 +14,26 @@ type CreateProjectInput = {
 export async function createProject(
   input: CreateProjectInput
 ) {
-  const supabase = await createClient();
+  const { supabase } = await requireActivePerson();
 
-  const nombre = input.nombre.trim();
-  const responsableId = input.responsable_id.trim();
-  const estadoId = input.estado_id.trim();
-  const fechaPropuesta = input.fecha_propuesta.trim();
+  if (!input || typeof input !== "object") {
+    throw new Error("Los datos del proyecto no son válidos.");
+  }
+
+  const nombre =
+    typeof input.nombre === "string" ? input.nombre.trim() : "";
+  const responsableId =
+    typeof input.responsable_id === "string"
+      ? input.responsable_id.trim()
+      : "";
+  const estadoId =
+    typeof input.estado_id === "string"
+      ? input.estado_id.trim()
+      : "";
+  const fechaPropuesta =
+    typeof input.fecha_propuesta === "string"
+      ? input.fecha_propuesta.trim()
+      : "";
 
   if (!nombre) {
     throw new Error("El nombre del proyecto es obligatorio.");
@@ -35,6 +49,29 @@ export async function createProject(
 
   if (!fechaPropuesta) {
     throw new Error("La fecha de propuesta es obligatoria.");
+  }
+
+  const uuidPattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  if (!uuidPattern.test(responsableId)) {
+    throw new Error("El responsable seleccionado no es válido.");
+  }
+
+  if (!uuidPattern.test(estadoId)) {
+    throw new Error("El estado seleccionado no es válido.");
+  }
+
+  const parsedProposalDate = new Date(
+    `${fechaPropuesta}T00:00:00Z`
+  );
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(fechaPropuesta) ||
+    Number.isNaN(parsedProposalDate.getTime()) ||
+    parsedProposalDate.toISOString().slice(0, 10) !== fechaPropuesta
+  ) {
+    throw new Error("La fecha de propuesta no es válida.");
   }
 
   const { data, error } = await supabase

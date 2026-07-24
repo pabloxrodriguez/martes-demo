@@ -60,7 +60,14 @@ export function NewTaskRow({
     setError(null);
   }
 
+  function clearError() {
+    if (error) {
+      setError(null);
+    }
+  }
+
   function handleTaskNameChange(newName: string) {
+    clearError();
     setTaskName(newName);
 
     const matchingTemplate = taskTemplateOptions.find(
@@ -192,7 +199,10 @@ export function NewTaskRow({
             value={responsibleId}
             disabled={isSaving}
             onChange={(event) =>
-              setResponsibleId(event.target.value)
+              {
+                clearError();
+                setResponsibleId(event.target.value);
+              }
             }
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500"
           >
@@ -217,7 +227,10 @@ export function NewTaskRow({
             value={committedDate}
             disabled={isSaving}
             onChange={(event) =>
-              setCommittedDate(event.target.value)
+              {
+                clearError();
+                setCommittedDate(event.target.value);
+              }
             }
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500"
           />
@@ -228,7 +241,10 @@ export function NewTaskRow({
             value={statusId}
             disabled={isSaving}
             onChange={(event) =>
-              setStatusId(event.target.value)
+              {
+                clearError();
+                setStatusId(event.target.value);
+              }
             }
             className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500"
           >
@@ -252,8 +268,11 @@ export function NewTaskRow({
             type="url"
             value={url}
             disabled={isSaving}
-            placeholder="https://"
-            onChange={(event) => setUrl(event.target.value)}
+            placeholder="Enlace opcional"
+            onChange={(event) => {
+              clearError();
+              setUrl(event.target.value);
+            }}
             className="w-full min-w-36 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500"
           />
         </td>
@@ -264,9 +283,10 @@ export function NewTaskRow({
             disabled={isSaving}
             rows={2}
             placeholder="Comentario"
-            onChange={(event) =>
+            onChange={(event) => {
+              clearError();
               setComment(event.target.value)
-            }
+            }}
             className="w-full min-w-64 resize-y rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500"
           />
         </td>
@@ -298,7 +318,11 @@ export function NewTaskRow({
             </button>
 
             {error && (
-              <p className="text-sm text-red-600">
+              <p
+                className="text-sm text-red-600"
+                role="alert"
+                aria-live="polite"
+              >
                 {error}
               </p>
             )}

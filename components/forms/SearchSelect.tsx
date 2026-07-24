@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type SearchOption = {
   value: string;
@@ -37,19 +37,14 @@ export function SearchSelect({
 
   const cleanSearch = search.trim();
 
-  const filteredOptions = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    if (!normalizedSearch) {
-      return options.slice(0, 10);
-    }
-
-    return options
-      .filter((option) =>
-        option.label.toLowerCase().includes(normalizedSearch)
-      )
-      .slice(0, 10);
-  }, [options, search]);
+  const normalizedSearch = search.trim().toLowerCase();
+  const filteredOptions = normalizedSearch
+    ? options
+        .filter((option) =>
+          option.label.toLowerCase().includes(normalizedSearch)
+        )
+        .slice(0, 10)
+    : options.slice(0, 10);
 
   const exactMatchExists = options.some(
     (option) =>

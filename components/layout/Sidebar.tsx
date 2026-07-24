@@ -1,15 +1,6 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/layout/LogoutButton";
-
-const menuItems = [
-  { label: "Mi Martes", href: "/mi-martes" },
-  { label: "Proyectos", href: "/proyectos" },
-  { label: "Equipo", href: "/equipo" },
-  { label: "Calendario", href: "/calendario" },
-  { label: "Resultados", href: "/resultados" },
-  { label: "Clientes", href: "/clientes" },
-];
+import { SidebarNav } from "@/components/layout/SidebarNav";
 
 export async function Sidebar() {
   const supabase = await createClient();
@@ -33,17 +24,7 @@ export async function Sidebar() {
         </p>
       </div>
 
-      <nav className="flex flex-col gap-1 p-4">
-        {menuItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="rounded-lg px-4 py-3.5 text-base font-medium text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <SidebarNav />
 
       <div className="border-t border-zinc-200 p-4">
         <div className="px-4 pb-3">

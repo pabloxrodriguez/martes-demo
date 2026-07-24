@@ -172,7 +172,8 @@ export async function getProjectEditOptions() {
   ] = await Promise.all([
     supabase
       .from("estados_proyecto")
-      .select("id, nombre, orden")
+      .select("id, codigo, nombre, orden")
+      .eq("activo", true)
       .order("orden"),
 
     supabase
@@ -184,11 +185,13 @@ export async function getProjectEditOptions() {
     supabase
       .from("personas")
       .select("id, nombre")
+      .eq("activo", true)
       .order("nombre"),
 
     supabase
       .from("clientes")
       .select("id, nombre")
+      .eq("activo", true)
       .order("nombre"),
 
     supabase
@@ -200,11 +203,13 @@ export async function getProjectEditOptions() {
     supabase
       .from("plantillas_tarea")
       .select("id, nombre")
+      .eq("activa", true)
       .order("nombre"),
 
     supabase
       .from("estados_tarea")
       .select("id, nombre")
+      .eq("activo", true)
       .order("nombre"),
   ]);
 

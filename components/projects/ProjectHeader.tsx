@@ -1,6 +1,7 @@
 import { HeaderField } from "@/components/project-header/HeaderField";
 import { HeaderSearchSelect } from "@/components/project-header/HeaderSearchSelect";
 import { ProjectHeaderCard } from "@/components/projects/ProjectHeaderCard";
+import Link from "next/link";
 import {
   Building2,
   BriefcaseBusiness,
@@ -12,7 +13,6 @@ import {
   MapPin,
   User,
   Wallet,
-  CircleDollarSign,
 } from "lucide-react";
 
 type SelectOption = {
@@ -153,6 +153,8 @@ function formatUpdatedAt(value: string | null) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
+    timeZone: "America/Santiago",
   }).format(new Date(value));
 }
 
@@ -184,12 +186,12 @@ export function ProjectHeader({
     <ProjectHeaderCard>
     <header className="bg-white px-5 pb-8 pt-6 sm:px-8">
       <div className="mx-auto w-full max-w-screen-2xl">
-        <a
+        <Link
           href="/proyectos"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-950"
         >
           ← Proyectos
-        </a>
+        </Link>
 
         <div className="mt-6">
           <div className="text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">

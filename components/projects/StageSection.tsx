@@ -1,12 +1,16 @@
+import Link from "next/link";
+
 type StageSectionProps = {
   title: string;
   count: number;
+  viewAllHref: string;
   children?: React.ReactNode;
 };
 
 export function StageSection({
   title,
   count,
+  viewAllHref,
   children,
 }: StageSectionProps) {
   return (
@@ -22,12 +26,12 @@ export function StageSection({
           </span>
         </div>
 
-        <button
+        <Link
+          href={viewAllHref}
           className="text-sm font-medium text-zinc-500 hover:text-zinc-900"
-          type="button"
         >
           Ver todos
-        </button>
+        </Link>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-2">

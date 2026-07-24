@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 
 type HeaderFieldOption = {
   value: string;
@@ -67,12 +67,6 @@ export function HeaderField({
   );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isEditing) {
-      setDraftValue(String(value ?? ""));
-    }
-  }, [value, isEditing]);
 
   const selectedOption = options.find(
     (option) => option.value === String(value ?? "")
@@ -230,6 +224,7 @@ export function HeaderField({
     <button
       type="button"
       onClick={() => {
+        setDraftValue(String(value ?? ""));
         setError(null);
         setIsEditing(true);
       }}
