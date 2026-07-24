@@ -37,14 +37,14 @@ Una tarea solo pasa a **Completada** cuando:
 | SEC-001 | Alta | Proteger y validar las Server Actions | En pruebas | Continuar pruebas de creación, edición y eliminación con usuarios activos. |
 | SEC-002 | Alta | Bloquear redirecciones externas en el callback OAuth | En pruebas | Confirmar explícitamente que un destino externo vuelve a `/proyectos`. |
 | DATA-001 | Alta | Obtener los estados de proyecto desde Supabase | En pruebas | Confirmar que cambios de catálogo se reflejan sin estados invisibles. |
-| AUTH-001 | Alta | Auto-vincular `auth_user_id` durante el primer login | Lista para probar | Migración aplicada; publicar y probar el lunes con Anai, además de una Persona ya vinculada. |
-| DB-001 | Alta | Versionar esquema, migraciones y políticas RLS | Lista para publicar | Esquema versionado; RLS aplicado y validado con acceso anónimo y una Persona activa. |
+| AUTH-001 | Alta | Auto-vincular `auth_user_id` durante el primer login | En pruebas | Versión publicada; probar el lunes con Anai y confirmar una Persona ya vinculada. |
+| DB-001 | Alta | Versionar esquema, migraciones y políticas RLS | Completada | Esquema publicado; RLS aplicado y validado con acceso anónimo y una Persona activa. |
 | OPS-001 | Alta | Revisar deployments, runtime y functions de Vercel | Completada | Producción estable; errores históricos clasificados y sin incidencias vigentes. |
-| REL-001 | Media | Mostrar versión y fecha de publicación | Lista para publicar | Versión 0.4 preparada; confirmar acceso y menú después del deployment. |
-| TASK-001 | Alta | Confirmar creación de tareas sin enlace | Lista para publicar | Prueba local aprobada; incluir en la próxima versión. |
-| TASK-002 | Alta | Corregir recuperación después de un error al crear tarea | Lista para publicar | Prueba local aprobada; incluir en la próxima versión. |
+| REL-001 | Media | Mostrar versión y fecha de publicación | En pruebas | Versión 0.4 visible en el acceso; confirmar también el menú autenticado. |
+| TASK-001 | Alta | Confirmar creación de tareas sin enlace | En pruebas | Versión publicada; repetir la prueba en producción. |
+| TASK-002 | Alta | Corregir recuperación después de un error al crear tarea | En pruebas | Versión publicada; repetir error y corrección en producción. |
 | CAT-001 | Media | Excluir catálogos inactivos de los selectores | En pruebas | Confirmar que solo aparecen personas, clientes, plantillas y estados activos. |
-| TS-001 | Media | Limpiar tipos y consultas de proyectos | Lista para publicar | Esquema tipado, clientes Supabase conectados y duplicados principales reemplazados por tipos derivados. |
+| TS-001 | Media | Limpiar tipos y consultas de proyectos | Completada | Esquema tipado publicado y compilación de producción aprobada. |
 | SEARCH-001 | Media | Implementar búsqueda de proyectos | En pruebas | Buscar por proyecto, cliente, tipo y responsable; probar también Limpiar. |
 | NAV-001 | Media | Mostrar la sección activa en el menú | En pruebas | Confirmar el indicador en la lista, ficha y módulos futuros. |
 | NAV-002 | Media | Revisar actualización de lista y ficha | En pruebas | Continuar pruebas después de cada mutación. |
@@ -55,9 +55,9 @@ Una tarea solo pasa a **Completada** cuando:
 | CAT-002 | Media | Administrar catálogos operativos | En pruebas | CRUD validado inicialmente; falta prueba con más de un usuario activo. |
 | CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | En pruebas | Empresa y contacto principal implementados; continuar validación. |
 | CLIENT-002 | Media | Agregar clientes desde el menú | Completada | Reemplazado por Catálogos y validado en producción. |
-| VENUE-001 | Media | Agregar datos de contacto a Venues | Lista para publicar | Alta/edición, recarga y búsqueda por contacto validadas localmente. |
+| VENUE-001 | Media | Agregar datos de contacto a Venues | En pruebas | Versión publicada; repetir alta/edición, recarga y búsqueda en producción. |
 | AUTH-002 | Media | Probar Catálogos con más de un usuario activo | Pendiente | Iniciar sesión con un segundo usuario activo y repetir una mutación. |
-| AUTH-003 | Media | Recuperar una sesión vencida sin error 500 | Lista para publicar | Redirigir al acceso con un mensaje claro y validar el flujo después de publicar. |
+| AUTH-003 | Media | Recuperar una sesión vencida sin error 500 | En pruebas | Versión publicada; validar redirección y mensaje con una sesión vencida. |
 | THEME-001 | Baja | Corregir experiencia en modo nocturno | Pendiente | Definir si MARTES soportará tema oscuro o permanecerá claro. |
 | MOD-001 | Baja | Implementar Mi Martes | Pendiente | Definir alcance funcional. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
@@ -68,7 +68,9 @@ Una tarea solo pasa a **Completada** cuando:
 
 ### 2026-07-24
 
-- Versión 0.4 preparada para publicación el 24 de julio de 2026 a las 19:54.
+- Versión 0.4 publicada el 24 de julio de 2026 a las 19:54 mediante el commit
+  `1f2e756`; deployment de Vercel listo en 28 segundos y acceso público
+  confirmado con la versión correcta.
 - Versión 0.3 operativa en producción y todavía bajo pruebas funcionales.
 - Hora de Chile validada.
 - CRUD de Catálogos validado inicialmente y edición de Venues confirmada
