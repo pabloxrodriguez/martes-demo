@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/server";
 
 export async function getCurrentPerson() {
@@ -8,7 +10,7 @@ export async function getCurrentPerson() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect("/login?reason=session_expired");
   }
 
   const { data: person, error } = await supabase

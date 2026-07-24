@@ -4,6 +4,7 @@ import { parse } from "csv-parse/sync";
 import dotenv from "dotenv";
 
 import { createAdminClient } from "../lib/supabase/admin";
+import type { TableInsert } from "../types/database";
 
 dotenv.config({ path: ".env.local" });
 
@@ -200,7 +201,7 @@ async function main() {
   const missingTypes = new Set<string>();
   const missingPeople = new Set<string>();
 
-  const projects = rows.map((row) => {
+  const projects: TableInsert<"proyectos">[] = rows.map((row) => {
     const statusId = statusByCode.get(row.estado_id.trim());
     const typeId = typeByName.get(normalizeText(row.tipo_id));
     const personId = personByName.get(
@@ -223,19 +224,20 @@ async function main() {
     return {
       legacy_id: row.id_proyecto,
       nombre: row.nombre,
-      estado_id: statusId,
+      estado_id: statusId ?? "",
       tipo_id: typeId ?? null,
       responsable_id: personId ?? null,
       cliente_id: clientId ?? null,
-      prioridad: row.prioridad || null,
+      prioridad: parseInteger(row.prioridad),
       fecha_propuesta: parseDate(row.fecha_propuesta),
       fecha_evento_inicio: parseDate(row.fecha_evento_inicio),
       fecha_evento_termino: parseDate(row.fecha_evento_termino),
       publico_esperado: parseInteger(row.publico_esperado),
       valor_venta: parseNumber(row.valor_venta),
       notas: row.notas || null,
-      fecha_creacion: parseDate(row.fecha_creacion),
-      fecha_actualizacion: parseDate(row.fecha_actualizacion),
+      fecha_creacion: parseDate(row.fecha_creacion) ?? undefined,
+      fecha_actualizacion:
+        parseDate(row.fecha_actualizacion) ?? undefined,
     };
   });
 

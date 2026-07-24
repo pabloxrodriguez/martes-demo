@@ -432,6 +432,9 @@ type VenueInput = {
   comuna?: unknown;
   ciudad?: unknown;
   capacidad?: unknown;
+  contacto_nombre?: unknown;
+  contacto_correo?: unknown;
+  contacto_celular?: unknown;
 };
 
 function optionalText(value: unknown, label: string) {
@@ -468,12 +471,34 @@ function requireVenueInput(input: unknown) {
     );
   }
 
+  const contactoCorreo =
+    typeof venue.contacto_correo === "string"
+      ? venue.contacto_correo.trim().toLowerCase()
+      : "";
+
+  if (
+    contactoCorreo &&
+    (contactoCorreo.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactoCorreo))
+  ) {
+    throw new Error("El correo del contacto no es válido.");
+  }
+
   return {
     nombre: requireClientName(venue.nombre),
     direccion: optionalText(venue.direccion, "La dirección"),
     comuna: optionalText(venue.comuna, "La comuna"),
     ciudad: optionalText(venue.ciudad, "La ciudad"),
     capacidad,
+    contacto_nombre: optionalText(
+      venue.contacto_nombre,
+      "El nombre del contacto"
+    ),
+    contacto_correo: contactoCorreo || null,
+    contacto_celular: optionalText(
+      venue.contacto_celular,
+      "El celular del contacto"
+    ),
   };
 }
 

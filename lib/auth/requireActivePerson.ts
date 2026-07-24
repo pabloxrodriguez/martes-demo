@@ -1,5 +1,7 @@
 import "server-only";
 
+import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/server";
 
 export async function requireActivePerson() {
@@ -11,7 +13,7 @@ export async function requireActivePerson() {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("Debes iniciar sesión para realizar esta acción.");
+    redirect("/login?reason=session_expired");
   }
 
   const { data: person, error: personError } = await supabase

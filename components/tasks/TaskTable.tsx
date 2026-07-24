@@ -21,13 +21,18 @@ type CreateTaskInput = {
   comentario: string | null;
 };
 
+type CreateTaskResult = {
+  success: boolean;
+  error: string | null;
+};
+
 type TaskTableProps = {
   tasks: TaskRowData[] | null;
   peopleOptions: SelectOption[];
   taskTemplateOptions: SelectOption[];
   taskStatusOptions: SelectOption[];
   defaultTaskStatusId: string;
-  onCreate: (input: CreateTaskInput) => Promise<void>;
+  onCreate: (input: CreateTaskInput) => Promise<CreateTaskResult>;
   onUpdate: (
     taskId: string,
     field: EditableTaskField,

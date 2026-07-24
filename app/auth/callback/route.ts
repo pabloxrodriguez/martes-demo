@@ -25,10 +25,33 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      return NextResponse.redirect(redirectUrl);
+    if (!exchangeError) {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (!userError && user?.email_confirmed_at) {
+        const { data: linkStatus, error: linkError } =
+          await supabase.rpc("link_current_auth_user");
+
+        if (!linkError && linkStatus === "linked") {
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        console.error("No se pudo vincular el usuario autenticado.", {
+          userId: user.id,
+          status: linkStatus,
+          error: linkError,
+        });
+      }
+
+      return NextResponse.redirect(
+        new URL("/acceso-denegado", origin)
+      );
     }
   }
 

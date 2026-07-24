@@ -1,0 +1,382 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+type TableDefinition<
+  Row,
+  Insert,
+  Relationships extends Relationship[] = [],
+> = {
+  Row: Row;
+  Insert: Insert;
+  Update: Partial<Insert>;
+  Relationships: Relationships;
+};
+
+type Relationship = {
+  foreignKeyName: string;
+  columns: string[];
+  isOneToOne: boolean;
+  referencedRelation: string;
+  referencedColumns: string[];
+};
+
+type ClientesRow = {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  contacto_nombre: string | null;
+  contacto_correo: string | null;
+  contacto_celular: string | null;
+};
+
+type EstadosProyectoRow = {
+  id: string;
+  codigo: number;
+  nombre: string;
+  orden: number;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+};
+
+type EstadosTareaRow = EstadosProyectoRow;
+
+type PersonasRow = {
+  id: string;
+  nombre: string;
+  email: string;
+  activo: boolean;
+  administrador: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  auth_user_id: string | null;
+};
+
+type PlantillasTareaRow = {
+  id: string;
+  nombre: string;
+  orden: number;
+  activa: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+};
+
+type ProyectoVenuesRow = {
+  id: string;
+  proyecto_id: string;
+  venue_id: string;
+  fecha_creacion: string;
+};
+
+type ProyectosRow = {
+  id: string;
+  legacy_id: string | null;
+  nombre: string;
+  estado_id: string;
+  tipo_id: string | null;
+  responsable_id: string | null;
+  cliente_id: string | null;
+  prioridad: number | null;
+  fecha_propuesta: string | null;
+  fecha_evento_inicio: string | null;
+  fecha_evento_termino: string | null;
+  publico_esperado: number | null;
+  valor_venta: number | null;
+  notas: string | null;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+};
+
+type TareasRow = {
+  id: string;
+  proyecto_id: string;
+  plantilla_tarea_id: string | null;
+  nombre: string;
+  responsable_id: string | null;
+  estado_id: string;
+  fecha_comprometida: string | null;
+  fecha_completada: string | null;
+  url: string | null;
+  orden: number;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  comentario: string | null;
+};
+
+type TiposProyectoRow = {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+};
+
+type VenuesRow = {
+  id: string;
+  nombre: string;
+  direccion: string | null;
+  comuna: string | null;
+  ciudad: string | null;
+  capacidad: number | null;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  contacto_nombre: string | null;
+  contacto_correo: string | null;
+  contacto_celular: string | null;
+};
+
+export type Database = {
+  public: {
+    Tables: {
+      clientes: TableDefinition<
+        ClientesRow,
+        {
+          id?: string;
+          nombre: string;
+          activo?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+          contacto_nombre?: string | null;
+          contacto_correo?: string | null;
+          contacto_celular?: string | null;
+        }
+      >;
+      estados_proyecto: TableDefinition<
+        EstadosProyectoRow,
+        {
+          id?: string;
+          codigo: number;
+          nombre: string;
+          orden: number;
+          activo?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+        }
+      >;
+      estados_tarea: TableDefinition<
+        EstadosTareaRow,
+        {
+          id?: string;
+          codigo: number;
+          nombre: string;
+          orden: number;
+          activo?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+        }
+      >;
+      personas: TableDefinition<
+        PersonasRow,
+        {
+          id?: string;
+          nombre: string;
+          email: string;
+          activo?: boolean;
+          administrador?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+          auth_user_id?: string | null;
+        }
+      >;
+      plantillas_tarea: TableDefinition<
+        PlantillasTareaRow,
+        {
+          id?: string;
+          nombre: string;
+          orden?: number;
+          activa?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+        }
+      >;
+      proyecto_venues: TableDefinition<
+        ProyectoVenuesRow,
+        {
+          id?: string;
+          proyecto_id: string;
+          venue_id: string;
+          fecha_creacion?: string;
+        },
+        [
+          {
+            foreignKeyName: "proyecto_venues_proyecto_id_fkey";
+            columns: ["proyecto_id"];
+            isOneToOne: false;
+            referencedRelation: "proyectos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyecto_venues_venue_id_fkey";
+            columns: ["venue_id"];
+            isOneToOne: false;
+            referencedRelation: "venues";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      proyectos: TableDefinition<
+        ProyectosRow,
+        {
+          id?: string;
+          legacy_id?: string | null;
+          nombre: string;
+          estado_id: string;
+          tipo_id?: string | null;
+          responsable_id?: string | null;
+          cliente_id?: string | null;
+          prioridad?: number | null;
+          fecha_propuesta?: string | null;
+          fecha_evento_inicio?: string | null;
+          fecha_evento_termino?: string | null;
+          publico_esperado?: number | null;
+          valor_venta?: number | null;
+          notas?: string | null;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+        },
+        [
+          {
+            foreignKeyName: "proyectos_cliente_id_fkey";
+            columns: ["cliente_id"];
+            isOneToOne: false;
+            referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyectos_estado_id_fkey";
+            columns: ["estado_id"];
+            isOneToOne: false;
+            referencedRelation: "estados_proyecto";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyectos_responsable_id_fkey";
+            columns: ["responsable_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyectos_tipo_id_fkey";
+            columns: ["tipo_id"];
+            isOneToOne: false;
+            referencedRelation: "tipos_proyecto";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      tareas: TableDefinition<
+        TareasRow,
+        {
+          id?: string;
+          proyecto_id: string;
+          plantilla_tarea_id?: string | null;
+          nombre: string;
+          responsable_id?: string | null;
+          estado_id: string;
+          fecha_comprometida?: string | null;
+          fecha_completada?: string | null;
+          url?: string | null;
+          orden?: number;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+          comentario?: string | null;
+        },
+        [
+          {
+            foreignKeyName: "tareas_estado_id_fkey";
+            columns: ["estado_id"];
+            isOneToOne: false;
+            referencedRelation: "estados_tarea";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tareas_plantilla_tarea_id_fkey";
+            columns: ["plantilla_tarea_id"];
+            isOneToOne: false;
+            referencedRelation: "plantillas_tarea";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tareas_proyecto_id_fkey";
+            columns: ["proyecto_id"];
+            isOneToOne: false;
+            referencedRelation: "proyectos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tareas_responsable_id_fkey";
+            columns: ["responsable_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      tipos_proyecto: TableDefinition<
+        TiposProyectoRow,
+        {
+          id?: string;
+          nombre: string;
+          activo?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+        }
+      >;
+      venues: TableDefinition<
+        VenuesRow,
+        {
+          id?: string;
+          nombre: string;
+          direccion?: string | null;
+          comuna?: string | null;
+          ciudad?: string | null;
+          capacidad?: number | null;
+          activo?: boolean;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+          contacto_nombre?: string | null;
+          contacto_correo?: string | null;
+          contacto_celular?: string | null;
+        }
+      >;
+    };
+    Views: Record<string, never>;
+    Functions: {
+      es_administrador: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      es_usuario_activo: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      is_active_person: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      link_current_auth_user: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+    };
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+};
+
+export type PublicTableName = keyof Database["public"]["Tables"];
+export type TableRow<TableName extends PublicTableName> =
+  Database["public"]["Tables"][TableName]["Row"];
+export type TableInsert<TableName extends PublicTableName> =
+  Database["public"]["Tables"][TableName]["Insert"];
+export type TableUpdate<TableName extends PublicTableName> =
+  Database["public"]["Tables"][TableName]["Update"];

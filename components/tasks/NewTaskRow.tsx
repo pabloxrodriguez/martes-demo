@@ -17,12 +17,17 @@ type CreateTaskInput = {
   comentario: string | null;
 };
 
+type CreateTaskResult = {
+  success: boolean;
+  error: string | null;
+};
+
 type NewTaskRowProps = {
   peopleOptions: SelectOption[];
   taskTemplateOptions: SelectOption[];
   taskStatusOptions: SelectOption[];
   defaultTaskStatusId: string;
-  onCreate: (input: CreateTaskInput) => Promise<void>;
+  onCreate: (input: CreateTaskInput) => Promise<CreateTaskResult>;
 };
 
 export function NewTaskRow({
@@ -106,7 +111,7 @@ export function NewTaskRow({
       setIsSaving(true);
       setError(null);
 
-      await onCreate({
+      const result = await onCreate({
         plantilla_tarea_id: templateId,
         nombre: cleanTaskName,
         responsable_id: responsibleId,
@@ -116,6 +121,11 @@ export function NewTaskRow({
         url: url.trim() || null,
         comentario: comment.trim() || null,
       });
+
+      if (!result.success) {
+        setError(result.error ?? "No se pudo crear la tarea.");
+        return;
+      }
 
       resetForm();
       setIsEditing(false);

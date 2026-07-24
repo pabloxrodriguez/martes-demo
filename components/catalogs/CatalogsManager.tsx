@@ -21,6 +21,7 @@ import {
   updateTaskTemplate,
   updateVenue,
 } from "@/app/(app)/catalogos/actions";
+import type { TableRow } from "@/types/database";
 
 type SectionId = "clients" | "projectTypes" | "venues" | "taskTemplates";
 type NamedSectionId = "projectTypes" | "taskTemplates";
@@ -31,18 +32,29 @@ type NamedItem = {
   activo: boolean;
 };
 
-type VenueItem = NamedItem & {
-  direccion: string | null;
-  comuna: string | null;
-  ciudad: string | null;
-  capacidad: number | null;
-};
+type VenueItem = Pick<
+  TableRow<"venues">,
+  | "id"
+  | "nombre"
+  | "activo"
+  | "direccion"
+  | "comuna"
+  | "ciudad"
+  | "capacidad"
+  | "contacto_nombre"
+  | "contacto_correo"
+  | "contacto_celular"
+>;
 
-type ClientItem = NamedItem & {
-  contacto_nombre: string | null;
-  contacto_correo: string | null;
-  contacto_celular: string | null;
-};
+type ClientItem = Pick<
+  TableRow<"clientes">,
+  | "id"
+  | "nombre"
+  | "activo"
+  | "contacto_nombre"
+  | "contacto_correo"
+  | "contacto_celular"
+>;
 
 type ClientDraft = {
   nombre: string;
@@ -57,6 +69,9 @@ type VenueDraft = {
   comuna: string;
   ciudad: string;
   capacidad: string;
+  contacto_nombre: string;
+  contacto_correo: string;
+  contacto_celular: string;
 };
 
 type CatalogsManagerProps = {
@@ -785,6 +800,9 @@ function emptyVenueDraft(): VenueDraft {
     comuna: "",
     ciudad: "",
     capacidad: "",
+    contacto_nombre: "",
+    contacto_correo: "",
+    contacto_celular: "",
   };
 }
 
@@ -800,7 +818,7 @@ function VenueFields({
   const fields: {
     key: keyof VenueDraft;
     label: string;
-    type?: "text" | "number";
+    type?: "text" | "number" | "email" | "tel";
     required?: boolean;
   }[] = [
     { key: "nombre", label: "Nombre", required: true },
@@ -808,10 +826,13 @@ function VenueFields({
     { key: "comuna", label: "Comuna" },
     { key: "ciudad", label: "Ciudad" },
     { key: "capacidad", label: "Capacidad", type: "number" },
+    { key: "contacto_nombre", label: "Nombre del contacto" },
+    { key: "contacto_correo", label: "Correo", type: "email" },
+    { key: "contacto_celular", label: "Celular", type: "tel" },
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {fields.map((field) => (
         <label key={field.key} className="text-xs font-medium text-zinc-600">
           {field.label}
@@ -821,7 +842,13 @@ function VenueFields({
             required={field.required}
             min={field.type === "number" ? 0 : undefined}
             max={field.type === "number" ? 10_000_000 : undefined}
-            maxLength={field.type === "number" ? undefined : 200}
+            maxLength={
+              field.type === "number"
+                ? undefined
+                : field.type === "email"
+                  ? 254
+                  : 200
+            }
             disabled={disabled}
             onChange={(event) => onChange(field.key, event.target.value)}
             className="mt-1 h-10 w-full rounded-lg border border-zinc-300 px-3 text-sm font-normal outline-none focus:border-zinc-500 disabled:bg-zinc-100"
@@ -840,6 +867,9 @@ function VenueRow({ venue }: { venue: VenueItem }) {
     comuna: venue.comuna ?? "",
     ciudad: venue.ciudad ?? "",
     capacidad: venue.capacidad === null ? "" : String(venue.capacidad),
+    contacto_nombre: venue.contacto_nombre ?? "",
+    contacto_correo: venue.contacto_correo ?? "",
+    contacto_celular: venue.contacto_celular ?? "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -939,6 +969,15 @@ function VenueRow({ venue }: { venue: VenueItem }) {
                 : ""}
               {!venue.activo ? " · Inactivo" : ""}
             </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              {[
+                venue.contacto_nombre,
+                venue.contacto_correo,
+                venue.contacto_celular,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "Sin contacto"}
+            </p>
           </div>
 
           <button
@@ -984,9 +1023,16 @@ function VenuesSection({ venues }: { venues: VenueItem[] }) {
   const normalizedQuery = query.trim().toLocaleLowerCase("es");
   const filteredVenues = normalizedQuery
     ? venues.filter((venue) =>
-        [venue.nombre, venue.direccion, venue.comuna, venue.ciudad].some(
-          (value) =>
-            value?.toLocaleLowerCase("es").includes(normalizedQuery)
+        [
+          venue.nombre,
+          venue.direccion,
+          venue.comuna,
+          venue.ciudad,
+          venue.contacto_nombre,
+          venue.contacto_correo,
+          venue.contacto_celular,
+        ].some((value) =>
+          value?.toLocaleLowerCase("es").includes(normalizedQuery)
         )
       )
     : venues;
@@ -1056,7 +1102,7 @@ function VenuesSection({ venues }: { venues: VenueItem[] }) {
       {filteredVenues.length ? (
         filteredVenues.map((venue) => (
           <VenueRow
-            key={`${venue.id}:${venue.nombre}:${venue.activo}:${venue.direccion}:${venue.comuna}:${venue.ciudad}:${venue.capacidad}`}
+            key={`${venue.id}:${venue.nombre}:${venue.activo}:${venue.direccion}:${venue.comuna}:${venue.ciudad}:${venue.capacidad}:${venue.contacto_nombre}:${venue.contacto_correo}:${venue.contacto_celular}`}
             venue={venue}
           />
         ))

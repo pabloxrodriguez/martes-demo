@@ -1,27 +1,9 @@
 import Link from "next/link";
 
+import type { ProjectListItem } from "@/lib/repositories/project.repository";
+
 type ProjectCardProps = {
-  project: {
-    id: string;
-    nombre: string;
-    fecha_propuesta: string | null;
-    fecha_evento_inicio: string | null;
-    prioridad: string | null;
-    clientes: {
-      nombre: string;
-    } | null;
-    tipos_proyecto: {
-      nombre: string;
-    } | null;
-    responsable: {
-      nombre: string;
-    } | null;
-    tareas: {
-      estados_tarea: {
-        nombre: string;
-      } | null;
-    }[];
-  };
+  project: ProjectListItem;
 };
 
 function formatDate(date: string | null) {

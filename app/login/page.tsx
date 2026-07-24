@@ -1,13 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { APP_VERSION } from "@/lib/app-version";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const sessionMessage =
+    searchParams.get("reason") === "session_expired"
+      ? "Tu sesión expiró. Vuelve a ingresar para continuar."
+      : null;
+  const visibleError = error ?? sessionMessage;
 
   async function handleGoogleLogin() {
     try {
@@ -91,9 +106,9 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {error && (
+        {visibleError && (
           <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+            {visibleError}
           </p>
         )}
 

@@ -219,6 +219,9 @@ Un mismo venue puede utilizarse en múltiples proyectos.
 | comuna | text | Sí | Comuna donde se ubica. |
 | ciudad | text | Sí | Ciudad donde se ubica. |
 | capacidad | integer | Sí | Capacidad máxima de asistentes. |
+| contacto_nombre | text | Sí | Nombre del contacto principal del venue. |
+| contacto_correo | text | Sí | Correo del contacto principal del venue. |
+| contacto_celular | text | Sí | Celular del contacto principal del venue. |
 | activo | boolean | No | Indica si el venue puede utilizarse en nuevos proyectos. |
 | fecha_creacion | timestamptz | No | Fecha de creación del registro. |
 | fecha_actualizacion | timestamptz | No | Fecha de última actualización. |

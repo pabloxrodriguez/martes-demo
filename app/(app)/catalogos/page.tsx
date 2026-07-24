@@ -24,7 +24,7 @@ export default async function CatalogsPage() {
     supabase
       .from("venues")
       .select(
-        "id, nombre, direccion, comuna, ciudad, capacidad, activo"
+        "id, nombre, direccion, comuna, ciudad, capacidad, contacto_nombre, contacto_correo, contacto_celular, activo"
       )
       .order("activo", { ascending: false })
       .order("nombre"),

@@ -13,6 +13,7 @@ trabajo pendiente de MARTES.
 | En curso | Se está trabajando activamente. |
 | Bloqueada | Falta una decisión, acceso o dependencia externa. |
 | Lista para probar | Implementada localmente; falta validación funcional. |
+| En pruebas | Publicada; la validación funcional está en curso. |
 | Lista para publicar | Validada localmente; falta commit, GitHub y Vercel. |
 | Completada | Publicada y comprobada en producción. |
 
@@ -32,28 +33,31 @@ Una tarea solo pasa a **Completada** cuando:
 
 | ID | Prioridad | Tarea | Estado | Próximo paso |
 |---|---:|---|---|---|
-| DEP-001 | Alta | Actualizar Next.js a 16.2.11 | Lista para publicar | Incluir en el próximo commit y deployment. |
-| SEC-001 | Alta | Proteger y validar las Server Actions | Lista para probar | Probar creación, edición y eliminación con un usuario activo. |
-| SEC-002 | Alta | Bloquear redirecciones externas en el callback OAuth | Lista para publicar | Incluir en el próximo commit y probar un login real. |
-| DATA-001 | Alta | Obtener los estados de proyecto desde Supabase | Lista para probar | Confirmar que todas las etapas activas y sus proyectos aparecen. |
-| AUTH-001 | Alta | Auto-vincular `auth_user_id` durante el primer login | Pendiente | Diseñar vinculación segura mediante correo verificado y evitar reasignaciones. |
-| DB-001 | Alta | Versionar esquema, migraciones y políticas RLS | Pendiente | Recuperar el esquema actual de Supabase y auditar sus políticas. |
-| OPS-001 | Alta | Revisar deployments, runtime y functions de Vercel | Bloqueada | Obtener acceso al dashboard o vincular la carpeta con Vercel. |
-| REL-001 | Media | Mostrar versión y fecha de publicación | Lista para publicar | Versión 0.3 preparada; comprobarla en el menú lateral y acceso. |
-| TASK-001 | Alta | Confirmar creación de tareas sin enlace | Lista para probar | Crear una tarea real con `url = null`. |
-| TASK-002 | Alta | Corregir recuperación después de un error al crear tarea | Lista para probar | Provocar un error, modificar un campo y confirmar que el aviso desaparece. |
-| CAT-001 | Media | Excluir catálogos inactivos de los selectores | Lista para probar | Confirmar que solo aparecen personas, clientes, plantillas y estados activos. |
-| TS-001 | Media | Limpiar tipos y consultas de proyectos | En curso | Lint ya está limpio; falta tipar Supabase y reducir tipos manuales duplicados. |
-| SEARCH-001 | Media | Implementar búsqueda de proyectos | Lista para probar | Buscar por proyecto, cliente, tipo y responsable; probar también Limpiar. |
-| NAV-001 | Media | Mostrar la sección activa en el menú | Lista para probar | Confirmar el indicador en la lista, ficha y módulos futuros. |
-| NAV-002 | Media | Revisar actualización de lista y ficha | Pendiente | Probar navegación y datos después de cada mutación. |
-| TIME-001 | Media | Mostrar la hora en `America/Santiago` | Lista para probar | Comparar la hora mostrada con la hora local de Chile. |
-| TASK-003 | Media | Mostrar aviso al completar una tarea | Lista para probar | Completar y reabrir una tarea; confirmar ambos avisos. |
-| TASK-004 | Media | Validar funcionalmente el borrado de tareas | Lista para publicar | Prueba funcional aprobada; incluir código y migración en el próximo commit. |
-| UX-001 | Media | Definir e implementar “Ver todos” | Lista para probar | Abrir cada estado, revisar la tabla y entrar a una ficha desde una fila. |
-| CAT-002 | Media | Administrar catálogos operativos | Lista para probar | Probar clientes, tipos, venues y plantillas con distintos usuarios activos. |
-| CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | Pendiente | Diseñar y migrar el modelo sin mezclar contactos con el nombre del cliente. |
-| CLIENT-002 | Media | Agregar clientes desde el menú | Lista para probar | Reemplazado por Catálogos; validar el flujo de clientes con un administrador. |
+| DEP-001 | Alta | Actualizar Next.js a 16.2.11 | Completada | Publicada y operativa en la versión 0.3. |
+| SEC-001 | Alta | Proteger y validar las Server Actions | En pruebas | Continuar pruebas de creación, edición y eliminación con usuarios activos. |
+| SEC-002 | Alta | Bloquear redirecciones externas en el callback OAuth | En pruebas | Confirmar explícitamente que un destino externo vuelve a `/proyectos`. |
+| DATA-001 | Alta | Obtener los estados de proyecto desde Supabase | En pruebas | Confirmar que cambios de catálogo se reflejan sin estados invisibles. |
+| AUTH-001 | Alta | Auto-vincular `auth_user_id` durante el primer login | Lista para probar | Migración aplicada; publicar y probar el lunes con Anai, además de una Persona ya vinculada. |
+| DB-001 | Alta | Versionar esquema, migraciones y políticas RLS | Lista para publicar | Esquema versionado; RLS aplicado y validado con acceso anónimo y una Persona activa. |
+| OPS-001 | Alta | Revisar deployments, runtime y functions de Vercel | Completada | Producción estable; errores históricos clasificados y sin incidencias vigentes. |
+| REL-001 | Media | Mostrar versión y fecha de publicación | Lista para publicar | Versión 0.4 preparada; confirmar acceso y menú después del deployment. |
+| TASK-001 | Alta | Confirmar creación de tareas sin enlace | Lista para publicar | Prueba local aprobada; incluir en la próxima versión. |
+| TASK-002 | Alta | Corregir recuperación después de un error al crear tarea | Lista para publicar | Prueba local aprobada; incluir en la próxima versión. |
+| CAT-001 | Media | Excluir catálogos inactivos de los selectores | En pruebas | Confirmar que solo aparecen personas, clientes, plantillas y estados activos. |
+| TS-001 | Media | Limpiar tipos y consultas de proyectos | Lista para publicar | Esquema tipado, clientes Supabase conectados y duplicados principales reemplazados por tipos derivados. |
+| SEARCH-001 | Media | Implementar búsqueda de proyectos | En pruebas | Buscar por proyecto, cliente, tipo y responsable; probar también Limpiar. |
+| NAV-001 | Media | Mostrar la sección activa en el menú | En pruebas | Confirmar el indicador en la lista, ficha y módulos futuros. |
+| NAV-002 | Media | Revisar actualización de lista y ficha | En pruebas | Continuar pruebas después de cada mutación. |
+| TIME-001 | Media | Mostrar la hora en `America/Santiago` | Completada | Hora validada en producción. |
+| TASK-003 | Media | Mostrar aviso al completar una tarea | En pruebas | Completar y reabrir una tarea; confirmar ambos avisos. |
+| TASK-004 | Media | Validar funcionalmente el borrado de tareas | Completada | Publicada y validada con la política RLS correspondiente. |
+| UX-001 | Media | Definir e implementar “Ver todos” | En pruebas | Abrir cada estado, revisar la tabla y entrar a una ficha desde una fila. |
+| CAT-002 | Media | Administrar catálogos operativos | En pruebas | CRUD validado inicialmente; falta prueba con más de un usuario activo. |
+| CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | En pruebas | Empresa y contacto principal implementados; continuar validación. |
+| CLIENT-002 | Media | Agregar clientes desde el menú | Completada | Reemplazado por Catálogos y validado en producción. |
+| VENUE-001 | Media | Agregar datos de contacto a Venues | Lista para publicar | Alta/edición, recarga y búsqueda por contacto validadas localmente. |
+| AUTH-002 | Media | Probar Catálogos con más de un usuario activo | Pendiente | Iniciar sesión con un segundo usuario activo y repetir una mutación. |
+| AUTH-003 | Media | Recuperar una sesión vencida sin error 500 | Lista para publicar | Redirigir al acceso con un mensaje claro y validar el flujo después de publicar. |
 | THEME-001 | Baja | Corregir experiencia en modo nocturno | Pendiente | Definir si MARTES soportará tema oscuro o permanecerá claro. |
 | MOD-001 | Baja | Implementar Mi Martes | Pendiente | Definir alcance funcional. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
@@ -61,6 +65,64 @@ Una tarea solo pasa a **Completada** cuando:
 | MOD-004 | Baja | Implementar Resultados | Pendiente | Definir alcance funcional. |
 
 ## Evidencia local acumulada
+
+### 2026-07-24
+
+- Versión 0.4 preparada para publicación el 24 de julio de 2026 a las 19:54.
+- Versión 0.3 operativa en producción y todavía bajo pruebas funcionales.
+- Hora de Chile validada.
+- CRUD de Catálogos validado inicialmente y edición de Venues confirmada
+  después de aplicar RLS.
+- Pendiente agregar datos de contacto al catálogo de Venues.
+- La creación de tareas sin enlace o con un enlace incompleto devolvía un
+  error genérico de Server Components en producción.
+- Corrección local: las tareas reciben orden automático y la Server Action
+  devuelve un resultado seguro con mensajes comprensibles para el usuario.
+- Prueba local aprobada para tareas sin enlace, enlace incompleto y corrección
+  posterior del formulario.
+- Auto-vinculación implementada localmente mediante una función atómica que
+  usa el correo verificado de Supabase, conserva vínculos existentes y nunca
+  reasigna una Persona ya vinculada.
+- Migración de auto-vinculación aplicada en Supabase; Anai quedó como la única
+  Persona activa viable para la prueba del primer acceso. Juanjo y Taki
+  permanecen inactivos.
+- Datos opcionales de contacto agregados localmente a Venues: nombre, correo y
+  celular. El correo se valida cuando se informa y los tres campos participan
+  en la búsqueda del catálogo.
+- Migración de campos de contacto de Venues aplicada en Supabase.
+- Consulta de inventario integral preparada para recuperar desde Supabase el
+  esquema público, restricciones, índices, RLS, permisos, funciones y triggers
+  sin modificar la base de datos.
+- Inventario recibido: 10 tablas, 86 columnas, 39 restricciones, 36 índices,
+  31 políticas RLS, cuatro funciones y ningún trigger personalizado.
+- Auditoría detectó políticas heredadas con acceso `public` a proyectos,
+  asociaciones de venues y varios catálogos, incluyendo escrituras abiertas.
+- Esquema base versionado y migración transaccional preparada para retirar
+  acceso anónimo, unificar RLS por Persona activa y reducir los grants del rol
+  autenticado a las operaciones utilizadas por MARTES.
+- Migración de endurecimiento RLS aplicada correctamente en Supabase.
+- Prueba externa anónima aprobada: las 10 tablas públicas rechazaron lectura
+  con estado 401 y código PostgreSQL 42501.
+- Prueba autenticada aprobada para carga de proyectos, apertura de ficha,
+  edición de un Venue, persistencia de sus contactos y búsqueda por contacto.
+- Prueba autenticada aprobada para crear, completar, reabrir y borrar una
+  tarea autorizada, además de asociar y quitar un Venue del proyecto.
+- Tipos centrales de Supabase generados desde el inventario real y conectados
+  a los clientes de navegador, servidor y administración.
+- El tipado detectó y permitió corregir prioridad como texto, actualizaciones
+  dinámicas demasiado amplias y campos incompatibles del importador.
+- Tipos manuales principales de estados, tipos, catálogos y tarjetas de
+  proyectos reemplazados por tipos derivados del esquema o del repositorio.
+- TypeScript, ESLint y la compilación completa de producción aprobados después
+  de la limpieza.
+- Vercel revisado: despliegue `7ba89b0` estable, últimos tres deployments
+  exitosos, sin timeouts ni presión de memoria y con 0% de errores en las
+  últimas seis horas observadas.
+- Los errores históricos de Vercel correspondían a interrupciones transitorias
+  de Supabase, un token emitido a futuro, una sesión vencida y el error de URL
+  de tarea ya corregido localmente.
+- Las sesiones vencidas ahora redirigen al acceso con un mensaje comprensible,
+  en vez de generar un error 500 en páginas protegidas o Server Actions.
 
 ### 2026-07-23
 

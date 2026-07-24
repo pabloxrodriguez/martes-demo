@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireActivePerson } from "@/lib/auth/requireActivePerson";
 import { createClient } from "@/lib/supabase/server";
+import type { TableUpdate } from "@/types/database";
 
 const allowedFields = [
   "nombre",
@@ -269,7 +270,14 @@ export async function updateProjectField(
       );
     }
 
-    const updateData: Record<string, string | number | null> = {
+    if (
+      normalizedValue !== null &&
+      typeof normalizedValue !== "string"
+    ) {
+      throw new Error("La fecha de inicio no es válida.");
+    }
+
+    const updateData: TableUpdate<"proyectos"> = {
       fecha_evento_inicio: normalizedValue,
       fecha_actualizacion: new Date().toISOString(),
     };
@@ -318,6 +326,13 @@ export async function updateProjectField(
       );
     }
 
+    if (
+      normalizedValue !== null &&
+      typeof normalizedValue !== "string"
+    ) {
+      throw new Error("La fecha de término no es válida.");
+    }
+
     const { data, error } = await supabase
       .from("proyectos")
       .update({
@@ -338,12 +353,14 @@ export async function updateProjectField(
       throw new Error("No se encontró el proyecto que intentas actualizar.");
     }
   } else {
+    const updateData = {
+      [field]: normalizedValue,
+      fecha_actualizacion: new Date().toISOString(),
+    } as TableUpdate<"proyectos">;
+
     const { data, error } = await supabase
       .from("proyectos")
-      .update({
-        [field]: normalizedValue,
-        fecha_actualizacion: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", cleanProjectId)
       .select("id")
       .maybeSingle();
@@ -528,7 +545,7 @@ export async function removeProjectVenue(
   revalidatePath("/proyectos");
 }
 
-export async function createProjectTask(
+async function createProjectTaskOrThrow(
   projectId: string,
   input: CreateProjectTaskInput
 ) {
@@ -568,6 +585,21 @@ export async function createProjectTask(
   }
 
   const now = new Date().toISOString();
+  const { data: lastTask, error: orderError } = await supabase
+    .from("tareas")
+    .select("orden")
+    .eq("proyecto_id", projectIdClean)
+    .order("orden", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (orderError) {
+    throw new Error(
+      `No se pudo preparar la nueva tarea: ${orderError.message}`
+    );
+  }
+
+  const nextOrder = Number(lastTask?.orden ?? 0) + 1;
 
   const { data, error } = await supabase
     .from("tareas")
@@ -580,6 +612,7 @@ export async function createProjectTask(
       fecha_comprometida: committedDate,
       url,
       comentario: comment,
+      orden: nextOrder,
       fecha_actualizacion: now,
     })
     .select("id")
@@ -601,10 +634,59 @@ export async function createProjectTask(
     throw new Error("No se pudo confirmar la creación de la tarea.");
   }
 
-  await updateProjectTimestamp(supabase, projectIdClean, now);
+  try {
+    await updateProjectTimestamp(supabase, projectIdClean, now);
+  } catch (timestampError) {
+    console.error(
+      "La tarea se creó, pero no se pudo actualizar la fecha del proyecto.",
+      {
+        projectId: projectIdClean,
+        error: timestampError,
+      }
+    );
+  }
 
   revalidatePath(`/proyectos/${projectIdClean}`);
   revalidatePath("/proyectos");
+}
+
+function taskCreationErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "No se pudo crear la tarea. Revisa los datos e inténtalo nuevamente.";
+  }
+
+  if (
+    error.message.startsWith("No se pudo crear la tarea:") ||
+    error.message.startsWith("No se pudo preparar la nueva tarea:")
+  ) {
+    return "No se pudo guardar la tarea. Revisa tus permisos e inténtalo nuevamente.";
+  }
+
+  return error.message;
+}
+
+export async function createProjectTask(
+  projectId: string,
+  input: CreateProjectTaskInput
+) {
+  try {
+    await createProjectTaskOrThrow(projectId, input);
+
+    return {
+      success: true as const,
+      error: null,
+    };
+  } catch (error) {
+    console.error("No se pudo crear una tarea.", {
+      projectId,
+      error,
+    });
+
+    return {
+      success: false as const,
+      error: taskCreationErrorMessage(error),
+    };
+  }
 }
 
 export async function updateTaskField(
@@ -653,13 +735,14 @@ export async function updateTaskField(
   }
 
   const now = new Date().toISOString();
+  const updateData = {
+    [field]: normalizedValue,
+    fecha_actualizacion: now,
+  } as TableUpdate<"tareas">;
 
   const { data, error } = await supabase
     .from("tareas")
-    .update({
-      [field]: normalizedValue,
-      fecha_actualizacion: now,
-    })
+    .update(updateData)
     .eq("id", cleanTaskId)
     .eq("proyecto_id", cleanProjectId)
     .select("id")
