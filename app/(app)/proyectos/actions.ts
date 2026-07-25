@@ -14,7 +14,7 @@ type CreateProjectInput = {
 export async function createProject(
   input: CreateProjectInput
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
 
   if (!input || typeof input !== "object") {
     throw new Error("Los datos del proyecto no son válidos.");
@@ -82,6 +82,8 @@ export async function createProject(
       estado_id: estadoId,
       fecha_propuesta: fechaPropuesta,
       prioridad: 5,
+      creado_por_id: person.id,
+      actualizado_por_id: person.id,
     })
     .select("id")
     .single();

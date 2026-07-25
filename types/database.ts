@@ -92,6 +92,8 @@ type ProyectosRow = {
   notas: string | null;
   fecha_creacion: string;
   fecha_actualizacion: string;
+  creado_por_id: string | null;
+  actualizado_por_id: string | null;
 };
 
 type TareasRow = {
@@ -108,6 +110,11 @@ type TareasRow = {
   fecha_creacion: string;
   fecha_actualizacion: string;
   comentario: string | null;
+  creada_por_id: string | null;
+  actualizada_por_id: string | null;
+  eliminada: boolean;
+  fecha_eliminacion: string | null;
+  eliminada_por_id: string | null;
 };
 
 type TiposProyectoRow = {
@@ -241,13 +248,29 @@ export type Database = {
           notas?: string | null;
           fecha_creacion?: string;
           fecha_actualizacion?: string;
+          creado_por_id?: string | null;
+          actualizado_por_id?: string | null;
         },
         [
+          {
+            foreignKeyName: "proyectos_actualizado_por_id_fkey";
+            columns: ["actualizado_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "proyectos_cliente_id_fkey";
             columns: ["cliente_id"];
             isOneToOne: false;
             referencedRelation: "clientes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyectos_creado_por_id_fkey";
+            columns: ["creado_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
             referencedColumns: ["id"];
           },
           {
@@ -289,8 +312,34 @@ export type Database = {
           fecha_creacion?: string;
           fecha_actualizacion?: string;
           comentario?: string | null;
+          creada_por_id?: string | null;
+          actualizada_por_id?: string | null;
+          eliminada?: boolean;
+          fecha_eliminacion?: string | null;
+          eliminada_por_id?: string | null;
         },
         [
+          {
+            foreignKeyName: "tareas_actualizada_por_id_fkey";
+            columns: ["actualizada_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tareas_creada_por_id_fkey";
+            columns: ["creada_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tareas_eliminada_por_id_fkey";
+            columns: ["eliminada_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "tareas_estado_id_fkey";
             columns: ["estado_id"];

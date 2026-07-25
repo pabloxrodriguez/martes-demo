@@ -40,6 +40,7 @@ export async function getProjects() {
   )
 )
     `)
+    .eq("tareas.eliminada", false)
     .order("fecha_evento_inicio", {
       ascending: false,
       nullsFirst: false,
@@ -67,6 +68,211 @@ export async function getProjects() {
 
 export type ProjectListItem = Awaited<
   ReturnType<typeof getProjects>
+>[number];
+
+export async function getMyOpenTasks(personId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("tareas")
+    .select(`
+      id,
+      proyecto_id,
+      nombre,
+      fecha_comprometida,
+      fecha_completada,
+      url,
+      comentario,
+      orden,
+      responsable:personas!tareas_responsable_id_fkey (
+        id,
+        nombre
+      ),
+      estados_tarea (
+        id,
+        nombre
+      ),
+      proyectos (
+        id,
+        nombre,
+        prioridad,
+        fecha_evento_inicio,
+        estados_proyecto (
+          nombre
+        ),
+        clientes (
+          nombre
+        )
+      )
+    `)
+    .eq("responsable_id", personId)
+    .is("fecha_completada", null)
+    .eq("eliminada", false)
+    .order("fecha_comprometida", {
+      ascending: true,
+      nullsFirst: false,
+    })
+    .order("orden", { ascending: true });
+
+  if (error) {
+    throw new Error(
+      `No se pudieron obtener tus tareas: ${error.message}`
+    );
+  }
+
+  return (data ?? [])
+    .map((task) => {
+      const status = one(task.estados_tarea);
+      const project = one(task.proyectos);
+
+      return {
+        ...task,
+        responsable: one(task.responsable),
+        estados_tarea: status,
+        proyectos: project
+          ? {
+              ...project,
+              estados_proyecto: one(
+                project.estados_proyecto
+              ),
+              clientes: one(project.clientes),
+            }
+          : null,
+      };
+    })
+    .filter((task) => {
+      const statusName = task.estados_tarea?.nombre;
+
+      return (
+        statusName !== "Completada" &&
+        statusName !== "Cancelada"
+      );
+    });
+}
+
+export type MyOpenTaskItem = Awaited<
+  ReturnType<typeof getMyOpenTasks>
+>[number];
+
+export async function getMyActiveProjects(personId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("proyectos")
+    .select(`
+      id,
+      nombre,
+      prioridad,
+      fecha_propuesta,
+      fecha_evento_inicio,
+      fecha_actualizacion,
+      estados_proyecto (
+        codigo,
+        nombre
+      ),
+      clientes (
+        nombre
+      ),
+      tipos_proyecto (
+        nombre
+      ),
+      tareas (
+        id,
+        fecha_completada,
+        eliminada,
+        estados_tarea (
+          nombre
+        )
+      )
+    `)
+    .eq("responsable_id", personId)
+    .eq("tareas.eliminada", false)
+    .order("prioridad", { ascending: true, nullsFirst: false })
+    .order("fecha_evento_inicio", {
+      ascending: true,
+      nullsFirst: false,
+    });
+
+  if (error) {
+    throw new Error(
+      `No se pudieron obtener tus proyectos: ${error.message}`
+    );
+  }
+
+  return (data ?? [])
+    .map((project) => ({
+      ...project,
+      estados_proyecto: one(project.estados_proyecto),
+      clientes: one(project.clientes),
+      tipos_proyecto: one(project.tipos_proyecto),
+      tareas:
+        project.tareas?.map((task) => ({
+          ...task,
+          estados_tarea: one(task.estados_tarea),
+        })) ?? [],
+    }))
+    .filter((project) => {
+      const statusCode = Number(project.estados_proyecto?.codigo);
+
+      return [1, 2, 3, 4].includes(statusCode);
+    });
+}
+
+export type MyActiveProjectItem = Awaited<
+  ReturnType<typeof getMyActiveProjects>
+>[number];
+
+export async function getRecentTaskActivity(limit = 8) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("tareas")
+    .select(`
+      id,
+      nombre,
+      fecha_creacion,
+      fecha_actualizacion,
+      fecha_completada,
+      eliminada,
+      fecha_eliminacion,
+      creador:personas!tareas_creada_por_id_fkey (
+        nombre
+      ),
+      actualizador:personas!tareas_actualizada_por_id_fkey (
+        nombre
+      ),
+      eliminador:personas!tareas_eliminada_por_id_fkey (
+        nombre
+      ),
+      estados_tarea (
+        nombre
+      ),
+      proyectos (
+        id,
+        nombre
+      )
+    `)
+    .order("fecha_actualizacion", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(
+      `No se pudo obtener la actividad reciente: ${error.message}`
+    );
+  }
+
+  return (data ?? []).map((task) => ({
+    ...task,
+    creador: one(task.creador),
+    actualizador: one(task.actualizador),
+    eliminador: one(task.eliminador),
+    estados_tarea: one(task.estados_tarea),
+    proyectos: one(task.proyectos),
+  }));
+}
+
+export type RecentTaskActivityItem = Awaited<
+  ReturnType<typeof getRecentTaskActivity>
 >[number];
 
 export async function getProjectById(id: string) {
@@ -131,6 +337,7 @@ export async function getProjectById(id: string) {
       )
     `)
     .eq("id", id)
+    .eq("tareas.eliminada", false)
     .single();
 
   if (error) {

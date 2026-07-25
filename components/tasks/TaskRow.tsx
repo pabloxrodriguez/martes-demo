@@ -63,7 +63,7 @@ type EditableCellProps = {
   onSave: (value: string) => Promise<void>;
 };
 
-function EditableCell({
+export function EditableCell({
   value,
   placeholder,
   type = "text",
@@ -211,7 +211,7 @@ type EditableSelectCellProps = {
   onSave: (value: string) => Promise<void>;
 };
 
-function EditableSelectCell({
+export function EditableSelectCell({
   value,
   options,
   placeholder,

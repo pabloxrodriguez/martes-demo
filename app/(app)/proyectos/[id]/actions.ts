@@ -128,13 +128,20 @@ function optionalHttpUrl(value: unknown) {
 async function updateProjectTimestamp(
   supabase: ServerSupabaseClient,
   projectId: string,
-  timestamp: string
+  timestamp: string,
+  personId?: string
 ) {
+  const updateData: TableUpdate<"proyectos"> = {
+    fecha_actualizacion: timestamp,
+  };
+
+  if (personId) {
+    updateData.actualizado_por_id = personId;
+  }
+
   const { data, error } = await supabase
     .from("proyectos")
-    .update({
-      fecha_actualizacion: timestamp,
-    })
+    .update(updateData)
     .eq("id", projectId)
     .select("id")
     .maybeSingle();
@@ -155,7 +162,7 @@ export async function updateProjectField(
   field: EditableProjectField,
   value: string
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
 
   if (!allowedFields.includes(field)) {
@@ -280,6 +287,7 @@ export async function updateProjectField(
     const updateData: TableUpdate<"proyectos"> = {
       fecha_evento_inicio: normalizedValue,
       fecha_actualizacion: new Date().toISOString(),
+      actualizado_por_id: person.id,
     };
 
     if (eventWasOneDay) {
@@ -338,6 +346,7 @@ export async function updateProjectField(
       .update({
         fecha_evento_termino: normalizedValue,
         fecha_actualizacion: new Date().toISOString(),
+        actualizado_por_id: person.id,
       })
       .eq("id", cleanProjectId)
       .select("id")
@@ -356,6 +365,7 @@ export async function updateProjectField(
     const updateData = {
       [field]: normalizedValue,
       fecha_actualizacion: new Date().toISOString(),
+      actualizado_por_id: person.id,
     } as TableUpdate<"proyectos">;
 
     const { data, error } = await supabase
@@ -384,7 +394,7 @@ export async function addProjectVenue(
   projectId: string,
   venueId: string
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanVenueId = requireUuid(venueId, "El venue");
 
@@ -416,7 +426,8 @@ export async function addProjectVenue(
   await updateProjectTimestamp(
     supabase,
     cleanProjectId,
-    new Date().toISOString()
+    new Date().toISOString(),
+    person.id
   );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
@@ -427,7 +438,7 @@ export async function createProjectVenue(
   projectId: string,
   venueName: string
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanName = requireString(venueName, "El nombre del venue");
 
@@ -502,7 +513,8 @@ export async function createProjectVenue(
   await updateProjectTimestamp(
     supabase,
     cleanProjectId,
-    new Date().toISOString()
+    new Date().toISOString(),
+    person.id
   );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
@@ -513,7 +525,7 @@ export async function removeProjectVenue(
   projectId: string,
   venueId: string
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanVenueId = requireUuid(venueId, "El venue");
 
@@ -538,7 +550,8 @@ export async function removeProjectVenue(
   await updateProjectTimestamp(
     supabase,
     cleanProjectId,
-    new Date().toISOString()
+    new Date().toISOString(),
+    person.id
   );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
@@ -549,7 +562,7 @@ async function createProjectTaskOrThrow(
   projectId: string,
   input: CreateProjectTaskInput
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const projectIdClean = requireUuid(projectId, "El proyecto");
 
   if (!input || typeof input !== "object") {
@@ -589,6 +602,7 @@ async function createProjectTaskOrThrow(
     .from("tareas")
     .select("orden")
     .eq("proyecto_id", projectIdClean)
+    .eq("eliminada", false)
     .order("orden", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -614,6 +628,9 @@ async function createProjectTaskOrThrow(
       comentario: comment,
       orden: nextOrder,
       fecha_actualizacion: now,
+      creada_por_id: person.id,
+      actualizada_por_id: person.id,
+      eliminada: false,
     })
     .select("id")
     .single();
@@ -635,7 +652,12 @@ async function createProjectTaskOrThrow(
   }
 
   try {
-    await updateProjectTimestamp(supabase, projectIdClean, now);
+    await updateProjectTimestamp(
+      supabase,
+      projectIdClean,
+      now,
+      person.id
+    );
   } catch (timestampError) {
     console.error(
       "La tarea se creó, pero no se pudo actualizar la fecha del proyecto.",
@@ -695,7 +717,7 @@ export async function updateTaskField(
   field: EditableTaskField,
   value: string
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanTaskId = requireUuid(taskId, "La tarea");
 
@@ -738,6 +760,7 @@ export async function updateTaskField(
   const updateData = {
     [field]: normalizedValue,
     fecha_actualizacion: now,
+    actualizada_por_id: person.id,
   } as TableUpdate<"tareas">;
 
   const { data, error } = await supabase
@@ -745,6 +768,7 @@ export async function updateTaskField(
     .update(updateData)
     .eq("id", cleanTaskId)
     .eq("proyecto_id", cleanProjectId)
+    .eq("eliminada", false)
     .select("id")
     .maybeSingle();
 
@@ -758,7 +782,12 @@ export async function updateTaskField(
     throw new Error("No se encontró la tarea que intentas actualizar.");
   }
 
-  await updateProjectTimestamp(supabase, cleanProjectId, now);
+  await updateProjectTimestamp(
+    supabase,
+    cleanProjectId,
+    now,
+    person.id
+  );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
@@ -769,7 +798,7 @@ export async function toggleTaskCompleted(
   taskId: string,
   completed: boolean
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase, person } = await requireActivePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanTaskId = requireUuid(taskId, "La tarea");
 
@@ -805,9 +834,11 @@ export async function toggleTaskCompleted(
       estado_id: targetStatus.id,
       fecha_completada: completedDate,
       fecha_actualizacion: now,
+      actualizada_por_id: person.id,
     })
     .eq("id", cleanTaskId)
     .eq("proyecto_id", cleanProjectId)
+    .eq("eliminada", false)
     .select("id")
     .maybeSingle();
 
@@ -821,7 +852,12 @@ export async function toggleTaskCompleted(
     throw new Error("No se encontró la tarea que intentas actualizar.");
   }
 
-  await updateProjectTimestamp(supabase, cleanProjectId, now);
+  await updateProjectTimestamp(
+    supabase,
+    cleanProjectId,
+    now,
+    person.id
+  );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
@@ -840,6 +876,7 @@ export async function deleteProjectTask(
     .select("id, responsable_id")
     .eq("id", cleanTaskId)
     .eq("proyecto_id", cleanProjectId)
+    .eq("eliminada", false)
     .maybeSingle();
 
   if (lookupError) {
@@ -878,11 +915,21 @@ export async function deleteProjectTask(
     );
   }
 
-  const { error } = await supabase
+  const now = new Date().toISOString();
+  const { data: deletedTask, error } = await supabase
     .from("tareas")
-    .delete()
+    .update({
+      eliminada: true,
+      fecha_eliminacion: now,
+      eliminada_por_id: person.id,
+      actualizada_por_id: person.id,
+      fecha_actualizacion: now,
+    })
     .eq("id", cleanTaskId)
-    .eq("proyecto_id", cleanProjectId);
+    .eq("proyecto_id", cleanProjectId)
+    .eq("eliminada", false)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     throw new Error(
@@ -890,21 +937,7 @@ export async function deleteProjectTask(
     );
   }
 
-  const { data: remainingTask, error: verificationError } =
-    await supabase
-      .from("tareas")
-      .select("id")
-      .eq("id", cleanTaskId)
-      .eq("proyecto_id", cleanProjectId)
-      .maybeSingle();
-
-  if (verificationError) {
-    throw new Error(
-      `No se pudo confirmar el borrado: ${verificationError.message}`
-    );
-  }
-
-  if (remainingTask) {
+  if (!deletedTask) {
     throw new Error(
       "La tarea no se pudo eliminar. Revisa tus permisos e inténtalo nuevamente."
     );
@@ -913,7 +946,8 @@ export async function deleteProjectTask(
   await updateProjectTimestamp(
     supabase,
     cleanProjectId,
-    new Date().toISOString()
+    now,
+    person.id
   );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);

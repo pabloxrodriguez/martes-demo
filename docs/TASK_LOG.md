@@ -50,7 +50,7 @@ Una tarea solo pasa a **Completada** cuando:
 | NAV-002 | Media | Revisar actualización de lista y ficha | En pruebas | Continuar pruebas después de cada mutación. |
 | TIME-001 | Media | Mostrar la hora en `America/Santiago` | Completada | Hora validada en producción. |
 | TASK-003 | Media | Mostrar aviso al completar una tarea | En pruebas | Completar y reabrir una tarea; confirmar ambos avisos. |
-| TASK-004 | Media | Validar funcionalmente el borrado de tareas | Completada | Publicada y validada con la política RLS correspondiente. |
+| TASK-004 | Media | Validar funcionalmente el borrado de tareas | Lista para publicar | Borrado lógico validado en Supabase; incluido en la versión 0.5. |
 | UX-001 | Media | Definir e implementar “Ver todos” | En pruebas | Abrir cada estado, revisar la tabla y entrar a una ficha desde una fila. |
 | CAT-002 | Media | Administrar catálogos operativos | En pruebas | CRUD validado inicialmente; falta prueba con más de un usuario activo. |
 | CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | En pruebas | Empresa y contacto principal implementados; continuar validación. |
@@ -59,12 +59,29 @@ Una tarea solo pasa a **Completada** cuando:
 | AUTH-002 | Media | Probar Catálogos con más de un usuario activo | Pendiente | Iniciar sesión con un segundo usuario activo y repetir una mutación. |
 | AUTH-003 | Media | Recuperar una sesión vencida sin error 500 | En pruebas | Versión publicada; validar redirección y mensaje con una sesión vencida. |
 | THEME-001 | Baja | Corregir experiencia en modo nocturno | Pendiente | Definir si MARTES soportará tema oscuro o permanecerá claro. |
-| MOD-001 | Baja | Implementar Mi Martes | Pendiente | Definir alcance funcional. |
+| MOD-001 | Baja | Implementar Mi Martes | Lista para publicar | Versión 0.5 validada localmente; falta comprobar en producción. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
 | MOD-003 | Baja | Implementar Calendario | Pendiente | Definir alcance funcional. |
 | MOD-004 | Baja | Implementar Resultados | Pendiente | Definir alcance funcional. |
 
 ## Evidencia local acumulada
+
+### 2026-07-25
+
+- Primer corte de Mi Martes implementado localmente como tablero personal de
+  tareas abiertas asignadas a la Persona conectada, agrupadas por vencidas,
+  para hoy, próximas y sin fecha.
+- Mi Martes evolucionado al esquema de cuatro bloques: resumen, tareas
+  editables, proyectos propios en fases 1 a 4 y actividad reciente basada en
+  cambios de tareas.
+- Versión 0.5 preparada para publicación el 25 de julio de 2026 a las 11:53,
+  con TypeScript, ESLint y build de producción aprobados.
+- Migración de autoría y borrado lógico de tareas aplicada en Supabase.
+- Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
+  “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con
+  `eliminada = true`, `fecha_eliminacion` y `eliminada_por = Pablo Rodriguez`.
+- Las tareas eliminadas lógicamente quedan excluidas de la ficha de proyecto,
+  el tablero general y Mi Martes.
 
 ### 2026-07-24
 
