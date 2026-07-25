@@ -7,7 +7,7 @@ export async function GET(request: Request) {
 
   const code = searchParams.get("code");
   const requestedPath = searchParams.get("next");
-  const fallbackUrl = new URL("/proyectos", origin);
+  const fallbackUrl = new URL("/mi-martes", origin);
   let redirectUrl = fallbackUrl;
 
   if (

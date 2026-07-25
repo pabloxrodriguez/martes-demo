@@ -48,10 +48,10 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isAuthenticated && pathname === "/login") {
-    const projectsUrl = request.nextUrl.clone();
-    projectsUrl.pathname = "/proyectos";
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = "/mi-martes";
 
-    return NextResponse.redirect(projectsUrl);
+    return NextResponse.redirect(homeUrl);
   }
 
   return response;

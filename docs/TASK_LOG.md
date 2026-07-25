@@ -81,6 +81,9 @@ Una tarea solo pasa a **Completada** cuando:
 - Versión 0.5.1 preparada para publicación el 25 de julio de 2026 a las
   12:20, con entrada inicial a Mi Martes, logo en acceso, favicon del planeta
   y originales de marca ordenados en `assets/brand`.
+- Versión 0.5.2 preparada para publicación el 25 de julio de 2026 a las
+  12:25, corrigiendo también el destino post-login y el acceso a `/login`
+  para usuarios ya autenticados hacia Mi Martes.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con
