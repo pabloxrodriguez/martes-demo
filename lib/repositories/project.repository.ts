@@ -35,12 +35,12 @@ export async function getProjects() {
         nombre
       ),
       tareas (
-  estados_tarea (
-    nombre
-  )
-)
+        eliminada,
+        estados_tarea (
+          nombre
+        )
+      )
     `)
-    .eq("tareas.eliminada", false)
     .order("fecha_evento_inicio", {
       ascending: false,
       nullsFirst: false,
@@ -59,10 +59,12 @@ export async function getProjects() {
     clientes: one(project.clientes),
     responsable: one(project.responsable),
     tareas:
-      project.tareas?.map((task) => ({
-        ...task,
-        estados_tarea: one(task.estados_tarea),
-      })) ?? [],
+      project.tareas
+        ?.filter((task) => !task.eliminada)
+        .map((task) => ({
+          ...task,
+          estados_tarea: one(task.estados_tarea),
+        })) ?? [],
   }));
 }
 
@@ -186,7 +188,6 @@ export async function getMyActiveProjects(personId: string) {
       )
     `)
     .eq("responsable_id", personId)
-    .eq("tareas.eliminada", false)
     .order("prioridad", { ascending: true, nullsFirst: false })
     .order("fecha_evento_inicio", {
       ascending: true,
@@ -326,6 +327,7 @@ export async function getProjectById(id: string) {
         url,
         comentario,
         orden,
+        eliminada,
         responsable:personas!tareas_responsable_id_fkey (
           id,
           nombre
@@ -337,7 +339,6 @@ export async function getProjectById(id: string) {
       )
     `)
     .eq("id", id)
-    .eq("tareas.eliminada", false)
     .single();
 
   if (error) {
@@ -360,11 +361,13 @@ export async function getProjectById(id: string) {
       })) ?? [],
 
     tareas:
-      data!.tareas?.map((task) => ({
-        ...task,
-        responsable: one(task.responsable),
-        estados_tarea: one(task.estados_tarea),
-      })) ?? [],
+      data!.tareas
+        ?.filter((task) => !task.eliminada)
+        .map((task) => ({
+          ...task,
+          responsable: one(task.responsable),
+          estados_tarea: one(task.estados_tarea),
+        })) ?? [],
   };
 }
 
