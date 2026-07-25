@@ -29,7 +29,6 @@ type ResultsProjectItem = ResultsProject & {
   statusCode: number;
   statusName: string;
   metricDate: string | null;
-  metricMonth: number | null;
   value: number;
 };
 
@@ -55,7 +54,9 @@ export type ResultsDashboard = {
     successRate: number | null;
   };
   monthlyEvolution: {
+    key: string;
     month: string;
+    year: string;
     value: number;
     projects: number;
   }[];
@@ -163,14 +164,6 @@ function isReportableProject(project: ResultsProjectItem) {
   return !typeName || !EXCLUDED_TYPE_NAMES.includes(typeName);
 }
 
-function getMonthIndex(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  return Number(value.slice(5, 7)) - 1;
-}
-
 function asResultsProject(project: ResultsProject): ResultsProjectItem {
   const statusCode = Number(project.estados_proyecto?.codigo ?? 0);
   const metricDate = getMetricDate({
@@ -178,7 +171,6 @@ function asResultsProject(project: ResultsProject): ResultsProjectItem {
     statusCode,
     statusName: project.estados_proyecto?.nombre ?? "Sin estado",
     metricDate: null,
-    metricMonth: null,
     value: Number(project.valor_venta ?? 0),
   });
 
@@ -187,7 +179,6 @@ function asResultsProject(project: ResultsProject): ResultsProjectItem {
     statusCode,
     statusName: project.estados_proyecto?.nombre ?? "Sin estado",
     metricDate,
-    metricMonth: getMonthIndex(metricDate),
     value: Number(project.valor_venta ?? 0),
   };
 }
@@ -251,6 +242,44 @@ function groupProjects(
     .sort((a, b) => b.value - a.value || b.projects - a.projects);
 }
 
+function buildMonthlyBuckets(period: ResultsPeriod) {
+  const buckets: {
+    key: string;
+    month: string;
+    year: string;
+    value: number;
+    projects: number;
+  }[] = [];
+  const [fromYear, fromMonth] = period.from
+    .split("-")
+    .map(Number);
+  const [toYear, toMonth] = period.to.split("-").map(Number);
+  let year = fromYear;
+  let month = fromMonth;
+
+  while (
+    year < toYear ||
+    (year === toYear && month <= toMonth)
+  ) {
+    buckets.push({
+      key: `${year}-${String(month).padStart(2, "0")}`,
+      month: MONTH_LABELS[month - 1],
+      year: String(year),
+      value: 0,
+      projects: 0,
+    });
+
+    month += 1;
+
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+  }
+
+  return buckets;
+}
+
 export async function getResultsDashboard(
   params: {
     from?: string | string[];
@@ -279,19 +308,20 @@ export async function getResultsDashboard(
     (project) => project.statusCode === REALIZED_STATUS_CODE
   );
 
-  const monthlyEvolution = MONTH_LABELS.map((month, index) => {
-    const monthProjects = wonProjects.filter(
-      (project) => project.metricMonth === index
+  const monthlyEvolution = buildMonthlyBuckets(period);
+
+  wonProjects.forEach((project) => {
+    const monthKey = project.metricDate?.slice(0, 7);
+    const bucket = monthlyEvolution.find(
+      (item) => item.key === monthKey
     );
 
-    return {
-      month,
-      value: monthProjects.reduce(
-        (total, project) => total + project.value,
-        0
-      ),
-      projects: monthProjects.length,
-    };
+    if (!bucket) {
+      return;
+    }
+
+    bucket.value += project.value;
+    bucket.projects += 1;
   });
 
   const closedProjects = wonProjects.length + lostProjects.length;

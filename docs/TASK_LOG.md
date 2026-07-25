@@ -104,10 +104,14 @@ Una tarea solo pasa a **Completada** cuando:
   valor de venta de los proyectos que componen cada número.
 - Estado de proyecto 8 preparado como Descartado - Cancelado. Este estado no
   entra en Resultados comerciales ni en la tasa de éxito.
-- Criterios de Resultados documentados en `docs/RESULTADOS_CRITERIOS.md`.
+- Criterios de Resultados documentados en `docs/RESULTADOS_CRITERIOS.md` y
+  `docs/RESULTADOS_CRITERIOS.docx` para compartir con el equipo.
 - Versión 0.6.0 preparada para publicación el 25 de julio de 2026 a las
   17:50, con MVP de Resultados, detalle editable y categoría Descartado -
   Cancelado.
+- Versión 0.6.1 preparada para publicación el 25 de julio de 2026 a las
+  18:24, con documento Word de criterios y gráfico de evolución mensual
+  corregido para períodos multi-año.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con

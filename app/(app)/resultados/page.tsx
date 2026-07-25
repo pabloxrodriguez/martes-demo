@@ -41,20 +41,11 @@ function formatDate(value: string) {
   }).format(new Date(`${value}T00:00:00Z`));
 }
 
-function getMaxMonthlyValue(
-  monthlyEvolution: ResultsDashboard["monthlyEvolution"]
-) {
-  return Math.max(
-    ...monthlyEvolution.map((month) => month.value),
-    1
-  );
-}
-
 export default async function Page({ searchParams }: PageProps) {
   const params = await searchParams;
   const dashboard = await getResultsDashboard(params);
-  const maxMonthlyValue = getMaxMonthlyValue(
-    dashboard.monthlyEvolution
+  const hasMonthlySales = dashboard.monthlyEvolution.some(
+    (month) => month.value > 0
   );
   const detailParams = `from=${dashboard.period.from}&to=${dashboard.period.to}`;
 
@@ -159,34 +150,18 @@ export default async function Page({ searchParams }: PageProps) {
         </section>
 
         <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
-          <Panel title="Evolución mensual" subtitle="Ventas ganadas por mes">
-            <div className="flex h-72 items-end gap-3 border-b border-l border-zinc-200 px-4 pb-4">
-              {dashboard.monthlyEvolution.map((month) => {
-                const height = Math.max(
-                  4,
-                  Math.round((month.value / maxMonthlyValue) * 220)
-                );
-
-                return (
-                  <div
-                    key={month.month}
-                    className="flex min-w-0 flex-1 flex-col items-center gap-2"
-                  >
-                    <div className="flex h-56 items-end">
-                      <div
-                        className="w-5 rounded-t-full bg-blue-600"
-                        style={{ height }}
-                        title={`${month.month}: ${formatMoney(month.value)}`}
-                      />
-                    </div>
-
-                    <span className="text-xs text-zinc-500">
-                      {month.month}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+          <Panel
+            title="Evolución mensual"
+            subtitle={
+              hasMonthlySales
+                ? "Ventas ganadas por mes (CLP)"
+                : "Proyectos ganados por mes (cantidad, sin montos informados)"
+            }
+          >
+            <MonthlyEvolutionChart
+              data={dashboard.monthlyEvolution}
+              mode={hasMonthlySales ? "money" : "projects"}
+            />
           </Panel>
 
           <Panel title="Pipeline" subtitle="Valor potencial por estado">
@@ -367,6 +342,198 @@ function Panel({
 
       {children}
     </section>
+  );
+}
+
+function MonthlyEvolutionChart({
+  data,
+  mode,
+}: {
+  data: ResultsDashboard["monthlyEvolution"];
+  mode: "money" | "projects";
+}) {
+  const width = Math.max(760, data.length * 58);
+  const height = 280;
+  const padding = {
+    top: 28,
+    right: 22,
+    bottom: 42,
+    left: 54,
+  };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const values = data.map((month) =>
+    mode === "money" ? month.value : month.projects
+  );
+  const maxValue = Math.max(...values, 1);
+  const points = values.map((value, index) => {
+    const x =
+      padding.left +
+      (chartWidth / Math.max(data.length - 1, 1)) * index;
+    const y =
+      padding.top + chartHeight - (value / maxValue) * chartHeight;
+
+    return {
+      x,
+      y,
+      value,
+      month: data[index].month,
+    };
+  });
+  const linePath = points
+    .map((point, index) =>
+      `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
+    )
+    .join(" ");
+  const areaPath = `${linePath} L ${
+    points[points.length - 1]?.x ?? padding.left
+  } ${padding.top + chartHeight} L ${padding.left} ${
+    padding.top + chartHeight
+  } Z`;
+  const gridLines = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+    const y = padding.top + chartHeight - ratio * chartHeight;
+    const value = maxValue * ratio;
+
+    return {
+      y,
+      value,
+    };
+  });
+
+  function formatMetric(value: number) {
+    if (mode === "money") {
+      return formatMoney(value);
+    }
+
+    return `${value} proyecto${value === 1 ? "" : "s"}`;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        role="img"
+        aria-label={
+          mode === "money"
+            ? "Evolución mensual de ventas ganadas en pesos chilenos"
+            : "Evolución mensual de proyectos ganados"
+        }
+        className="h-80 w-full"
+        style={{
+          minWidth: `${width}px`,
+        }}
+      >
+        <defs>
+          <linearGradient
+            id="monthly-evolution-area"
+            x1="0"
+            x2="0"
+            y1="0"
+            y2="1"
+          >
+            <stop offset="0%" stopColor="#2563eb" stopOpacity="0.24" />
+            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+
+        {gridLines.map((line) => (
+          <g key={line.y}>
+            <line
+              x1={padding.left}
+              x2={width - padding.right}
+              y1={line.y}
+              y2={line.y}
+              stroke="#e4e4e7"
+              strokeDasharray="4 6"
+            />
+            <text
+              x={padding.left - 10}
+              y={line.y + 4}
+              textAnchor="end"
+              className="fill-zinc-400 text-[11px]"
+            >
+              {mode === "money"
+                ? formatMoney(line.value)
+                : Math.round(line.value)}
+            </text>
+          </g>
+        ))}
+
+        <path d={areaPath} fill="url(#monthly-evolution-area)" />
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#2563eb"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {points.map((point, index) => {
+          const monthData = data[index];
+          const showYear =
+            index === 0 ||
+            monthData.year !== data[index - 1]?.year;
+          const showValueLabel =
+            point.value > 0 && data.length <= 24;
+
+          return (
+            <g key={monthData.key}>
+              <line
+                x1={point.x}
+                x2={point.x}
+                y1={padding.top + chartHeight}
+                y2={padding.top + chartHeight + 6}
+                stroke="#d4d4d8"
+              />
+
+              <text
+                x={point.x}
+                y={height - (showYear ? 22 : 16)}
+                textAnchor="middle"
+                className="fill-zinc-500 text-[12px]"
+              >
+                {point.month}
+              </text>
+
+              {showYear && (
+                <text
+                  x={point.x}
+                  y={height - 6}
+                  textAnchor="middle"
+                  className="fill-zinc-400 text-[11px] font-medium"
+                >
+                  {monthData.year}
+                </text>
+              )}
+
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r="5"
+                className="fill-white"
+                stroke="#2563eb"
+                strokeWidth="3"
+                aria-label={`${point.month}: ${formatMetric(point.value)}`}
+              />
+
+              {showValueLabel && (
+                <text
+                x={point.x}
+                y={Math.max(14, point.y - 12)}
+                textAnchor="middle"
+                className="fill-zinc-700 text-[11px] font-medium"
+                >
+                  {mode === "money"
+                    ? formatMoney(point.value)
+                    : point.value}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
