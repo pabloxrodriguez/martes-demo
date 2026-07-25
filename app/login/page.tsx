@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 import { APP_VERSION } from "@/lib/app-version";
@@ -57,6 +58,15 @@ function LoginContent() {
     <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-6">
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-10 shadow-sm">
         <div className="text-center">
+          <Image
+            src="/icon.png"
+            alt="Martes"
+            width={112}
+            height={112}
+            priority
+            className="mx-auto mb-5 rounded-full"
+          />
+
           <h1 className="text-5xl font-bold tracking-tight text-zinc-900">
             MARTES
           </h1>

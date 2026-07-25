@@ -78,6 +78,9 @@ Una tarea solo pasa a **Completada** cuando:
   con TypeScript, ESLint y build de producción aprobados.
 - Versión 0.5 publicada mediante el commit `d85716a`; Vercel la marcó como
   Ready/Production y la pantalla de acceso pública mostró “Versión 0.5”.
+- Versión 0.5.1 preparada para publicación el 25 de julio de 2026 a las
+  12:20, con entrada inicial a Mi Martes, logo en acceso, favicon del planeta
+  y originales de marca ordenados en `assets/brand`.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con
