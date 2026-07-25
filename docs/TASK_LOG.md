@@ -1,6 +1,6 @@
 # MARTES — Registro de trabajo
 
-Última actualización: 2026-07-23
+Última actualización: 2026-07-25
 
 Este documento es la fuente única para organizar, ejecutar y verificar el
 trabajo pendiente de MARTES.
@@ -87,6 +87,9 @@ Una tarea solo pasa a **Completada** cuando:
 - Versión 0.5.3 preparada para publicación el 25 de julio de 2026 a las
   13:01, corrigiendo el render de proyectos después de editar fechas al
   filtrar tareas eliminadas en código en vez de usar filtros embebidos.
+- Versión 0.5.4 preparada para publicación el 25 de julio de 2026 a las
+  13:08, corrigiendo el mensaje al intentar guardar una fecha de término
+  anterior a la fecha de inicio en la ficha de proyecto.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con

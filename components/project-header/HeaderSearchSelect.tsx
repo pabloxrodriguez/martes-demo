@@ -7,10 +7,17 @@ type SearchOption = {
   label: string;
 };
 
+type SaveResult =
+  | void
+  | {
+      success: boolean;
+      error: string | null;
+    };
+
 type HeaderSearchSelectProps = {
   value: string | null;
   options: SearchOption[];
-  onSave: (newValue: string) => Promise<void>;
+  onSave: (newValue: string) => Promise<SaveResult>;
   icon?: ReactNode;
   prefix?: string;
   placeholder?: string;
@@ -56,7 +63,12 @@ export function HeaderSearchSelect({
       setIsSaving(true);
       setError(null);
 
-      await onSave(newValue);
+      const result = await onSave(newValue);
+
+      if (result && !result.success) {
+        setError(result.error ?? "No se pudo guardar el cambio.");
+        return;
+      }
 
       setSearch("");
       setIsEditing(false);

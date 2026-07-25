@@ -17,13 +17,20 @@ type VenueItem = {
   } | null;
 };
 
+type SaveResult =
+  | void
+  | {
+      success: boolean;
+      error: string | null;
+    };
+
 type ProjectDetailsProps = {
   publicoEsperado: number | null;
   notas: string | null;
   venues: VenueItem[];
   venueOptions: Option[];
-  onSaveAudience: (value: string) => Promise<void>;
-  onSaveNotes: (value: string) => Promise<void>;
+  onSaveAudience: (value: string) => Promise<SaveResult>;
+  onSaveNotes: (value: string) => Promise<SaveResult>;
   onSaveVenue: (value: string) => Promise<void>;
   onCreateVenue: (value: string) => Promise<void>;
   onRemoveVenue: (venueId: string) => Promise<void>;

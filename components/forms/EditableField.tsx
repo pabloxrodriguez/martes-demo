@@ -7,6 +7,13 @@ type SelectOption = {
   label: string;
 };
 
+type SaveResult =
+  | void
+  | {
+      success: boolean;
+      error: string | null;
+    };
+
 type EditableFieldProps = {
   label: string;
   value: string | number | null;
@@ -19,7 +26,7 @@ type EditableFieldProps = {
     | "select";
   placeholder?: string;
   options?: SelectOption[];
-  onSave: (newValue: string) => Promise<void>;
+  onSave: (newValue: string) => Promise<SaveResult>;
 };
 
 function formatCurrency(value: string | number | null) {
@@ -66,7 +73,13 @@ export function EditableField({
       setIsSaving(true);
       setError(null);
 
-      await onSave(cleanValue);
+      const result = await onSave(cleanValue);
+
+      if (result && !result.success) {
+        setError(result.error ?? "No se pudo guardar el cambio.");
+        return;
+      }
+
       setIsEditing(false);
     } catch (error) {
       setError(

@@ -30,7 +30,14 @@ type ProjectVenue = {
   venues: Venue | null;
 };
 
-type SaveAction = (newValue: string) => Promise<void>;
+type SaveResult =
+  | void
+  | {
+      success: boolean;
+      error: string | null;
+    };
+
+type SaveAction = (newValue: string) => Promise<SaveResult>;
 
 type ProjectHeaderProps = {
   project: {

@@ -157,7 +157,7 @@ async function updateProjectTimestamp(
   }
 }
 
-export async function updateProjectField(
+async function updateProjectFieldOrThrow(
   projectId: string,
   field: EditableProjectField,
   value: string
@@ -388,6 +388,29 @@ export async function updateProjectField(
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
+}
+
+export async function updateProjectField(
+  projectId: string,
+  field: EditableProjectField,
+  value: string
+) {
+  try {
+    await updateProjectFieldOrThrow(projectId, field, value);
+
+    return {
+      success: true as const,
+      error: null,
+    };
+  } catch (caughtError) {
+    return {
+      success: false as const,
+      error:
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo guardar el cambio.",
+    };
+  }
 }
 
 export async function addProjectVenue(

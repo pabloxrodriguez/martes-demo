@@ -7,9 +7,16 @@ type HeaderFieldOption = {
   label: string;
 };
 
+type SaveResult =
+  | void
+  | {
+      success: boolean;
+      error: string | null;
+    };
+
 type HeaderFieldProps = {
   value: string | number | null;
-  onSave: (newValue: string) => Promise<void>;
+  onSave: (newValue: string) => Promise<SaveResult>;
   icon?: ReactNode;
   prefix?: string;
   placeholder?: string;
@@ -100,7 +107,12 @@ export function HeaderField({
       setIsSaving(true);
       setError(null);
 
-      await onSave(cleanValue);
+      const result = await onSave(cleanValue);
+
+      if (result && !result.success) {
+        setError(result.error ?? "No se pudo guardar el cambio.");
+        return;
+      }
 
       setIsEditing(false);
     } catch (caughtError) {
