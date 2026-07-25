@@ -5,6 +5,7 @@ import {
   getProjectEditOptions,
   getProjects,
 } from "@/lib/services/project.service";
+import { getProjectStatusStyle } from "@/lib/project-status-style";
 
 type ProjectStatusPageProps = {
   params: Promise<{
@@ -48,6 +49,8 @@ export default async function ProjectStatusPage({
     notFound();
   }
 
+  const statusStyle = getProjectStatusStyle(statusCode);
+
   const statusProjects = projects
     .filter(
       (project) =>
@@ -78,9 +81,16 @@ export default async function ProjectStatusPage({
 
         <div className="mt-5 flex items-end justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-semibold text-zinc-950">
-              {status.nombre}
-            </h1>
+            <div className="flex items-center gap-3">
+              <span
+                className={`h-4 w-4 rounded-full ${statusStyle.dot}`}
+                aria-hidden="true"
+              />
+
+              <h1 className={`text-3xl font-semibold ${statusStyle.text}`}>
+                {status.nombre}
+              </h1>
+            </div>
 
             <p className="mt-2 text-sm text-zinc-500">
               {statusProjects.length}{" "}

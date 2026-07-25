@@ -388,6 +388,8 @@ async function updateProjectFieldOrThrow(
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
+  revalidatePath("/resultados");
+  revalidatePath("/resultados/detalle");
 }
 
 export async function updateProjectField(

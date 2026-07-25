@@ -62,7 +62,7 @@ Una tarea solo pasa a **Completada** cuando:
 | MOD-001 | Baja | Implementar Mi Martes | En pruebas | Versión 0.5 publicada; falta validar edición de tareas y actividad reciente en producción. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
 | MOD-003 | Baja | Implementar Calendario | Pendiente | Definir alcance funcional. |
-| MOD-004 | Baja | Implementar Resultados | Pendiente | Definir alcance funcional. |
+| MOD-004 | Baja | Implementar Resultados | Lista para publicar | MVP local validado; publicar versión 0.6.0 y revisar en producción. |
 
 ## Evidencia local acumulada
 
@@ -90,6 +90,24 @@ Una tarea solo pasa a **Completada** cuando:
 - Versión 0.5.4 preparada para publicación el 25 de julio de 2026 a las
   13:08, corrigiendo el mensaje al intentar guardar una fecha de término
   anterior a la fecha de inicio en la ficha de proyecto.
+- Primer MVP de Resultados implementado localmente con selector de período,
+  ventas ganadas, proyectos gestionados, ganados, no ganados, tasa de éxito,
+  pipeline, cortes por cliente/tipo y proyectos realizados.
+- Regla comercial aplicada en Resultados: En ejecución y Realizado cuentan
+  como ventas ganadas y usan fecha de ejecución; En ejecución sin fecha de
+  evento usa fecha de propuesta como respaldo; Realizado cuenta además como
+  evento ejecutado; Prospecto, En preparación, Evaluación de cliente y No
+  ganado usan fecha de propuesta; No olvidar y Administrativo - Interno quedan
+  fuera de resultados comerciales.
+- Las tarjetas Proyectos gestionados, Proyectos ganados y Proyectos no
+  ganados abren un detalle editable para revisar y corregir estado, fechas y
+  valor de venta de los proyectos que componen cada número.
+- Estado de proyecto 8 preparado como Descartado - Cancelado. Este estado no
+  entra en Resultados comerciales ni en la tasa de éxito.
+- Criterios de Resultados documentados en `docs/RESULTADOS_CRITERIOS.md`.
+- Versión 0.6.0 preparada para publicación el 25 de julio de 2026 a las
+  17:50, con MVP de Resultados, detalle editable y categoría Descartado -
+  Cancelado.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con

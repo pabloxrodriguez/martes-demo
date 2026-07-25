@@ -1,6 +1,7 @@
 import { HeaderField } from "@/components/project-header/HeaderField";
 import { HeaderSearchSelect } from "@/components/project-header/HeaderSearchSelect";
 import { ProjectHeaderCard } from "@/components/projects/ProjectHeaderCard";
+import { getProjectStatusStyle } from "@/lib/project-status-style";
 import Link from "next/link";
 import {
   Building2,
@@ -91,43 +92,6 @@ type ProjectHeaderProps = {
   onSaveEventEnd: SaveAction;
 };
 
-const statusStyles: Record<
-  number,
-  {
-    dot: string;
-    text: string;
-  }
-> = {
-  1: {
-    dot: "bg-amber-400",
-    text: "text-amber-800",
-  },
-  2: {
-    dot: "bg-blue-500",
-    text: "text-blue-800",
-  },
-  3: {
-    dot: "bg-violet-500",
-    text: "text-violet-800",
-  },
-  4: {
-    dot: "bg-emerald-500",
-    text: "text-emerald-800",
-  },
-  5: {
-    dot: "bg-zinc-700",
-    text: "text-zinc-800",
-  },
-  6: {
-    dot: "bg-red-500",
-    text: "text-red-800",
-  },
-  7: {
-    dot: "bg-amber-800",
-    text: "text-amber-950",
-  },
-};
-
 function formatVenues(
   projectVenues: ProjectVenue[] | null
 ) {
@@ -186,8 +150,7 @@ export function ProjectHeader({
   const statusCode =
     Number(project.estados_proyecto?.codigo) || 1;
 
-  const statusStyle =
-    statusStyles[statusCode] ?? statusStyles[1];
+  const statusStyle = getProjectStatusStyle(statusCode);
 
   return (
     <ProjectHeaderCard>

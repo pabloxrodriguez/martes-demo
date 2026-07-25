@@ -104,6 +104,7 @@ export default async function ProjectsPage({
                 title={stage.nombre}
                 count={stageProjects.length}
                 viewAllHref={`/proyectos/estado/${stage.codigo}`}
+                statusCode={Number(stage.codigo)}
               >
                 {stageProjects.map((project) => (
                   <ProjectCard
