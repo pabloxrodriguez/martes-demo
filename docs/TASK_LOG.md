@@ -50,7 +50,7 @@ Una tarea solo pasa a **Completada** cuando:
 | NAV-002 | Media | Revisar actualización de lista y ficha | En pruebas | Continuar pruebas después de cada mutación. |
 | TIME-001 | Media | Mostrar la hora en `America/Santiago` | Completada | Hora validada en producción. |
 | TASK-003 | Media | Mostrar aviso al completar una tarea | En pruebas | Completar y reabrir una tarea; confirmar ambos avisos. |
-| TASK-004 | Media | Validar funcionalmente el borrado de tareas | Lista para publicar | Borrado lógico validado en Supabase; incluido en la versión 0.5. |
+| TASK-004 | Media | Validar funcionalmente el borrado de tareas | En pruebas | Borrado lógico publicado en versión 0.5; falta repetir flujo completo en producción. |
 | UX-001 | Media | Definir e implementar “Ver todos” | En pruebas | Abrir cada estado, revisar la tabla y entrar a una ficha desde una fila. |
 | CAT-002 | Media | Administrar catálogos operativos | En pruebas | CRUD validado inicialmente; falta prueba con más de un usuario activo. |
 | CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | En pruebas | Empresa y contacto principal implementados; continuar validación. |
@@ -59,7 +59,7 @@ Una tarea solo pasa a **Completada** cuando:
 | AUTH-002 | Media | Probar Catálogos con más de un usuario activo | Pendiente | Iniciar sesión con un segundo usuario activo y repetir una mutación. |
 | AUTH-003 | Media | Recuperar una sesión vencida sin error 500 | En pruebas | Versión publicada; validar redirección y mensaje con una sesión vencida. |
 | THEME-001 | Baja | Corregir experiencia en modo nocturno | Pendiente | Definir si MARTES soportará tema oscuro o permanecerá claro. |
-| MOD-001 | Baja | Implementar Mi Martes | Lista para publicar | Versión 0.5 validada localmente; falta comprobar en producción. |
+| MOD-001 | Baja | Implementar Mi Martes | En pruebas | Versión 0.5 publicada; falta validar edición de tareas y actividad reciente en producción. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
 | MOD-003 | Baja | Implementar Calendario | Pendiente | Definir alcance funcional. |
 | MOD-004 | Baja | Implementar Resultados | Pendiente | Definir alcance funcional. |
@@ -76,6 +76,8 @@ Una tarea solo pasa a **Completada** cuando:
   cambios de tareas.
 - Versión 0.5 preparada para publicación el 25 de julio de 2026 a las 11:53,
   con TypeScript, ESLint y build de producción aprobados.
+- Versión 0.5 publicada mediante el commit `d85716a`; Vercel la marcó como
+  Ready/Production y la pantalla de acceso pública mostró “Versión 0.5”.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con
