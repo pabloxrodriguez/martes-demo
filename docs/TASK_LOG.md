@@ -51,7 +51,7 @@ Una tarea solo pasa a **Completada** cuando:
 | TIME-001 | Media | Mostrar la hora en `America/Santiago` | Completada | Hora validada en producción. |
 | TASK-003 | Media | Mostrar aviso al completar una tarea | En pruebas | Completar y reabrir una tarea; confirmar ambos avisos. |
 | TASK-004 | Media | Validar funcionalmente el borrado de tareas | En pruebas | Borrado lógico publicado en versión 0.5; falta repetir flujo completo en producción. |
-| UX-001 | Media | Definir e implementar “Ver todos” | En pruebas | Abrir cada estado, revisar la tabla y entrar a una ficha desde una fila. |
+| UX-001 | Media | Definir e implementar “Ver todos” | En pruebas | Tabla editable implementada; probar guardado por fila en distintos estados. |
 | CAT-002 | Media | Administrar catálogos operativos | En pruebas | CRUD validado inicialmente; falta prueba con más de un usuario activo. |
 | CLIENT-001 | Media | Ampliar clientes con empresa, contactos y correos | En pruebas | Empresa y contacto principal implementados; continuar validación. |
 | CLIENT-002 | Media | Agregar clientes desde el menú | Completada | Reemplazado por Catálogos y validado en producción. |
@@ -61,7 +61,7 @@ Una tarea solo pasa a **Completada** cuando:
 | THEME-001 | Baja | Corregir experiencia en modo nocturno | Pendiente | Definir si MARTES soportará tema oscuro o permanecerá claro. |
 | MOD-001 | Baja | Implementar Mi Martes | En pruebas | Versión 0.5 publicada; falta validar edición de tareas y actividad reciente en producción. |
 | MOD-002 | Baja | Implementar Equipo | Pendiente | Definir alcance funcional. |
-| MOD-003 | Baja | Implementar Calendario | Pendiente | Definir alcance funcional. |
+| MOD-003 | Baja | Implementar Calendario | Lista para probar | MVP local implementado; revisar navegación mensual, hitos y Nuevo proyecto. |
 | MOD-004 | Baja | Implementar Resultados | Lista para publicar | MVP local validado; publicar versión 0.6.0 y revisar en producción. |
 
 ## Evidencia local acumulada
@@ -112,6 +112,17 @@ Una tarea solo pasa a **Completada** cuando:
 - Versión 0.6.1 preparada para publicación el 25 de julio de 2026 a las
   18:24, con documento Word de criterios y gráfico de evolución mensual
   corregido para períodos multi-año.
+- Primer MVP de Calendario implementado localmente con grilla mensual,
+  navegación por mes, botón Hoy, Nuevo proyecto, resumen del mes, leyenda por
+  estado y próximos hitos.
+- Criterio de Calendario: muestra entregas de propuesta para Prospecto, En
+  preparación, Evaluación de cliente y En ejecución; muestra eventos posibles
+  como TBC para Prospecto, En preparación y Evaluación de cliente; muestra
+  eventos confirmados para proyectos En ejecución; excluye Realizado, No
+  ganado, No olvidar, Descartado - Cancelado y Administrativo - Interno.
+- La vista “Ver todos” de cada estado de Proyectos ahora es editable por fila
+  para estado, prioridad, responsable, fechas de propuesta/evento y valor de
+  venta.
 - Migración de autoría y borrado lógico de tareas aplicada en Supabase.
 - Validación funcional aprobada: la tarea “Llamar a cliente” del proyecto
   “🧪 Martes” desaparece de la app al borrarse, pero permanece en Supabase con
@@ -252,3 +263,15 @@ Para cada sesión:
   degradación incompatible de Next.js.
 - Cada publicación debe actualizar la versión y fecha centralizadas; ambas se
   muestran en el acceso y en el menú lateral.
+
+## Publicación 0.7.0 — 26 julio 2026, 12:37
+
+- Calendario implementado con vista mensual, hitos del mes, propuestas vigentes
+  y eventos/TBC según estado del proyecto.
+- “Nuevo proyecto” agregado desde Calendario usando el mismo formulario breve de
+  Proyectos.
+- “Ver todos” de Proyectos convertido en tabla editable con guardado por fila o
+  guardado masivo.
+- La tabla editable fija el nombre del proyecto, agrega desplazamiento
+  horizontal superior y permite editar prioridad, estado, tipo, responsable,
+  propuesta y valor.

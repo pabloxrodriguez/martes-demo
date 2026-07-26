@@ -17,8 +17,13 @@ export async function getProjects() {
       id,
       nombre,
       prioridad,
+      estado_id,
+      tipo_id,
+      responsable_id,
       fecha_propuesta,
       fecha_evento_inicio,
+      fecha_evento_termino,
+      valor_venta,
       estados_proyecto (
         id,
         codigo,
@@ -32,6 +37,7 @@ export async function getProjects() {
         nombre
       ),
       responsable:personas!proyectos_responsable_id_fkey (
+        id,
         nombre
       ),
       tareas (

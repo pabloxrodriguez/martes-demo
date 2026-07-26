@@ -95,6 +95,7 @@ export async function createProject(
   }
 
   revalidatePath("/proyectos");
+  revalidatePath("/calendario");
 
   return {
     id: data.id,
