@@ -54,6 +54,7 @@ type PersonasRow = {
   email: string;
   activo: boolean;
   administrador: boolean;
+  rol: "admin" | "direccion" | "equipo";
   fecha_creacion: string;
   fecha_actualizacion: string;
   auth_user_id: string | null;
@@ -188,6 +189,7 @@ export type Database = {
           email: string;
           activo?: boolean;
           administrador?: boolean;
+          rol?: "admin" | "direccion" | "equipo";
           fecha_creacion?: string;
           fecha_actualizacion?: string;
           auth_user_id?: string | null;

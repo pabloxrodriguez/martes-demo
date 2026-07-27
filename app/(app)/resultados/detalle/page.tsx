@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ResultsEditableProjectsTable } from "@/components/results/ResultsEditableProjectsTable";
+import { requireActivePerson } from "@/lib/auth/requireActivePerson";
 import {
   getResultsDetail,
   isResultMetric,
@@ -32,6 +33,12 @@ function formatDate(value: string) {
 export default async function ResultsDetailPage({
   searchParams,
 }: PageProps) {
+  const { person } = await requireActivePerson();
+
+  if (person.rol !== "admin" && person.rol !== "direccion") {
+    redirect("/acceso-denegado");
+  }
+
   const params = await searchParams;
   const metric = getFirst(params?.metric);
 

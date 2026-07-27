@@ -96,6 +96,8 @@ export async function createProject(
 
   revalidatePath("/proyectos");
   revalidatePath("/calendario");
+  revalidatePath("/resultados");
+  revalidatePath("/resultado-financiero");
 
   return {
     id: data.id,

@@ -61,6 +61,7 @@ export type ResultsDashboard = {
     projects: number;
   }[];
   pipeline: GroupedMetric[];
+  projectsByClient: GroupedMetric[];
   salesByClient: GroupedMetric[];
   salesByType: GroupedMetric[];
   projectsByType: GroupedMetric[];
@@ -346,6 +347,11 @@ export async function getResultsDashboard(
       pipelineProjects,
       (project) => project.statusName,
       "value"
+    ),
+    projectsByClient: groupProjects(
+      commercialProjects,
+      (project) => project.clientes?.nombre ?? "Sin cliente",
+      "projects"
     ),
     salesByClient: groupProjects(
       wonProjects,

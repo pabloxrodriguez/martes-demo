@@ -9,6 +9,13 @@ export async function Sidebar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const { data: person } = user
+    ? await supabase
+        .from("personas")
+        .select("rol")
+        .eq("auth_user_id", user.id)
+        .maybeSingle()
+    : { data: null };
 
   const displayName =
     user?.user_metadata?.full_name ??
@@ -25,7 +32,9 @@ export async function Sidebar() {
         </p>
       </div>
 
-      <SidebarNav />
+      <SidebarNav canSeeFinancialResults={
+        person?.rol === "admin" || person?.rol === "direccion"
+      } />
 
       <div className="border-t border-zinc-200 p-4">
         <div className="px-4 pb-4 text-xs text-zinc-400">

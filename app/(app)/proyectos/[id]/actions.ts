@@ -390,6 +390,7 @@ async function updateProjectFieldOrThrow(
   revalidatePath("/proyectos");
   revalidatePath("/resultados");
   revalidatePath("/resultados/detalle");
+  revalidatePath("/resultado-financiero");
 }
 
 export async function updateProjectField(

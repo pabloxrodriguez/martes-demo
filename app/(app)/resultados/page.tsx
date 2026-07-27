@@ -42,11 +42,29 @@ function formatDate(value: string) {
 }
 
 export default async function Page({ searchParams }: PageProps) {
+  return (
+    <ResultsPageContent
+      searchParams={searchParams}
+      title="Resultados"
+      description="Visión general operativa de La Oreja Lab según la fecha comercial de cada proyecto. No incluye Administrativos - Internos ni Descartados - Cancelados."
+      showFinancialValues={false}
+    />
+  );
+}
+
+export async function ResultsPageContent({
+  searchParams,
+  title,
+  description,
+  showFinancialValues,
+}: PageProps & {
+  title: string;
+  description: string;
+  showFinancialValues: boolean;
+}) {
   const params = await searchParams;
   const dashboard = await getResultsDashboard(params);
-  const hasMonthlySales = dashboard.monthlyEvolution.some(
-    (month) => month.value > 0
-  );
+  const chartMode = showFinancialValues ? "money" : "projects";
   const detailParams = `from=${dashboard.period.from}&to=${dashboard.period.to}`;
 
   return (
@@ -55,13 +73,11 @@ export default async function Page({ searchParams }: PageProps) {
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <h1 className="text-3xl font-semibold text-zinc-950">
-              Resultados
+              {title}
             </h1>
 
             <p className="mt-2 text-sm text-zinc-500">
-              Visión general del desempeño de La Oreja Lab según
-              la fecha comercial de cada proyecto. No incluye
-              Administrativos - Internos ni Descartados - Cancelados.
+              {description}
             </p>
           </div>
 
@@ -100,14 +116,20 @@ export default async function Page({ searchParams }: PageProps) {
           {formatDate(dashboard.period.to)}
         </p>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <SummaryCard
-            title="Ventas ganadas"
-            value={formatMoney(dashboard.summary.wonSalesValue)}
-            detail="En ejecución + realizados"
-            icon={<CircleDollarSign className="h-6 w-6" />}
-            tone="green"
-          />
+        <section
+          className={`mt-8 grid gap-4 md:grid-cols-2 ${
+            showFinancialValues ? "xl:grid-cols-5" : "xl:grid-cols-4"
+          }`}
+        >
+          {showFinancialValues && (
+            <SummaryCard
+              title="Ventas ganadas"
+              value={formatMoney(dashboard.summary.wonSalesValue)}
+              detail="En ejecución + realizados"
+              icon={<CircleDollarSign className="h-6 w-6" />}
+              tone="green"
+            />
+          )}
 
           <SummaryCard
             title="Proyectos gestionados"
@@ -115,7 +137,11 @@ export default async function Page({ searchParams }: PageProps) {
             detail="Estados comerciales 1 a 6"
             icon={<BriefcaseBusiness className="h-6 w-6" />}
             tone="blue"
-            href={`/resultados/detalle?metric=gestionados&${detailParams}`}
+            href={
+              showFinancialValues
+                ? `/resultados/detalle?metric=gestionados&${detailParams}`
+                : undefined
+            }
           />
 
           <SummaryCard
@@ -124,7 +150,11 @@ export default async function Page({ searchParams }: PageProps) {
             detail="En ejecución + realizados"
             icon={<CheckCircle2 className="h-6 w-6" />}
             tone="green"
-            href={`/resultados/detalle?metric=ganados&${detailParams}`}
+            href={
+              showFinancialValues
+                ? `/resultados/detalle?metric=ganados&${detailParams}`
+                : undefined
+            }
           />
 
           <SummaryCard
@@ -133,7 +163,11 @@ export default async function Page({ searchParams }: PageProps) {
             detail="Estado No ganado"
             icon={<XCircle className="h-6 w-6" />}
             tone="red"
-            href={`/resultados/detalle?metric=no-ganados&${detailParams}`}
+            href={
+              showFinancialValues
+                ? `/resultados/detalle?metric=no-ganados&${detailParams}`
+                : undefined
+            }
           />
 
           <SummaryCard
@@ -153,48 +187,77 @@ export default async function Page({ searchParams }: PageProps) {
           <Panel
             title="Evolución mensual"
             subtitle={
-              hasMonthlySales
+              showFinancialValues
                 ? "Ventas ganadas por mes (CLP)"
-                : "Proyectos ganados por mes (cantidad, sin montos informados)"
+                : "Proyectos ganados por mes"
             }
           >
             <MonthlyEvolutionChart
               data={dashboard.monthlyEvolution}
-              mode={hasMonthlySales ? "money" : "projects"}
+              mode={chartMode}
             />
           </Panel>
 
-          <Panel title="Pipeline" subtitle="Valor potencial por estado">
+          <Panel
+            title="Pipeline"
+            subtitle={
+              showFinancialValues
+                ? "Valor potencial por estado"
+                : "Proyectos vigentes por estado"
+            }
+          >
             <MetricList
               items={dashboard.pipeline}
               emptyText="No hay proyectos en pipeline para el período."
+              showFinancialValues={showFinancialValues}
             />
           </Panel>
         </section>
 
         <section className="mt-8 grid gap-8 xl:grid-cols-3">
-          <Panel title="Ventas por cliente">
+          <Panel
+            title={
+              showFinancialValues ? "Ventas por cliente" : "Proyectos por cliente"
+            }
+          >
             <MetricTable
-              items={dashboard.salesByClient.slice(0, 6)}
-              valueLabel="Ventas"
-              emptyText="No hay ventas ganadas para el período."
+              items={
+                showFinancialValues
+                  ? dashboard.salesByClient.slice(0, 6)
+                  : dashboard.projectsByClient.slice(0, 6)
+              }
+              valueLabel={showFinancialValues ? "Ventas" : "Proyectos"}
+              emptyText="No hay proyectos para el período."
+              showFinancialValues={showFinancialValues}
             />
           </Panel>
 
           <Panel title="Proyectos por tipo">
             <MetricTable
               items={dashboard.projectsByType.slice(0, 6)}
-              valueLabel="Ventas"
+              valueLabel={showFinancialValues ? "Ventas" : "Proyectos"}
               emptyText="No hay proyectos para el período."
+              showFinancialValues={showFinancialValues}
             />
           </Panel>
 
-          <Panel title="Ventas por tipo de proyecto">
-            <MetricList
-              items={dashboard.salesByType.slice(0, 6)}
-              emptyText="No hay ventas ganadas para el período."
-            />
-          </Panel>
+          {showFinancialValues ? (
+            <Panel title="Ventas por tipo de proyecto">
+              <MetricList
+                items={dashboard.salesByType.slice(0, 6)}
+                emptyText="No hay ventas ganadas para el período."
+                showFinancialValues
+              />
+            </Panel>
+          ) : (
+            <Panel title="Proyectos por estado">
+              <MetricList
+                items={dashboard.pipeline}
+                emptyText="No hay proyectos en pipeline para el período."
+                showFinancialValues={false}
+              />
+            </Panel>
+          )}
         </section>
 
         <section className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -210,30 +273,32 @@ export default async function Page({ searchParams }: PageProps) {
                 <div className="mt-1 text-sm">eventos</div>
               </div>
 
-              <div className="flex-1 space-y-3 text-sm">
-                <MetricLine
-                  label="Ventas realizadas"
-                  value={formatMoney(dashboard.realized.value)}
-                />
-                <MetricLine
-                  label="Ticket promedio"
-                  value={
-                    dashboard.realized.projects > 0
-                      ? formatMoney(
-                          dashboard.realized.value /
-                            dashboard.realized.projects
-                        )
-                      : "—"
-                  }
-                />
-              </div>
+              {showFinancialValues && (
+                <div className="flex-1 space-y-3 text-sm">
+                  <MetricLine
+                    label="Ventas realizadas"
+                    value={formatMoney(dashboard.realized.value)}
+                  />
+                  <MetricLine
+                    label="Ticket promedio"
+                    value={
+                      dashboard.realized.projects > 0
+                        ? formatMoney(
+                            dashboard.realized.value /
+                              dashboard.realized.projects
+                          )
+                        : "—"
+                    }
+                  />
+                </div>
+              )}
             </div>
           </Panel>
 
           <Panel title="Notas del reporte">
             <div className="space-y-3 text-sm text-zinc-600">
               <p>
-                En ejecución cuenta como venta ganada. Realizado
+                En ejecución cuenta como proyecto ganado. Realizado
                 cuenta además como evento ejecutado.
               </p>
 
@@ -540,11 +605,18 @@ function MonthlyEvolutionChart({
 function MetricList({
   items,
   emptyText,
+  showFinancialValues,
 }: {
   items: ResultsDashboard["pipeline"];
   emptyText: string;
+  showFinancialValues: boolean;
 }) {
-  const maxValue = Math.max(...items.map((item) => item.value), 1);
+  const maxValue = Math.max(
+    ...items.map((item) =>
+      showFinancialValues ? item.value : item.projects
+    ),
+    1
+  );
 
   if (items.length === 0) {
     return <p className="text-sm text-zinc-500">{emptyText}</p>;
@@ -565,9 +637,15 @@ function MetricList({
             </div>
 
             <div className="text-right">
-              <div className="font-semibold text-zinc-950">
-                {formatMoney(item.value)}
-              </div>
+              {showFinancialValues ? (
+                <div className="font-semibold text-zinc-950">
+                  {formatMoney(item.value)}
+                </div>
+              ) : (
+                <div className="font-semibold text-zinc-950">
+                  {item.projects}
+                </div>
+              )}
               <div className="text-sm text-zinc-500">
                 {item.percentage}%
               </div>
@@ -580,7 +658,11 @@ function MetricList({
               style={{
                 width: `${Math.max(
                   4,
-                  Math.round((item.value / maxValue) * 100)
+                  Math.round(
+                    ((showFinancialValues ? item.value : item.projects) /
+                      maxValue) *
+                      100
+                  )
                 )}%`,
               }}
             />
@@ -595,10 +677,12 @@ function MetricTable({
   items,
   valueLabel,
   emptyText,
+  showFinancialValues,
 }: {
   items: ResultsDashboard["salesByClient"];
   valueLabel: string;
   emptyText: string;
+  showFinancialValues: boolean;
 }) {
   if (items.length === 0) {
     return <p className="text-sm text-zinc-500">{emptyText}</p>;
@@ -610,9 +694,11 @@ function MetricTable({
         <thead className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-400">
           <tr>
             <th className="py-2 font-semibold">Nombre</th>
-            <th className="py-2 text-right font-semibold">
-              {valueLabel}
-            </th>
+            {showFinancialValues && (
+              <th className="py-2 text-right font-semibold">
+                {valueLabel}
+              </th>
+            )}
             <th className="py-2 text-right font-semibold">
               Proyectos
             </th>
@@ -625,9 +711,11 @@ function MetricTable({
               <td className="py-3 font-medium text-zinc-950">
                 {item.name}
               </td>
-              <td className="py-3 text-right text-zinc-700">
-                {formatMoney(item.value)}
-              </td>
+              {showFinancialValues && (
+                <td className="py-3 text-right text-zinc-700">
+                  {formatMoney(item.value)}
+                </td>
+              )}
               <td className="py-3 text-right text-zinc-700">
                 {item.projects}
               </td>

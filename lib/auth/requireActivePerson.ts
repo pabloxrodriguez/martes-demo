@@ -18,7 +18,7 @@ export async function requireActivePerson() {
 
   const { data: person, error: personError } = await supabase
     .from("personas")
-    .select("id, activo, administrador")
+    .select("id, activo, administrador, rol")
     .eq("auth_user_id", user.id)
     .maybeSingle();
 

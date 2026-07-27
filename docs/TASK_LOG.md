@@ -275,3 +275,11 @@ Para cada sesión:
 - La tabla editable fija el nombre del proyecto, agrega desplazamiento
   horizontal superior y permite editar prioridad, estado, tipo, responsable,
   propuesta y valor.
+
+## Publicación 0.7.1 — 27 julio 2026, 13:39
+
+- Roles agregados a personas: admin, direccion y equipo.
+- Resultados separado en vista operativa sin montos comerciales.
+- Resultado Financiero agregado como vista con montos, visible solo para admin
+  y dirección.
+- Acceso directo a Resultado Financiero bloqueado para usuarios de equipo.

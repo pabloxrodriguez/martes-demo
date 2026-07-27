@@ -9,15 +9,28 @@ const menuItems = [
   { label: "Equipo", href: "/equipo" },
   { label: "Calendario", href: "/calendario" },
   { label: "Resultados", href: "/resultados" },
+  {
+    label: "Resultado Financiero",
+    href: "/resultado-financiero",
+    financialOnly: true,
+  },
   { label: "Catálogos", href: "/catalogos" },
 ];
 
-export function SidebarNav() {
+export function SidebarNav({
+  canSeeFinancialResults,
+}: {
+  canSeeFinancialResults: boolean;
+}) {
   const pathname = usePathname();
 
   return (
     <nav className="flex flex-col gap-1 p-4">
-      {menuItems.map((item) => {
+      {menuItems
+        .filter(
+          (item) => !item.financialOnly || canSeeFinancialResults
+        )
+        .map((item) => {
         const isActive =
           pathname === item.href ||
           pathname.startsWith(`${item.href}/`);
