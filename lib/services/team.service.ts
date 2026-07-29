@@ -27,11 +27,6 @@ type TeamProjectGroup = {
 export type TeamMatrixRow = {
   person: TeamPerson;
   totalOpenTasks: number;
-  load: {
-    label: "Sin carga" | "Óptima" | "Media" | "Alta" | "Sobrecarga";
-    percentage: number;
-    tone: "zinc" | "green" | "amber" | "red";
-  };
   projectsByStatus: Record<number, TeamProjectGroup[]>;
 };
 
@@ -49,46 +44,6 @@ export type TeamDashboard = {
     assignedTasks: number;
   };
 };
-
-function getLoad(totalOpenTasks: number): TeamMatrixRow["load"] {
-  if (totalOpenTasks === 0) {
-    return {
-      label: "Sin carga",
-      percentage: 0,
-      tone: "zinc",
-    };
-  }
-
-  if (totalOpenTasks <= 3) {
-    return {
-      label: "Óptima",
-      percentage: Math.round((totalOpenTasks / 10) * 100),
-      tone: "green",
-    };
-  }
-
-  if (totalOpenTasks <= 6) {
-    return {
-      label: "Media",
-      percentage: Math.round((totalOpenTasks / 10) * 100),
-      tone: "amber",
-    };
-  }
-
-  if (totalOpenTasks <= 9) {
-    return {
-      label: "Alta",
-      percentage: Math.round((totalOpenTasks / 10) * 100),
-      tone: "red",
-    };
-  }
-
-  return {
-    label: "Sobrecarga",
-    percentage: Math.max(100, Math.round((totalOpenTasks / 10) * 100)),
-    tone: "red",
-  };
-}
 
 function isVisibleTask(task: TeamOpenTask) {
   const statusName = task.estados_tarea?.nombre;
@@ -197,7 +152,6 @@ export async function getTeamDashboard(): Promise<TeamDashboard> {
     return {
       person,
       totalOpenTasks,
-      load: getLoad(totalOpenTasks),
       projectsByStatus,
     };
   });

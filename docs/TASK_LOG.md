@@ -292,3 +292,9 @@ Para cada sesión:
 - Tarjetas de proyecto muestran tareas abiertas, fechas comprometidas y enlace a
   la ficha del proyecto.
 - Filtro por miembros agregado como chips seleccionables para enfocar la vista.
+
+## Publicación 0.8.1 — 29 julio 2026, 13:50
+
+- Indicador de carga de Equipo simplificado a cantidad de tareas abiertas.
+- Se eliminaron porcentajes, barras y etiquetas interpretativas para evitar una
+  lectura evaluativa de la carga del equipo.

@@ -38,29 +38,6 @@ const STATUS_TONES: Record<
   },
 };
 
-const LOAD_TONES = {
-  zinc: {
-    text: "text-zinc-500",
-    ring: "border-zinc-300",
-    bar: "bg-zinc-300",
-  },
-  green: {
-    text: "text-green-700",
-    ring: "border-green-500",
-    bar: "bg-green-500",
-  },
-  amber: {
-    text: "text-amber-700",
-    ring: "border-amber-500",
-    bar: "bg-amber-500",
-  },
-  red: {
-    text: "text-red-700",
-    ring: "border-red-500",
-    bar: "bg-red-500",
-  },
-};
-
 function formatShortDate(value: string | null) {
   if (!value) {
     return "Sin fecha";
@@ -267,33 +244,9 @@ export default async function Page({ searchParams }: PageProps) {
                         </div>
                       </div>
 
-                      <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <div
-                              className={`text-sm font-semibold ${LOAD_TONES[row.load.tone].text}`}
-                            >
-                              {row.load.label}
-                            </div>
-                            <div className="mt-0.5 text-xs text-zinc-500">
-                              {row.totalOpenTasks} tarea
-                              {row.totalOpenTasks === 1 ? "" : "s"} abiertas
-                            </div>
-                          </div>
-                          <div
-                            className={`text-lg font-semibold ${LOAD_TONES[row.load.tone].text}`}
-                          >
-                            {row.load.percentage}%
-                          </div>
-                        </div>
-                        <div className="mt-3 h-2 rounded-full bg-zinc-200">
-                          <div
-                            className={`h-2 rounded-full ${LOAD_TONES[row.load.tone].bar}`}
-                            style={{
-                              width: `${Math.min(row.load.percentage, 100)}%`,
-                            }}
-                          />
-                        </div>
+                      <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-700">
+                        {row.totalOpenTasks} tarea
+                        {row.totalOpenTasks === 1 ? "" : "s"} abiertas
                       </div>
                     </td>
 
@@ -379,9 +332,9 @@ export default async function Page({ searchParams }: PageProps) {
         </section>
 
         <p className="mt-4 text-center text-xs text-zinc-500">
-          La carga es una referencia inicial: cuenta tareas abiertas
-          asignadas en proyectos activos, incluyendo Administrativo -
-          Interno. No incluye tareas completadas, canceladas ni eliminadas.
+          Cuenta tareas abiertas asignadas en proyectos activos, incluyendo
+          Administrativo - Interno. No incluye tareas completadas, canceladas
+          ni eliminadas.
         </p>
       </div>
     </main>
