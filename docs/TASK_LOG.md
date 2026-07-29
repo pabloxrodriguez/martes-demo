@@ -283,3 +283,12 @@ Para cada sesión:
 - Resultado Financiero agregado como vista con montos, visible solo para admin
   y dirección.
 - Acceso directo a Resultado Financiero bloqueado para usuarios de equipo.
+
+## Publicación 0.8.0 — 29 julio 2026, 13:27
+
+- Módulo Equipo implementado con matriz por persona y estado de proyecto.
+- Carga por miembro calculada desde tareas abiertas asignadas en proyectos
+  activos.
+- Tarjetas de proyecto muestran tareas abiertas, fechas comprometidas y enlace a
+  la ficha del proyecto.
+- Filtro por miembros agregado como chips seleccionables para enfocar la vista.
