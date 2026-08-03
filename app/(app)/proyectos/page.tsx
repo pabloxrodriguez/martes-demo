@@ -1,6 +1,7 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { StageSection } from "@/components/projects/StageSection";
+import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
 import {
   getProjectEditOptions,
   getProjects,
@@ -82,8 +83,11 @@ export default async function ProjectsPage({
   const search = typeof q === "string" ? q.trim() : "";
   const normalizedSearch = normalizeSearch(search);
   const currentYear = getCurrentYear();
-  const projects = await getProjects();
-  const editOptions = await getProjectEditOptions();
+  const [projects, editOptions, currentPerson] = await Promise.all([
+    getProjects(),
+    getProjectEditOptions(),
+    getCurrentPerson(),
+  ]);
   const stages = editOptions.statuses;
   const filteredProjects = normalizedSearch
     ? projects.filter((project) =>
@@ -126,6 +130,7 @@ export default async function ProjectsPage({
         statusOptions={statusOptions}
         defaultStatusId={prospectStatus?.id ?? ""}
         initialSearch={search}
+        canCreateProjects={currentPerson?.rol !== "lector"}
       />
 
       <main className="p-8">

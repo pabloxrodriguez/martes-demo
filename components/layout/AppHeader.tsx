@@ -16,6 +16,7 @@ type AppHeaderProps = {
   statusOptions: SelectOption[];
   defaultStatusId: string;
   initialSearch: string;
+  canCreateProjects?: boolean;
 };
 
 export function AppHeader({
@@ -23,6 +24,7 @@ export function AppHeader({
   statusOptions,
   defaultStatusId,
   initialSearch,
+  canCreateProjects = true,
 }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -110,24 +112,28 @@ export function AppHeader({
               Histórico
             </Link>
 
-            <button
-              type="button"
-              onClick={() => setIsCreateModalOpen(true)}
-              className="h-11 rounded-xl bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800"
-            >
-              Nuevo proyecto
-            </button>
+            {canCreateProjects && (
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="h-11 rounded-xl bg-zinc-950 px-5 text-sm font-medium text-white transition hover:bg-zinc-800"
+              >
+                Nuevo proyecto
+              </button>
+            )}
           </div>
         </div>
       </header>
 
-      <CreateProjectModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        peopleOptions={peopleOptions}
-        statusOptions={statusOptions}
-        defaultStatusId={defaultStatusId}
-      />
+      {canCreateProjects && (
+        <CreateProjectModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          peopleOptions={peopleOptions}
+          statusOptions={statusOptions}
+          defaultStatusId={defaultStatusId}
+        />
+      )}
     </>
   );
 }

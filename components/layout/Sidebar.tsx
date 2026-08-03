@@ -32,9 +32,13 @@ export async function Sidebar() {
         </p>
       </div>
 
-      <SidebarNav canSeeFinancialResults={
-        person?.rol === "admin" || person?.rol === "direccion"
-      } />
+      <SidebarNav
+        canSeeFinancialResults={
+          person?.rol === "admin" || person?.rol === "direccion"
+        }
+        canSeeAdministration={person?.rol === "admin"}
+        canEdit={person?.rol !== "lector"}
+      />
 
       <div className="border-t border-zinc-200 p-4">
         <div className="px-4 pb-4 text-xs text-zinc-400">

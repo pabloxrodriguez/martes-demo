@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireActivePerson } from "@/lib/auth/requireActivePerson";
+import {
+  requireEditablePerson,
+} from "@/lib/auth/requireActivePerson";
 import { createClient } from "@/lib/supabase/server";
 import type { TableUpdate } from "@/types/database";
 
@@ -162,7 +164,7 @@ async function updateProjectFieldOrThrow(
   field: EditableProjectField,
   value: string
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
 
   if (!allowedFields.includes(field)) {
@@ -420,7 +422,7 @@ export async function addProjectVenue(
   projectId: string,
   venueId: string
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanVenueId = requireUuid(venueId, "El venue");
 
@@ -464,7 +466,7 @@ export async function createProjectVenue(
   projectId: string,
   venueName: string
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanName = requireString(venueName, "El nombre del venue");
 
@@ -551,7 +553,7 @@ export async function removeProjectVenue(
   projectId: string,
   venueId: string
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanVenueId = requireUuid(venueId, "El venue");
 
@@ -588,7 +590,7 @@ async function createProjectTaskOrThrow(
   projectId: string,
   input: CreateProjectTaskInput
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const projectIdClean = requireUuid(projectId, "El proyecto");
 
   if (!input || typeof input !== "object") {
@@ -743,7 +745,7 @@ export async function updateTaskField(
   field: EditableTaskField,
   value: string
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanTaskId = requireUuid(taskId, "La tarea");
 
@@ -824,7 +826,7 @@ export async function toggleTaskCompleted(
   taskId: string,
   completed: boolean
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanTaskId = requireUuid(taskId, "La tarea");
 
@@ -893,7 +895,7 @@ export async function deleteProjectTask(
   projectId: string,
   taskId: string
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const cleanTaskId = requireUuid(taskId, "La tarea");
 
@@ -981,7 +983,7 @@ export async function deleteProjectTask(
 }
 
 export async function deleteProject(projectId: string) {
-  const { supabase, user } = await requireActivePerson();
+  const { supabase, user } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
 
   const { data: project, error: projectError } = await supabase

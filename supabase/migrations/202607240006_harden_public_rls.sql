@@ -3,6 +3,35 @@
 
 begin;
 
+-- Estas funciones legacy existían en producción antes de versionar el
+-- endurecimiento RLS. Se definen aquí para que una base limpia pueda ejecutar
+-- los revoke/grant posteriores sin depender de estado creado manualmente.
+create or replace function public.es_usuario_activo()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+  select public.is_active_person();
+$function$;
+
+create or replace function public.es_administrador()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $function$
+  select exists (
+    select 1
+    from public.personas
+    where personas.auth_user_id = (select auth.uid())
+      and personas.activo = true
+      and personas.administrador = true
+  );
+$function$;
+
 alter table public.clientes enable row level security;
 alter table public.estados_proyecto enable row level security;
 alter table public.estados_tarea enable row level security;

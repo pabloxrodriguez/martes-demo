@@ -317,3 +317,14 @@ Para cada sesión:
   Martes y en la ficha de Proyecto.
 - Se mantiene el selector nativo de fecha al editar, pero la lectura normal
   evita el formato técnico AAAA-MM-DD.
+
+## Publicación 0.10.0 — 3 agosto 2026, 15:00
+
+- Administración agregada para gestionar personas, roles y accesos.
+- Rol lector agregado para accesos externos o de demostración sin permisos de
+  escritura.
+- Menú y acciones de servidor ajustadas para bloquear escrituras de lectores.
+- Políticas RLS versionadas para que lectores mantengan solo lectura y editores
+  puedan operar.
+- Funciones legacy de acceso versionadas para reducir drift entre producción y
+  migraciones.

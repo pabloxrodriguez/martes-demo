@@ -14,13 +14,22 @@ const menuItems = [
     href: "/resultado-financiero",
     financialOnly: true,
   },
-  { label: "Catálogos", href: "/catalogos" },
+  { label: "Catálogos", href: "/catalogos", editorOnly: true },
+  {
+    label: "Administración",
+    href: "/administracion",
+    adminOnly: true,
+  },
 ];
 
 export function SidebarNav({
   canSeeFinancialResults,
+  canSeeAdministration,
+  canEdit,
 }: {
   canSeeFinancialResults: boolean;
+  canSeeAdministration: boolean;
+  canEdit: boolean;
 }) {
   const pathname = usePathname();
 
@@ -28,7 +37,10 @@ export function SidebarNav({
     <nav className="flex flex-col gap-1 p-4">
       {menuItems
         .filter(
-          (item) => !item.financialOnly || canSeeFinancialResults
+          (item) =>
+            (!item.financialOnly || canSeeFinancialResults) &&
+            (!item.adminOnly || canSeeAdministration) &&
+            (!item.editorOnly || canEdit)
         )
         .map((item) => {
         const isActive =

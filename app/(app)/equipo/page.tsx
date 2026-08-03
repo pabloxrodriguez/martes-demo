@@ -69,6 +69,10 @@ function formatRole(role: string) {
     return "Dirección";
   }
 
+  if (role === "lector") {
+    return "Lector";
+  }
+
   return "Equipo";
 }
 

@@ -54,7 +54,7 @@ type PersonasRow = {
   email: string;
   activo: boolean;
   administrador: boolean;
-  rol: "admin" | "direccion" | "equipo";
+  rol: "admin" | "direccion" | "equipo" | "lector";
   fecha_creacion: string;
   fecha_actualizacion: string;
   auth_user_id: string | null;
@@ -189,7 +189,7 @@ export type Database = {
           email: string;
           activo?: boolean;
           administrador?: boolean;
-          rol?: "admin" | "direccion" | "equipo";
+          rol?: "admin" | "direccion" | "equipo" | "lector";
           fecha_creacion?: string;
           fecha_actualizacion?: string;
           auth_user_id?: string | null;
@@ -411,6 +411,10 @@ export type Database = {
         Returns: boolean;
       };
       is_active_person: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      is_editor_person: {
         Args: Record<string, never>;
         Returns: boolean;
       };

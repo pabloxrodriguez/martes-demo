@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireActivePerson } from "@/lib/auth/requireActivePerson";
+import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -81,7 +81,7 @@ function normalizeCatalogName(value: string) {
 }
 
 async function requireUniqueClientName(
-  supabase: Awaited<ReturnType<typeof requireActivePerson>>["supabase"],
+  supabase: Awaited<ReturnType<typeof requireEditablePerson>>["supabase"],
   nombre: string,
   currentClientId?: string
 ) {
@@ -133,7 +133,7 @@ function clientWriteError(
 }
 
 export async function createClient(input: unknown) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const client = requireClientInput(input);
 
   await requireUniqueClientName(supabase, client.nombre);
@@ -158,7 +158,7 @@ export async function updateClient(
   clientIdInput: unknown,
   input: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const clientId = requireClientId(clientIdInput);
   const client = requireClientInput(input);
 
@@ -192,7 +192,7 @@ export async function setClientActive(
   clientIdInput: unknown,
   activeInput: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const clientId = requireClientId(clientIdInput);
 
   if (typeof activeInput !== "boolean") {
@@ -229,7 +229,7 @@ export async function setClientActive(
 }
 
 export async function createProjectType(nameInput: unknown) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const nombre = requireClientName(nameInput);
 
   const { error } = await supabase
@@ -251,7 +251,7 @@ export async function updateProjectType(
   typeIdInput: unknown,
   nameInput: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const typeId = requireClientId(typeIdInput);
   const nombre = requireClientName(nameInput);
 
@@ -286,7 +286,7 @@ export async function setProjectTypeActive(
   typeIdInput: unknown,
   activeInput: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const typeId = requireClientId(typeIdInput);
 
   if (typeof activeInput !== "boolean") {
@@ -321,7 +321,7 @@ export async function setProjectTypeActive(
 }
 
 export async function createTaskTemplate(nameInput: unknown) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const nombre = requireClientName(nameInput);
   const { data: lastTemplate, error: orderError } = await supabase
     .from("plantillas_tarea")
@@ -357,7 +357,7 @@ export async function updateTaskTemplate(
   templateIdInput: unknown,
   nameInput: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const templateId = requireClientId(templateIdInput);
   const nombre = requireClientName(nameInput);
 
@@ -392,7 +392,7 @@ export async function setTaskTemplateActive(
   templateIdInput: unknown,
   activeInput: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const templateId = requireClientId(templateIdInput);
 
   if (typeof activeInput !== "boolean") {
@@ -503,7 +503,7 @@ function requireVenueInput(input: unknown) {
 }
 
 export async function createVenue(input: unknown) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const venue = requireVenueInput(input);
 
   const { error } = await supabase
@@ -522,7 +522,7 @@ export async function updateVenue(
   venueIdInput: unknown,
   input: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const venueId = requireClientId(venueIdInput);
   const venue = requireVenueInput(input);
 
@@ -554,7 +554,7 @@ export async function setVenueActive(
   venueIdInput: unknown,
   activeInput: unknown
 ) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
   const venueId = requireClientId(venueIdInput);
 
   if (typeof activeInput !== "boolean") {

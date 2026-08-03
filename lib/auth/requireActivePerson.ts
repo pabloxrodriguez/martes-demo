@@ -38,3 +38,13 @@ export async function requireActivePerson() {
     person,
   };
 }
+
+export async function requireEditablePerson() {
+  const context = await requireActivePerson();
+
+  if (context.person.rol === "lector") {
+    throw new Error("Tu usuario tiene acceso de solo lectura.");
+  }
+
+  return context;
+}

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireActivePerson } from "@/lib/auth/requireActivePerson";
+import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 
 type CreateProjectInput = {
   nombre: string;
@@ -14,7 +14,7 @@ type CreateProjectInput = {
 export async function createProject(
   input: CreateProjectInput
 ) {
-  const { supabase, person } = await requireActivePerson();
+  const { supabase, person } = await requireEditablePerson();
 
   if (!input || typeof input !== "object") {
     throw new Error("Los datos del proyecto no son válidos.");

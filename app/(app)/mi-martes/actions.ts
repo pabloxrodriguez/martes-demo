@@ -7,7 +7,7 @@ import {
   toggleTaskCompleted,
   updateTaskField,
 } from "@/app/(app)/proyectos/[id]/actions";
-import { requireActivePerson } from "@/lib/auth/requireActivePerson";
+import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 import type { EditableTaskField } from "@/components/tasks/TaskRow";
 
 const uuidPattern =
@@ -24,7 +24,7 @@ function requireTaskId(value: string) {
 }
 
 async function getTaskProjectId(taskId: string) {
-  const { supabase } = await requireActivePerson();
+  const { supabase } = await requireEditablePerson();
 
   const { data, error } = await supabase
     .from("tareas")

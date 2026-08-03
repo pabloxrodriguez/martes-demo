@@ -1,7 +1,9 @@
 import { CatalogsManager } from "@/components/catalogs/CatalogsManager";
+import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function CatalogsPage() {
+  await requireEditablePerson();
   const supabase = await createClient();
   const [
     { data: clients, error: clientsError },
