@@ -194,6 +194,7 @@ export function MyTasksPanel({
                   <td className="px-2 py-3">
                     <EditableCell
                       value={task.fecha_comprometida}
+                      displayValue={formatDate(task.fecha_comprometida)}
                       placeholder="Sin fecha"
                       type="date"
                       onSave={(value) =>
@@ -204,12 +205,6 @@ export function MyTasksPanel({
                         )
                       }
                     />
-
-                    {task.fecha_comprometida && (
-                      <div className="mt-1 px-2 text-xs text-zinc-400">
-                        {formatDate(task.fecha_comprometida)}
-                      </div>
-                    )}
                   </td>
 
                   <td className="px-2 py-3">

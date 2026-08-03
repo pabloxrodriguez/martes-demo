@@ -57,6 +57,7 @@ type TaskRowProps = {
 
 type EditableCellProps = {
   value: string | null;
+  displayValue?: string | null;
   placeholder: string;
   type?: "text" | "date" | "url";
   multiline?: boolean;
@@ -65,6 +66,7 @@ type EditableCellProps = {
 
 export function EditableCell({
   value,
+  displayValue,
   placeholder,
   type = "text",
   multiline = false,
@@ -119,7 +121,7 @@ export function EditableCell({
         title="Haz clic para editar"
       >
         {value ? (
-          value
+          displayValue ?? value
         ) : (
           <span className="text-zinc-400">
             {placeholder}
@@ -480,6 +482,7 @@ export function TaskRow({
         <td className="px-2 py-3">
           <EditableCell
             value={task.fecha_comprometida}
+            displayValue={formatDate(task.fecha_comprometida)}
             placeholder="Sin fecha"
             type="date"
             onSave={(value) =>
@@ -491,11 +494,6 @@ export function TaskRow({
             }
           />
 
-          {!task.fecha_comprometida ? null : (
-            <div className="mt-1 px-2 text-xs text-zinc-400">
-              {formatDate(task.fecha_comprometida)}
-            </div>
-          )}
         </td>
 
         <td className="px-2 py-3">

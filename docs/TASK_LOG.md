@@ -310,3 +310,10 @@ Para cada sesión:
 - Acceso a Histórico movido al encabezado superior junto a Nuevo proyecto.
 - Desplazamiento horizontal de secciones de Proyectos reforzado para usuarios
   con mouse.
+
+## Publicación 0.9.1 — 3 agosto 2026, 13:06
+
+- Fechas editables de tareas muestran formato legible para usuarios en Mi
+  Martes y en la ficha de Proyecto.
+- Se mantiene el selector nativo de fecha al editar, pero la lectura normal
+  evita el formato técnico AAAA-MM-DD.
