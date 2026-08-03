@@ -298,3 +298,15 @@ Para cada sesión:
 - Indicador de carga de Equipo simplificado a cantidad de tareas abiertas.
 - Se eliminaron porcentajes, barras y etiquetas interpretativas para evitar una
   lectura evaluativa de la carga del equipo.
+
+## Publicación 0.9.0 — 3 agosto 2026, 12:56
+
+- Proyectos Realizados y No ganados limitados al año en curso en la vista
+  principal de Proyectos.
+- Realizados se ordenan por fecha de evento más reciente; No ganados por fecha
+  de propuesta más reciente.
+- Histórico de proyectos agregado dentro de Proyectos para Realizados y No
+  ganados de años anteriores.
+- Acceso a Histórico movido al encabezado superior junto a Nuevo proyecto.
+- Desplazamiento horizontal de secciones de Proyectos reforzado para usuarios
+  con mouse.

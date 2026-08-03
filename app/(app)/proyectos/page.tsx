@@ -20,12 +20,68 @@ function normalizeSearch(value: string) {
     .trim();
 }
 
+function getCurrentYear() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+  }).format(new Date());
+}
+
+function getProjectCommercialDate(project: Awaited<ReturnType<typeof getProjects>>[number]) {
+  const statusCode = Number(project.estados_proyecto?.codigo);
+
+  if (statusCode === 6) {
+    return project.fecha_propuesta;
+  }
+
+  return project.fecha_evento_inicio;
+}
+
+function shouldShowOnMainProjectsPage(
+  project: Awaited<ReturnType<typeof getProjects>>[number],
+  currentYear: string
+) {
+  const statusCode = Number(project.estados_proyecto?.codigo);
+
+  if (statusCode !== 5 && statusCode !== 6) {
+    return true;
+  }
+
+  return getProjectCommercialDate(project)?.startsWith(currentYear);
+}
+
+function sortProjectsForStage(
+  a: Awaited<ReturnType<typeof getProjects>>[number],
+  b: Awaited<ReturnType<typeof getProjects>>[number]
+) {
+  const statusCode = Number(a.estados_proyecto?.codigo);
+
+  if (statusCode === 5 || statusCode === 6) {
+    return (getProjectCommercialDate(b) ?? "0000-00-00").localeCompare(
+      getProjectCommercialDate(a) ?? "0000-00-00"
+    );
+  }
+
+  const priorityA = Number(a.prioridad ?? 999);
+  const priorityB = Number(b.prioridad ?? 999);
+
+  if (priorityA !== priorityB) {
+    return priorityA - priorityB;
+  }
+
+  const dateA = a.fecha_evento_inicio ?? "9999-12-31";
+  const dateB = b.fecha_evento_inicio ?? "9999-12-31";
+
+  return dateA.localeCompare(dateB);
+}
+
 export default async function ProjectsPage({
   searchParams,
 }: ProjectsPageProps) {
   const { q } = await searchParams;
   const search = typeof q === "string" ? q.trim() : "";
   const normalizedSearch = normalizeSearch(search);
+  const currentYear = getCurrentYear();
   const projects = await getProjects();
   const editOptions = await getProjectEditOptions();
   const stages = editOptions.statuses;
@@ -43,6 +99,9 @@ export default async function ProjectsPage({
         )
       )
     : projects;
+  const visibleProjects = filteredProjects.filter((project) =>
+    shouldShowOnMainProjectsPage(project, currentYear)
+  );
 
   const peopleOptions = editOptions.people.map((person) => ({
     value: person.id,
@@ -72,31 +131,13 @@ export default async function ProjectsPage({
       <main className="p-8">
         <div className="space-y-10">
           {stages.map((stage) => {
-            const stageProjects = filteredProjects
+            const stageProjects = visibleProjects
               .filter(
                 (project) =>
                   Number(project.estados_proyecto?.codigo) ===
                   stage.codigo
               )
-              .sort((a, b) => {
-                const priorityA = Number(
-                  a.prioridad ?? 999
-                );
-                const priorityB = Number(
-                  b.prioridad ?? 999
-                );
-
-                if (priorityA !== priorityB) {
-                  return priorityA - priorityB;
-                }
-
-                const dateA =
-                  a.fecha_evento_inicio ?? "9999-12-31";
-                const dateB =
-                  b.fecha_evento_inicio ?? "9999-12-31";
-
-                return dateA.localeCompare(dateB);
-              });
+              .sort(sortProjectsForStage);
 
             return (
               <StageSection

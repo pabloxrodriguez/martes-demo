@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useTransition } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { CreateProjectModal } from "@/components/projects/CreateProjectModal";
@@ -101,6 +102,13 @@ export function AppHeader({
                 </button>
               )}
             </form>
+
+            <Link
+              href="/proyectos/historico"
+              className="flex h-11 items-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950"
+            >
+              Histórico
+            </Link>
 
             <button
               type="button"

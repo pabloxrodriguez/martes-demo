@@ -47,7 +47,11 @@ export function StageSection({
         </Link>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      <div className="mb-2 text-xs text-zinc-400">
+        Desplaza horizontalmente para ver más proyectos.
+      </div>
+
+      <div className="flex gap-4 overflow-x-scroll pb-4 [scrollbar-color:#a1a1aa_#f4f4f5] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-400 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-zinc-100">
         {children}
       </div>
     </section>

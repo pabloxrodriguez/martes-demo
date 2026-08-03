@@ -14,6 +14,59 @@ type ProjectStatusPageProps = {
   }>;
 };
 
+function getCurrentYear() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+  }).format(new Date());
+}
+
+function getCommercialDate(
+  project: Awaited<ReturnType<typeof getProjects>>[number],
+  statusCode: number
+) {
+  if (statusCode === 6) {
+    return project.fecha_propuesta;
+  }
+
+  return project.fecha_evento_inicio;
+}
+
+function isVisibleInCurrentStatusView(
+  project: Awaited<ReturnType<typeof getProjects>>[number],
+  statusCode: number,
+  currentYear: string
+) {
+  if (statusCode !== 5 && statusCode !== 6) {
+    return true;
+  }
+
+  return getCommercialDate(project, statusCode)?.startsWith(currentYear);
+}
+
+function sortStatusProjects(
+  a: Awaited<ReturnType<typeof getProjects>>[number],
+  b: Awaited<ReturnType<typeof getProjects>>[number],
+  statusCode: number
+) {
+  if (statusCode === 5 || statusCode === 6) {
+    return (getCommercialDate(b, statusCode) ?? "0000-00-00").localeCompare(
+      getCommercialDate(a, statusCode) ?? "0000-00-00"
+    );
+  }
+
+  const priorityDifference =
+    Number(a.prioridad ?? 999) - Number(b.prioridad ?? 999);
+
+  if (priorityDifference !== 0) {
+    return priorityDifference;
+  }
+
+  return (a.fecha_evento_inicio ?? "9999-12-31").localeCompare(
+    b.fecha_evento_inicio ?? "9999-12-31"
+  );
+}
+
 export default async function ProjectStatusPage({
   params,
 }: ProjectStatusPageProps) {
@@ -38,6 +91,7 @@ export default async function ProjectStatusPage({
   }
 
   const statusStyle = getProjectStatusStyle(statusCode);
+  const currentYear = getCurrentYear();
   const statusOptions = editOptions.statuses.map((statusOption) => ({
     value: statusOption.id,
     label: statusOption.nombre,
@@ -54,20 +108,10 @@ export default async function ProjectStatusPage({
   const statusProjects = projects
     .filter(
       (project) =>
-        Number(project.estados_proyecto?.codigo) === statusCode
+        Number(project.estados_proyecto?.codigo) === statusCode &&
+        isVisibleInCurrentStatusView(project, statusCode, currentYear)
     )
-    .sort((a, b) => {
-      const priorityDifference =
-        Number(a.prioridad ?? 999) - Number(b.prioridad ?? 999);
-
-      if (priorityDifference !== 0) {
-        return priorityDifference;
-      }
-
-      return (a.fecha_evento_inicio ?? "9999-12-31").localeCompare(
-        b.fecha_evento_inicio ?? "9999-12-31"
-      );
-    });
+    .sort((a, b) => sortStatusProjects(a, b, statusCode));
 
   return (
     <main className="px-5 py-8 sm:px-8">
@@ -97,6 +141,8 @@ export default async function ProjectStatusPage({
               {statusProjects.length === 1
                 ? "proyecto"
                 : "proyectos"}
+              {(statusCode === 5 || statusCode === 6) &&
+                ` del año ${currentYear}`}
             </p>
           </div>
         </div>
