@@ -31,6 +31,13 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 0.10.1 — 3 agosto 2026, 15:18
+
+- Se ocultó el botón “Nuevo proyecto” en Calendario para usuarios con rol
+  `lector`.
+- Se mantiene la protección de escritura por Server Actions y políticas RLS.
+- Parche menor sobre la versión 0.10.0 de administración y usuarios lectores.
+
 | ID | Prioridad | Tarea | Estado | Próximo paso |
 |---|---:|---|---|---|
 | DEP-001 | Alta | Actualizar Next.js a 16.2.11 | Completada | Publicada y operativa en la versión 0.3. |

@@ -6,6 +6,7 @@ import {
   getCalendarDashboard,
   type CalendarMilestone,
 } from "@/lib/services/calendar.service";
+import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
 import { getProjectEditOptions } from "@/lib/services/project.service";
 import { getProjectStatusStyle } from "@/lib/project-status-style";
 
@@ -29,12 +30,13 @@ function formatDate(value: string) {
 
 export default async function CalendarPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const [dashboard, editOptions] = await Promise.all([
+  const [dashboard, editOptions, currentPerson] = await Promise.all([
     getCalendarDashboard({
       year: params?.year,
       month: params?.month,
     }),
     getProjectEditOptions(),
+    getCurrentPerson(),
   ]);
 
   const peopleOptions = editOptions.people.map((person) => ({
@@ -59,6 +61,7 @@ export default async function CalendarPage({ searchParams }: PageProps) {
         peopleOptions={peopleOptions}
         statusOptions={statusOptions}
         defaultStatusId={prospectStatus?.id ?? ""}
+        canCreateProjects={currentPerson?.rol !== "lector"}
       />
 
       <main className="p-8">
