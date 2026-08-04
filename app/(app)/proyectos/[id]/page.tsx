@@ -31,12 +31,19 @@ type ProjectPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams?: Promise<{
+    gael?: string | string[];
+  }>;
 };
 
 export default async function ProjectPage({
   params,
+  searchParams,
 }: ProjectPageProps) {
   const { id } = await params;
+  const query = await searchParams;
+  const gaelNoticeCode =
+    typeof query?.gael === "string" ? query.gael : null;
 
   const [project, editOptions, currentPerson] = await Promise.all([
     getProjectById(id),
@@ -160,6 +167,14 @@ export default async function ProjectPage({
       value: person.id,
       label: person.nombre,
     }));
+  const gaelNotice =
+    gaelNoticeCode === "budget-imported"
+      ? "Presupuesto importado desde Gael."
+      : gaelNoticeCode === "access-added"
+        ? "Persona autorizada para ver presupuestos Gael."
+        : gaelNoticeCode === "access-removed"
+          ? "Acceso a presupuestos Gael quitado."
+          : null;
 
   return (
     <>
@@ -219,6 +234,7 @@ export default async function ProjectPage({
               onRemoveAccess={removeBudgetAccess}
               canImport={canImportGaelBudgets}
               canManageAccess={canManageGaelAccess}
+              notice={gaelNotice}
             />
           ) : null}
         </div>

@@ -1157,6 +1157,7 @@ export async function importGaelBudget(
   );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
+  redirect(`/proyectos/${cleanProjectId}?gael=budget-imported`);
 }
 
 async function assertCanManageGaelBudgetAccess(projectId: string) {
@@ -1246,6 +1247,7 @@ export async function addGaelBudgetAccess(
   }
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
+  redirect(`/proyectos/${cleanProjectId}?gael=access-added`);
 }
 
 export async function removeGaelBudgetAccess(
@@ -1269,6 +1271,7 @@ export async function removeGaelBudgetAccess(
   }
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
+  redirect(`/proyectos/${cleanProjectId}?gael=access-removed`);
 }
 
 export async function deleteProject(projectId: string) {

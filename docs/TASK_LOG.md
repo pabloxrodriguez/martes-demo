@@ -31,6 +31,11 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 1.0.3 — 4 agosto 2026, 14:57
+
+- Se agregaron mensajes de confirmación en la ficha al importar presupuestos
+  Gael, autorizar personas o quitar accesos.
+
 ## Publicación 1.0.2 — 4 agosto 2026, 14:49
 
 - Se endurecieron las políticas RLS de Presupuestos Gael en Supabase.
