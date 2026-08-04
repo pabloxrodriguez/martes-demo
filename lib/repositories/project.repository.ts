@@ -346,6 +346,16 @@ export async function getProjectById(id: string) {
           orden
         )
       ),
+      proyecto_presupuesto_gael_accesos (
+        id,
+        persona_id,
+        personas!proyecto_presupuesto_gael_accesos_persona_id_fkey (
+          id,
+          nombre,
+          rol,
+          activo
+        )
+      ),
       tareas (
         id,
         plantilla_tarea_id,
@@ -401,6 +411,14 @@ export async function getProjectById(id: string) {
           (a, b) =>
             a.gael_presupuesto_id - b.gael_presupuesto_id
         ) ?? [],
+
+    proyecto_presupuesto_gael_accesos:
+      data!.proyecto_presupuesto_gael_accesos
+        ?.map((access) => ({
+          ...access,
+          personas: one(access.personas),
+        }))
+        .filter((access) => access.personas?.activo) ?? [],
 
     tareas:
       data!.tareas

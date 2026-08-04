@@ -31,6 +31,18 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 1.0.1 — 4 agosto 2026, 14:34
+
+- Se corrigió el guardado de personas y roles en Administración usando un
+  formulario real por persona.
+- Se agregó control de acceso por proyecto para Presupuestos Gael.
+- Los presupuestos Gael quedan ocultos para usuarios `lector`.
+- El responsable del proyecto, Dirección y Admin pueden administrar quién ve e
+  importa presupuestos Gael.
+- La transferencia de responsable queda limitada al responsable actual,
+  Dirección o Admin; si el proyecto no tiene responsable, cualquier editor
+  puede asignarlo.
+
 ## Publicación 1.0 — 4 agosto 2026, 13:58
 
 - Se integró Gael en la ficha de proyecto para importar presupuestos de gasto

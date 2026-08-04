@@ -6,6 +6,11 @@ import { redirect } from "next/navigation";
 import {
   requireEditablePerson,
 } from "@/lib/auth/requireActivePerson";
+import {
+  canManageProjectGaelBudgetAccess,
+  canTransferProjectResponsible,
+  canImportProjectGaelBudgets,
+} from "@/lib/auth/projectGaelAccess";
 import { fetchGaelBudget } from "@/lib/integrations/gael/budgets";
 import { createClient } from "@/lib/supabase/server";
 import type { Json, TableUpdate } from "@/types/database";
@@ -204,6 +209,32 @@ async function updateProjectFieldOrThrow(
       cleanValue,
       field === "estado_id" ? "El estado" : "El responsable"
     );
+  }
+
+  if (field === "responsable_id") {
+    const { data: currentProject, error: projectError } =
+      await supabase
+        .from("proyectos")
+        .select("responsable_id")
+        .eq("id", cleanProjectId)
+        .single();
+
+    if (projectError) {
+      throw new Error(
+        `No se pudo verificar el responsable actual: ${projectError.message}`
+      );
+    }
+
+    if (
+      !canTransferProjectResponsible({
+        person,
+        currentResponsibleId: currentProject.responsable_id,
+      })
+    ) {
+      throw new Error(
+        "Solo el responsable actual, Dirección o Admin pueden transferir la responsabilidad del proyecto."
+      );
+    }
   }
 
   if (field === "tipo_id" || field === "cliente_id") {
@@ -1014,7 +1045,13 @@ export async function importGaelBudget(
 
   const { data: project, error: projectError } = await supabase
     .from("proyectos")
-    .select("id")
+    .select(`
+      id,
+      responsable_id,
+      proyecto_presupuesto_gael_accesos (
+        persona_id
+      )
+    `)
     .eq("id", cleanProjectId)
     .maybeSingle();
 
@@ -1026,6 +1063,21 @@ export async function importGaelBudget(
 
   if (!project) {
     throw new Error("No se encontró el proyecto.");
+  }
+
+  if (
+    !canImportProjectGaelBudgets({
+      person,
+      projectResponsibleId: project.responsable_id,
+      explicitAccessPersonIds:
+        project.proyecto_presupuesto_gael_accesos?.map(
+          (access) => access.persona_id
+        ) ?? [],
+    })
+  ) {
+    throw new Error(
+      "No tienes acceso para importar presupuestos Gael en este proyecto."
+    );
   }
 
   const { data: budget, error: budgetError } = await supabase
@@ -1103,6 +1155,118 @@ export async function importGaelBudget(
     now,
     person.id
   );
+
+  revalidatePath(`/proyectos/${cleanProjectId}`);
+}
+
+async function assertCanManageGaelBudgetAccess(projectId: string) {
+  const { supabase, person } = await requireEditablePerson();
+  const cleanProjectId = requireUuid(projectId, "El proyecto");
+
+  const { data: project, error } = await supabase
+    .from("proyectos")
+    .select("id, responsable_id")
+    .eq("id", cleanProjectId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      `No se pudo verificar el proyecto: ${error.message}`
+    );
+  }
+
+  if (!project) {
+    throw new Error("No se encontró el proyecto.");
+  }
+
+  if (
+    !canManageProjectGaelBudgetAccess({
+      person,
+      projectResponsibleId: project.responsable_id,
+    })
+  ) {
+    throw new Error(
+      "Solo el responsable del proyecto, Dirección o Admin pueden administrar accesos Gael."
+    );
+  }
+
+  return {
+    supabase,
+    person,
+    cleanProjectId,
+  };
+}
+
+export async function addGaelBudgetAccess(
+  projectId: string,
+  formData: FormData
+) {
+  const { supabase, person, cleanProjectId } =
+    await assertCanManageGaelBudgetAccess(projectId);
+  const targetPersonId = requireUuid(
+    formData.get("persona_id"),
+    "La persona"
+  );
+
+  const { data: targetPerson, error: personError } = await supabase
+    .from("personas")
+    .select("id, activo, rol")
+    .eq("id", targetPersonId)
+    .maybeSingle();
+
+  if (personError) {
+    throw new Error(
+      `No se pudo verificar la persona: ${personError.message}`
+    );
+  }
+
+  if (!targetPerson?.activo || targetPerson.rol === "lector") {
+    throw new Error(
+      "Solo puedes autorizar personas activas que no sean lectoras."
+    );
+  }
+
+  const { error } = await supabase
+    .from("proyecto_presupuesto_gael_accesos")
+    .upsert(
+      {
+        proyecto_id: cleanProjectId,
+        persona_id: targetPersonId,
+        creado_por_id: person.id,
+      },
+      {
+        onConflict: "proyecto_id,persona_id",
+      }
+    );
+
+  if (error) {
+    throw new Error(
+      `No se pudo autorizar la persona: ${error.message}`
+    );
+  }
+
+  revalidatePath(`/proyectos/${cleanProjectId}`);
+}
+
+export async function removeGaelBudgetAccess(
+  projectId: string,
+  accessId: string
+) {
+  const { supabase, cleanProjectId } =
+    await assertCanManageGaelBudgetAccess(projectId);
+  const cleanAccessId = requireUuid(accessId, "El acceso");
+
+  const { error } = await supabase
+    .from("proyecto_presupuesto_gael_accesos")
+    .delete()
+    .eq("id", cleanAccessId)
+    .eq("proyecto_id", cleanProjectId);
+
+  if (error) {
+    throw new Error(
+      `No se pudo quitar el acceso: ${error.message}`
+    );
+  }
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
 }

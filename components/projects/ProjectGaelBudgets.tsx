@@ -22,8 +22,22 @@ type GaelBudget = {
 
 type ProjectGaelBudgetsProps = {
   budgets: GaelBudget[];
+  accessList: Array<{
+    id: string;
+    persona_id: string;
+    personas: {
+      nombre: string;
+    } | null;
+  }>;
+  peopleOptions: Array<{
+    value: string;
+    label: string;
+  }>;
   onImport: (formData: FormData) => Promise<void>;
+  onAddAccess: (formData: FormData) => Promise<void>;
+  onRemoveAccess: (accessId: string) => Promise<void>;
   canImport?: boolean;
+  canManageAccess?: boolean;
 };
 
 const currencyFormatter = new Intl.NumberFormat("es-CL", {
@@ -65,9 +79,21 @@ function formatDateTime(value: string) {
 
 export function ProjectGaelBudgets({
   budgets,
+  accessList,
+  peopleOptions,
   onImport,
+  onAddAccess,
+  onRemoveAccess,
   canImport = true,
+  canManageAccess = false,
 }: ProjectGaelBudgetsProps) {
+  const authorizedPersonIds = new Set(
+    accessList.map((access) => access.persona_id)
+  );
+  const availablePeopleOptions = peopleOptions.filter(
+    (person) => !authorizedPersonIds.has(person.value)
+  );
+
   return (
     <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -101,6 +127,73 @@ export function ProjectGaelBudgets({
           </form>
         ) : null}
       </div>
+
+      {canManageAccess ? (
+        <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+                Acceso a presupuestos
+              </h3>
+              <p className="mt-1 text-sm text-zinc-500">
+                Autoriza a personas del equipo para ver e importar presupuestos
+                Gael en este proyecto.
+              </p>
+            </div>
+
+            {availablePeopleOptions.length ? (
+              <form
+                action={onAddAccess}
+                className="flex flex-col gap-3 sm:flex-row"
+              >
+                <select
+                  name="persona_id"
+                  className="h-10 min-w-60 rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500"
+                  required
+                >
+                  <option value="">Seleccionar persona</option>
+                  {availablePeopleOptions.map((person) => (
+                    <option key={person.value} value={person.value}>
+                      {person.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="submit"
+                  className="h-10 rounded-lg bg-white px-4 text-sm font-medium text-zinc-950 ring-1 ring-zinc-300 transition hover:bg-zinc-100"
+                >
+                  Autorizar
+                </button>
+              </form>
+            ) : null}
+          </div>
+
+          {accessList.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {accessList.map((access) => (
+                <form
+                  key={access.id}
+                  action={onRemoveAccess.bind(null, access.id)}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm text-zinc-700 ring-1 ring-zinc-200"
+                >
+                  <span>{access.personas?.nombre ?? "Persona"}</span>
+                  <button
+                    type="submit"
+                    className="text-zinc-400 transition hover:text-red-600"
+                    title="Quitar acceso"
+                  >
+                    ×
+                  </button>
+                </form>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-zinc-400">
+              No hay personas autorizadas adicionalmente.
+            </p>
+          )}
+        </div>
+      ) : null}
 
       {budgets.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-500">

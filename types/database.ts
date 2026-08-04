@@ -108,6 +108,14 @@ type ProyectoPresupuestoGaelLineasRow = {
   raw: Json | null;
 };
 
+type ProyectoPresupuestoGaelAccesosRow = {
+  id: string;
+  proyecto_id: string;
+  persona_id: string;
+  creado_por_id: string | null;
+  fecha_creacion: string;
+};
+
 type ProyectosRow = {
   id: string;
   legacy_id: string | null;
@@ -285,6 +293,39 @@ export type Database = {
             columns: ["presupuesto_id"];
             isOneToOne: false;
             referencedRelation: "proyecto_presupuestos_gael";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      proyecto_presupuesto_gael_accesos: TableDefinition<
+        ProyectoPresupuestoGaelAccesosRow,
+        {
+          id?: string;
+          proyecto_id: string;
+          persona_id: string;
+          creado_por_id?: string | null;
+          fecha_creacion?: string;
+        },
+        [
+          {
+            foreignKeyName: "proyecto_presupuesto_gael_accesos_proyecto_id_fkey";
+            columns: ["proyecto_id"];
+            isOneToOne: false;
+            referencedRelation: "proyectos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyecto_presupuesto_gael_accesos_persona_id_fkey";
+            columns: ["persona_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyecto_presupuesto_gael_accesos_creado_por_id_fkey";
+            columns: ["creado_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
             referencedColumns: ["id"];
           },
         ]

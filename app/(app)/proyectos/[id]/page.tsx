@@ -4,17 +4,24 @@ import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";
 import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
 import {
+  canImportProjectGaelBudgets,
+  canManageProjectGaelBudgetAccess,
+  canViewProjectGaelBudgets,
+} from "@/lib/auth/projectGaelAccess";
+import {
   getProjectById,
   getProjectEditOptions,
 } from "@/lib/services/project.service";
 import {
   addProjectVenue,
+  addGaelBudgetAccess,
   createProjectTask,
   createProjectVenue,
   deleteProject,
   deleteProjectTask,
   importGaelBudget,
   removeProjectVenue,
+  removeGaelBudgetAccess,
   toggleTaskCompleted,
   updateProjectField,
   updateTaskField,
@@ -127,6 +134,32 @@ export default async function ProjectPage({
   const deleteTask = deleteProjectTask.bind(null, project.id);
   const deleteCurrentProject = deleteProject.bind(null, project.id);
   const importBudget = importGaelBudget.bind(null, project.id);
+  const addBudgetAccess = addGaelBudgetAccess.bind(null, project.id);
+  const removeBudgetAccess = removeGaelBudgetAccess.bind(null, project.id);
+  const gaelAccessPersonIds =
+    project.proyecto_presupuesto_gael_accesos?.map(
+      (access) => access.persona_id
+    ) ?? [];
+  const canViewGaelBudgets = canViewProjectGaelBudgets({
+    person: currentPerson,
+    projectResponsibleId: project.responsable?.id ?? null,
+    explicitAccessPersonIds: gaelAccessPersonIds,
+  });
+  const canImportGaelBudgets = canImportProjectGaelBudgets({
+    person: currentPerson,
+    projectResponsibleId: project.responsable?.id ?? null,
+    explicitAccessPersonIds: gaelAccessPersonIds,
+  });
+  const canManageGaelAccess = canManageProjectGaelBudgetAccess({
+    person: currentPerson,
+    projectResponsibleId: project.responsable?.id ?? null,
+  });
+  const gaelAccessPeopleOptions = editOptions.people
+    .filter((person) => person.id !== project.responsable?.id)
+    .map((person) => ({
+      value: person.id,
+      label: person.nombre,
+    }));
 
   return (
     <>
@@ -176,11 +209,18 @@ export default async function ProjectPage({
             onDeleteProject={deleteCurrentProject}
           />
 
-          <ProjectGaelBudgets
-            budgets={project.proyecto_presupuestos_gael ?? []}
-            onImport={importBudget}
-            canImport={currentPerson?.rol !== "lector"}
-          />
+          {canViewGaelBudgets ? (
+            <ProjectGaelBudgets
+              budgets={project.proyecto_presupuestos_gael ?? []}
+              accessList={project.proyecto_presupuesto_gael_accesos ?? []}
+              peopleOptions={gaelAccessPeopleOptions}
+              onImport={importBudget}
+              onAddAccess={addBudgetAccess}
+              onRemoveAccess={removeBudgetAccess}
+              canImport={canImportGaelBudgets}
+              canManageAccess={canManageGaelAccess}
+            />
+          ) : null}
         </div>
       </main>
     </>
