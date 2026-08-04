@@ -31,6 +31,14 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 1.0.2 — 4 agosto 2026, 14:49
+
+- Se endurecieron las políticas RLS de Presupuestos Gael en Supabase.
+- Los presupuestos, líneas y accesos Gael ya no son legibles por cualquier
+  usuario activo.
+- La lectura queda limitada a Admin, Dirección, responsable del proyecto o
+  personas explícitamente autorizadas; `lector` queda siempre excluido.
+
 ## Publicación 1.0.1 — 4 agosto 2026, 14:34
 
 - Se corrigió el guardado de personas y roles en Administración usando un
