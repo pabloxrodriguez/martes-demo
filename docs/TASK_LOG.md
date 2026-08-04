@@ -1,6 +1,6 @@
 # MARTES — Registro de trabajo
 
-Última actualización: 2026-07-25
+Última actualización: 2026-08-04
 
 Este documento es la fuente única para organizar, ejecutar y verificar el
 trabajo pendiente de MARTES.
@@ -30,6 +30,20 @@ Una tarea solo pasa a **Completada** cuando:
 7. Se comprueba el resultado en producción.
 
 ## Trabajo actual
+
+## Publicación 1.0 — 4 agosto 2026, 13:58
+
+- Se integró Gael en la ficha de proyecto para importar presupuestos de gasto
+  por número.
+- La ficha muestra los presupuestos importados en un contenedor final de solo
+  lectura, con Categoría, Concepto, Cant, Veces, Unitario, Total(P) y
+  Operación.
+- Martes guarda una copia de consulta de los presupuestos; la ejecución y la
+  edición siguen viviendo en Gael.
+- Los usuarios lectores pueden ver presupuestos importados, pero no pueden
+  importar nuevos.
+- Se agregaron las variables de entorno `GAEL_API_BASE_URL` y `GAEL_API_KEY`
+  para producción.
 
 ## Publicación 0.10.1 — 3 agosto 2026, 15:18
 

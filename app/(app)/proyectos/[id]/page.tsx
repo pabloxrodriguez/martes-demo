@@ -1,6 +1,8 @@
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
+import { ProjectGaelBudgets } from "@/components/projects/ProjectGaelBudgets";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";
+import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
 import {
   getProjectById,
   getProjectEditOptions,
@@ -11,6 +13,7 @@ import {
   createProjectVenue,
   deleteProject,
   deleteProjectTask,
+  importGaelBudget,
   removeProjectVenue,
   toggleTaskCompleted,
   updateProjectField,
@@ -28,8 +31,11 @@ export default async function ProjectPage({
 }: ProjectPageProps) {
   const { id } = await params;
 
-  const project = await getProjectById(id);
-  const editOptions = await getProjectEditOptions();
+  const [project, editOptions, currentPerson] = await Promise.all([
+    getProjectById(id),
+    getProjectEditOptions(),
+    getCurrentPerson(),
+  ]);
 
   const priorityOptions = [
     { value: "1", label: "1" },
@@ -120,6 +126,7 @@ export default async function ProjectPage({
   );
   const deleteTask = deleteProjectTask.bind(null, project.id);
   const deleteCurrentProject = deleteProject.bind(null, project.id);
+  const importBudget = importGaelBudget.bind(null, project.id);
 
   return (
     <>
@@ -157,19 +164,23 @@ export default async function ProjectPage({
           />
 
           <ProjectDetails
-  publicoEsperado={project.publico_esperado}
-  notas={project.notas}
-  venues={project.proyecto_venues ?? []}
-  venueOptions={venueOptions}
-  onSaveAudience={saveField("publico_esperado")}
-  onSaveNotes={saveField("notas")}
-  onSaveVenue={saveVenue}
-  onCreateVenue={createVenue}
-  onRemoveVenue={removeVenue}
-  onDeleteProject={deleteCurrentProject}
-/>
+            publicoEsperado={project.publico_esperado}
+            notas={project.notas}
+            venues={project.proyecto_venues ?? []}
+            venueOptions={venueOptions}
+            onSaveAudience={saveField("publico_esperado")}
+            onSaveNotes={saveField("notas")}
+            onSaveVenue={saveVenue}
+            onCreateVenue={createVenue}
+            onRemoveVenue={removeVenue}
+            onDeleteProject={deleteCurrentProject}
+          />
 
-
+          <ProjectGaelBudgets
+            budgets={project.proyecto_presupuestos_gael ?? []}
+            onImport={importBudget}
+            canImport={currentPerson?.rol !== "lector"}
+          />
         </div>
       </main>
     </>

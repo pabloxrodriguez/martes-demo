@@ -76,6 +76,38 @@ type ProyectoVenuesRow = {
   fecha_creacion: string;
 };
 
+type ProyectoPresupuestosGaelRow = {
+  id: string;
+  proyecto_id: string;
+  gael_presupuesto_id: number;
+  nombre: string | null;
+  estado: string | null;
+  empresa_nombre: string | null;
+  ucontrol_nombre: string | null;
+  valor_proyectado: number | null;
+  fecha_creacion_gael: string | null;
+  fecha_importacion: string;
+  fecha_actualizacion: string;
+  creado_por_id: string | null;
+  actualizado_por_id: string | null;
+  raw: Json | null;
+};
+
+type ProyectoPresupuestoGaelLineasRow = {
+  id: string;
+  presupuesto_id: string;
+  gael_linea_id: number;
+  categoria: string | null;
+  concepto: string | null;
+  cantidad: number | null;
+  veces: number | null;
+  unitario: number | null;
+  total_proyectado: number | null;
+  operacion: string | null;
+  orden: number;
+  raw: Json | null;
+};
+
 type ProyectosRow = {
   id: string;
   legacy_id: string | null;
@@ -227,6 +259,74 @@ export type Database = {
             columns: ["venue_id"];
             isOneToOne: false;
             referencedRelation: "venues";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      proyecto_presupuesto_gael_lineas: TableDefinition<
+        ProyectoPresupuestoGaelLineasRow,
+        {
+          id?: string;
+          presupuesto_id: string;
+          gael_linea_id: number;
+          categoria?: string | null;
+          concepto?: string | null;
+          cantidad?: number | null;
+          veces?: number | null;
+          unitario?: number | null;
+          total_proyectado?: number | null;
+          operacion?: string | null;
+          orden?: number;
+          raw?: Json | null;
+        },
+        [
+          {
+            foreignKeyName: "proyecto_presupuesto_gael_lineas_presupuesto_id_fkey";
+            columns: ["presupuesto_id"];
+            isOneToOne: false;
+            referencedRelation: "proyecto_presupuestos_gael";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      proyecto_presupuestos_gael: TableDefinition<
+        ProyectoPresupuestosGaelRow,
+        {
+          id?: string;
+          proyecto_id: string;
+          gael_presupuesto_id: number;
+          nombre?: string | null;
+          estado?: string | null;
+          empresa_nombre?: string | null;
+          ucontrol_nombre?: string | null;
+          valor_proyectado?: number | null;
+          fecha_creacion_gael?: string | null;
+          fecha_importacion?: string;
+          fecha_actualizacion?: string;
+          creado_por_id?: string | null;
+          actualizado_por_id?: string | null;
+          raw?: Json | null;
+        },
+        [
+          {
+            foreignKeyName: "proyecto_presupuestos_gael_proyecto_id_fkey";
+            columns: ["proyecto_id"];
+            isOneToOne: false;
+            referencedRelation: "proyectos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyecto_presupuestos_gael_creado_por_id_fkey";
+            columns: ["creado_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyecto_presupuestos_gael_actualizado_por_id_fkey";
+            columns: ["actualizado_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
             referencedColumns: ["id"];
           },
         ]

@@ -6,8 +6,9 @@ import { redirect } from "next/navigation";
 import {
   requireEditablePerson,
 } from "@/lib/auth/requireActivePerson";
+import { fetchGaelBudget } from "@/lib/integrations/gael/budgets";
 import { createClient } from "@/lib/supabase/server";
-import type { TableUpdate } from "@/types/database";
+import type { Json, TableUpdate } from "@/types/database";
 
 const allowedFields = [
   "nombre",
@@ -125,6 +126,21 @@ function optionalHttpUrl(value: unknown) {
   }
 
   return cleanValue;
+}
+
+function requirePositiveInteger(value: unknown, label: string) {
+  const cleanValue = requireString(value, label);
+  const parsedValue = Number(cleanValue);
+
+  if (
+    !cleanValue ||
+    !Number.isInteger(parsedValue) ||
+    parsedValue <= 0
+  ) {
+    throw new Error(`${label} debe ser un número válido.`);
+  }
+
+  return parsedValue;
 }
 
 async function updateProjectTimestamp(
@@ -980,6 +996,115 @@ export async function deleteProjectTask(
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
+}
+
+export async function importGaelBudget(
+  projectId: string,
+  formData: FormData
+) {
+  const { supabase, person } = await requireEditablePerson();
+  const cleanProjectId = requireUuid(projectId, "El proyecto");
+  const budgetNumber = requirePositiveInteger(
+    formData.get("gael_presupuesto_id"),
+    "El presupuesto Gael"
+  );
+
+  const importedBudget = await fetchGaelBudget(budgetNumber);
+  const now = new Date().toISOString();
+
+  const { data: project, error: projectError } = await supabase
+    .from("proyectos")
+    .select("id")
+    .eq("id", cleanProjectId)
+    .maybeSingle();
+
+  if (projectError) {
+    throw new Error(
+      `No se pudo verificar el proyecto: ${projectError.message}`
+    );
+  }
+
+  if (!project) {
+    throw new Error("No se encontró el proyecto.");
+  }
+
+  const { data: budget, error: budgetError } = await supabase
+    .from("proyecto_presupuestos_gael")
+    .upsert(
+      {
+        proyecto_id: cleanProjectId,
+        gael_presupuesto_id:
+          importedBudget.header.gael_presupuesto_id,
+        nombre: importedBudget.header.nombre,
+        estado: importedBudget.header.estado,
+        empresa_nombre: importedBudget.header.empresa_nombre,
+        ucontrol_nombre: importedBudget.header.ucontrol_nombre,
+        valor_proyectado: importedBudget.header.valor_proyectado,
+        fecha_creacion_gael:
+          importedBudget.header.fecha_creacion_gael,
+        fecha_actualizacion: now,
+        actualizado_por_id: person.id,
+        creado_por_id: person.id,
+        raw: importedBudget.header.raw as Json,
+      },
+      {
+        onConflict: "proyecto_id,gael_presupuesto_id",
+      }
+    )
+    .select("id")
+    .single();
+
+  if (budgetError) {
+    throw new Error(
+      `No se pudo guardar el presupuesto Gael: ${budgetError.message}`
+    );
+  }
+
+  const { error: deleteLinesError } = await supabase
+    .from("proyecto_presupuesto_gael_lineas")
+    .delete()
+    .eq("presupuesto_id", budget.id);
+
+  if (deleteLinesError) {
+    throw new Error(
+      `No se pudieron actualizar las líneas Gael: ${deleteLinesError.message}`
+    );
+  }
+
+  if (importedBudget.lines.length > 0) {
+    const { error: insertLinesError } = await supabase
+      .from("proyecto_presupuesto_gael_lineas")
+      .insert(
+        importedBudget.lines.map((line) => ({
+          presupuesto_id: budget.id,
+          gael_linea_id: line.gael_linea_id,
+          categoria: line.categoria,
+          concepto: line.concepto,
+          cantidad: line.cantidad,
+          veces: line.veces,
+          unitario: line.unitario,
+          total_proyectado: line.total_proyectado,
+          operacion: line.operacion,
+          orden: line.orden,
+          raw: line.raw as Json,
+        }))
+      );
+
+    if (insertLinesError) {
+      throw new Error(
+        `No se pudieron guardar las líneas Gael: ${insertLinesError.message}`
+      );
+    }
+  }
+
+  await updateProjectTimestamp(
+    supabase,
+    cleanProjectId,
+    now,
+    person.id
+  );
+
+  revalidatePath(`/proyectos/${cleanProjectId}`);
 }
 
 export async function deleteProject(projectId: string) {

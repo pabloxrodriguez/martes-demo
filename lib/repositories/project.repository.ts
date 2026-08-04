@@ -324,6 +324,28 @@ export async function getProjectById(id: string) {
           ciudad
         )
       ),
+      proyecto_presupuestos_gael (
+        id,
+        gael_presupuesto_id,
+        nombre,
+        estado,
+        empresa_nombre,
+        ucontrol_nombre,
+        valor_proyectado,
+        fecha_actualizacion,
+        proyecto_presupuesto_gael_lineas (
+          id,
+          gael_linea_id,
+          categoria,
+          concepto,
+          cantidad,
+          veces,
+          unitario,
+          total_proyectado,
+          operacion,
+          orden
+        )
+      ),
       tareas (
         id,
         plantilla_tarea_id,
@@ -365,6 +387,20 @@ export async function getProjectById(id: string) {
         ...projectVenue,
         venues: one(projectVenue.venues),
       })) ?? [],
+
+    proyecto_presupuestos_gael:
+      data!.proyecto_presupuestos_gael
+        ?.map((budget) => ({
+          ...budget,
+          proyecto_presupuesto_gael_lineas:
+            budget.proyecto_presupuesto_gael_lineas?.sort(
+              (a, b) => a.orden - b.orden
+            ) ?? [],
+        }))
+        .sort(
+          (a, b) =>
+            a.gael_presupuesto_id - b.gael_presupuesto_id
+        ) ?? [],
 
     tareas:
       data!.tareas
