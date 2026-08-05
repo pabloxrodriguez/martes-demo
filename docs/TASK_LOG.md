@@ -31,6 +31,14 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 1.0.4 — 5 agosto 2026, 10:08
+
+- Se agregó la opción de actualizar un presupuesto importado desde Gael desde
+  la misma ficha de proyecto.
+- Se agregó la opción de quitar un presupuesto Gael de un proyecto.
+- Se reemplazó el error de servidor por un mensaje amable cuando el número de
+  presupuesto no existe o Gael no lo puede entregar.
+
 ## Publicación 1.0.3 — 4 agosto 2026, 14:57
 
 - Se agregaron mensajes de confirmación en la ficha al importar presupuestos

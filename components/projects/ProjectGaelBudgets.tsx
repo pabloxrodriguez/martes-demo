@@ -34,11 +34,14 @@ type ProjectGaelBudgetsProps = {
     label: string;
   }>;
   onImport: (formData: FormData) => Promise<void>;
+  onRefresh: (budgetNumber: number) => Promise<void>;
+  onRemoveBudget: (budgetId: string) => Promise<void>;
   onAddAccess: (formData: FormData) => Promise<void>;
   onRemoveAccess: (accessId: string) => Promise<void>;
   canImport?: boolean;
   canManageAccess?: boolean;
   notice?: string | null;
+  noticeTone?: "success" | "error";
 };
 
 const currencyFormatter = new Intl.NumberFormat("es-CL", {
@@ -83,11 +86,14 @@ export function ProjectGaelBudgets({
   accessList,
   peopleOptions,
   onImport,
+  onRefresh,
+  onRemoveBudget,
   onAddAccess,
   onRemoveAccess,
   canImport = true,
   canManageAccess = false,
   notice = null,
+  noticeTone = "success",
 }: ProjectGaelBudgetsProps) {
   const authorizedPersonIds = new Set(
     accessList.map((access) => access.persona_id)
@@ -131,7 +137,13 @@ export function ProjectGaelBudgets({
       </div>
 
       {notice ? (
-        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+        <div
+          className={`mt-5 rounded-xl border px-4 py-3 text-sm font-medium ${
+            noticeTone === "error"
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-800"
+          }`}
+        >
           {notice}
         </div>
       ) : null}
@@ -238,6 +250,32 @@ export function ProjectGaelBudgets({
                 <div className="text-sm font-semibold text-zinc-950">
                   Total(P): {formatCurrency(budget.valor_proyectado)}
                 </div>
+
+                {canImport ? (
+                  <div className="flex flex-wrap gap-2">
+                    <form
+                      action={onRefresh.bind(
+                        null,
+                        budget.gael_presupuesto_id
+                      )}
+                    >
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-white px-3 py-2 text-sm font-medium text-zinc-950 ring-1 ring-zinc-300 transition hover:bg-zinc-100"
+                      >
+                        Actualizar desde Gael
+                      </button>
+                    </form>
+                    <form action={onRemoveBudget.bind(null, budget.id)}>
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-white px-3 py-2 text-sm font-medium text-red-600 ring-1 ring-red-200 transition hover:bg-red-50"
+                      >
+                        Quitar
+                      </button>
+                    </form>
+                  </div>
+                ) : null}
               </div>
 
               <div className="overflow-x-auto">

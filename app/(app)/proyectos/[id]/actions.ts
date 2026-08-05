@@ -148,6 +148,16 @@ function requirePositiveInteger(value: unknown, label: string) {
   return parsedValue;
 }
 
+function gaelStatusHref(projectId: string, status: string) {
+  return `/proyectos/${projectId}?gael=${encodeURIComponent(status)}`;
+}
+
+function gaelErrorHref(projectId: string, message: string) {
+  return `/proyectos/${projectId}?gael=error&gael_error=${encodeURIComponent(
+    message
+  )}`;
+}
+
 async function updateProjectTimestamp(
   supabase: ServerSupabaseClient,
   projectId: string,
@@ -1033,12 +1043,55 @@ export async function importGaelBudget(
   projectId: string,
   formData: FormData
 ) {
-  const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
   const budgetNumber = requirePositiveInteger(
     formData.get("gael_presupuesto_id"),
     "El presupuesto Gael"
   );
+
+  try {
+    await upsertGaelBudgetForProject(cleanProjectId, budgetNumber);
+  } catch (error) {
+    redirect(
+      gaelErrorHref(
+        cleanProjectId,
+        error instanceof Error
+          ? error.message
+          : "No se pudo importar el presupuesto Gael."
+      )
+    );
+  }
+
+  redirect(gaelStatusHref(cleanProjectId, "budget-imported"));
+}
+
+export async function refreshGaelBudget(
+  projectId: string,
+  budgetNumber: number
+) {
+  const cleanProjectId = requireUuid(projectId, "El proyecto");
+
+  try {
+    await upsertGaelBudgetForProject(cleanProjectId, budgetNumber);
+  } catch (error) {
+    redirect(
+      gaelErrorHref(
+        cleanProjectId,
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar el presupuesto Gael."
+      )
+    );
+  }
+
+  redirect(gaelStatusHref(cleanProjectId, "budget-refreshed"));
+}
+
+async function upsertGaelBudgetForProject(
+  cleanProjectId: string,
+  budgetNumber: number
+) {
+  const { supabase, person } = await requireEditablePerson();
 
   const importedBudget = await fetchGaelBudget(budgetNumber);
   const now = new Date().toISOString();
@@ -1157,7 +1210,70 @@ export async function importGaelBudget(
   );
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
-  redirect(`/proyectos/${cleanProjectId}?gael=budget-imported`);
+}
+
+export async function removeGaelBudget(
+  projectId: string,
+  budgetId: string
+) {
+  const { supabase, person } = await requireEditablePerson();
+  const cleanProjectId = requireUuid(projectId, "El proyecto");
+  const cleanBudgetId = requireUuid(budgetId, "El presupuesto");
+
+  const { data: project, error: projectError } = await supabase
+    .from("proyectos")
+    .select(`
+      id,
+      responsable_id,
+      proyecto_presupuesto_gael_accesos (
+        persona_id
+      )
+    `)
+    .eq("id", cleanProjectId)
+    .maybeSingle();
+
+  if (projectError) {
+    throw new Error(
+      `No se pudo verificar el proyecto: ${projectError.message}`
+    );
+  }
+
+  if (
+    !project ||
+    !canImportProjectGaelBudgets({
+      person,
+      projectResponsibleId: project.responsable_id,
+      explicitAccessPersonIds:
+        project.proyecto_presupuesto_gael_accesos?.map(
+          (access) => access.persona_id
+        ) ?? [],
+    })
+  ) {
+    redirect(
+      gaelErrorHref(
+        cleanProjectId,
+        "No tienes acceso para quitar presupuestos Gael en este proyecto."
+      )
+    );
+  }
+
+  const { error } = await supabase
+    .from("proyecto_presupuestos_gael")
+    .delete()
+    .eq("id", cleanBudgetId)
+    .eq("proyecto_id", cleanProjectId);
+
+  if (error) {
+    redirect(
+      gaelErrorHref(
+        cleanProjectId,
+        `No se pudo quitar el presupuesto Gael: ${error.message}`
+      )
+    );
+  }
+
+  revalidatePath(`/proyectos/${cleanProjectId}`);
+  redirect(gaelStatusHref(cleanProjectId, "budget-removed"));
 }
 
 async function assertCanManageGaelBudgetAccess(projectId: string) {

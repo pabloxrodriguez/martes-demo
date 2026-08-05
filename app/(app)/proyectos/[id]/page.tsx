@@ -20,6 +20,8 @@ import {
   deleteProject,
   deleteProjectTask,
   importGaelBudget,
+  refreshGaelBudget,
+  removeGaelBudget,
   removeProjectVenue,
   removeGaelBudgetAccess,
   toggleTaskCompleted,
@@ -33,6 +35,7 @@ type ProjectPageProps = {
   }>;
   searchParams?: Promise<{
     gael?: string | string[];
+    gael_error?: string | string[];
   }>;
 };
 
@@ -44,6 +47,8 @@ export default async function ProjectPage({
   const query = await searchParams;
   const gaelNoticeCode =
     typeof query?.gael === "string" ? query.gael : null;
+  const gaelErrorMessage =
+    typeof query?.gael_error === "string" ? query.gael_error : null;
 
   const [project, editOptions, currentPerson] = await Promise.all([
     getProjectById(id),
@@ -141,6 +146,8 @@ export default async function ProjectPage({
   const deleteTask = deleteProjectTask.bind(null, project.id);
   const deleteCurrentProject = deleteProject.bind(null, project.id);
   const importBudget = importGaelBudget.bind(null, project.id);
+  const refreshBudget = refreshGaelBudget.bind(null, project.id);
+  const removeBudget = removeGaelBudget.bind(null, project.id);
   const addBudgetAccess = addGaelBudgetAccess.bind(null, project.id);
   const removeBudgetAccess = removeGaelBudgetAccess.bind(null, project.id);
   const gaelAccessPersonIds =
@@ -170,11 +177,18 @@ export default async function ProjectPage({
   const gaelNotice =
     gaelNoticeCode === "budget-imported"
       ? "Presupuesto importado desde Gael."
-      : gaelNoticeCode === "access-added"
-        ? "Persona autorizada para ver presupuestos Gael."
-        : gaelNoticeCode === "access-removed"
-          ? "Acceso a presupuestos Gael quitado."
-          : null;
+      : gaelNoticeCode === "budget-refreshed"
+        ? "Presupuesto actualizado desde Gael."
+        : gaelNoticeCode === "budget-removed"
+          ? "Presupuesto Gael quitado de este proyecto."
+          : gaelNoticeCode === "access-added"
+            ? "Persona autorizada para ver presupuestos Gael."
+            : gaelNoticeCode === "access-removed"
+              ? "Acceso a presupuestos Gael quitado."
+              : gaelNoticeCode === "error"
+                ? gaelErrorMessage ??
+                  "No se pudo completar la acción de Gael."
+                : null;
 
   return (
     <>
@@ -230,11 +244,16 @@ export default async function ProjectPage({
               accessList={project.proyecto_presupuesto_gael_accesos ?? []}
               peopleOptions={gaelAccessPeopleOptions}
               onImport={importBudget}
+              onRefresh={refreshBudget}
+              onRemoveBudget={removeBudget}
               onAddAccess={addBudgetAccess}
               onRemoveAccess={removeBudgetAccess}
               canImport={canImportGaelBudgets}
               canManageAccess={canManageGaelAccess}
               notice={gaelNotice}
+              noticeTone={
+                gaelNoticeCode === "error" ? "error" : "success"
+              }
             />
           ) : null}
         </div>
