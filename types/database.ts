@@ -60,6 +60,18 @@ type PersonasRow = {
   auth_user_id: string | null;
 };
 
+type GoogleConnectionsRow = {
+  id: string;
+  persona_id: string;
+  google_email: string | null;
+  access_token_encrypted: string;
+  refresh_token_encrypted: string | null;
+  scope: string;
+  expires_at: string;
+  connected_at: string;
+  fecha_actualizacion: string;
+};
+
 type PlantillasTareaRow = {
   id: string;
   nombre: string;
@@ -220,6 +232,29 @@ export type Database = {
           fecha_creacion?: string;
           fecha_actualizacion?: string;
         }
+      >;
+      google_connections: TableDefinition<
+        GoogleConnectionsRow,
+        {
+          id?: string;
+          persona_id: string;
+          google_email?: string | null;
+          access_token_encrypted: string;
+          refresh_token_encrypted?: string | null;
+          scope: string;
+          expires_at: string;
+          connected_at?: string;
+          fecha_actualizacion?: string;
+        },
+        [
+          {
+            foreignKeyName: "google_connections_persona_id_fkey";
+            columns: ["persona_id"];
+            isOneToOne: true;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+        ]
       >;
       personas: TableDefinition<
         PersonasRow,

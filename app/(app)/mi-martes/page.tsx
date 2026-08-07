@@ -1,7 +1,14 @@
 import Link from "next/link";
 
 import { MyTasksPanel } from "@/components/my-martes/MyTasksPanel";
+import { PersonalWorkspacePanel } from "@/components/my-martes/PersonalWorkspacePanel";
 import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
+import {
+  getGoogleCalendarSummary,
+  getGoogleDriveSummary,
+  getGoogleGmailSummary,
+} from "@/lib/integrations/google/workspace";
+import { createClient } from "@/lib/supabase/server";
 import {
   getMyActiveProjects,
   getMyOpenTasks,
@@ -91,16 +98,53 @@ function buildActivityText(activity: RecentTaskActivityItem) {
   return `${actor} actualizó ${activity.nombre}`;
 }
 
-export default async function Page() {
+type PageProps = {
+  searchParams?: Promise<{
+    google?: string | string[];
+  }>;
+};
+
+export default async function Page({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const googleNoticeCode =
+    typeof params?.google === "string" ? params.google : null;
   const person = await getCurrentPerson();
   const today = todayAsDateOnly();
+  const supabase = await createClient();
 
-  const [tasks, projects, activity, editOptions] = await Promise.all([
+  const [
+    tasks,
+    projects,
+    activity,
+    editOptions,
+    googleConnectionResult,
+    gmailSummary,
+    calendarSummary,
+    driveSummary,
+  ] = await Promise.all([
     getMyOpenTasks(person!.id),
     getMyActiveProjects(person!.id),
     getRecentTaskActivity(8),
     getProjectEditOptions(),
+    supabase
+      .from("google_connections")
+      .select("google_email, expires_at")
+      .eq("persona_id", person!.id)
+      .maybeSingle(),
+    getGoogleGmailSummary({
+      supabase,
+      personId: person!.id,
+    }),
+    getGoogleCalendarSummary({
+      supabase,
+      personId: person!.id,
+    }),
+    getGoogleDriveSummary({
+      supabase,
+      personId: person!.id,
+    }),
   ]);
+  const googleConnection = googleConnectionResult.data;
 
   const sortedTasks = sortTasksByUrgency(tasks);
   const overdueTasks = tasks.filter(
@@ -144,6 +188,21 @@ export default async function Page() {
     value: status.id,
     label: status.nombre,
   }));
+  const googleNotice =
+    googleNoticeCode === "connected"
+      ? "Google quedó conectado a Mi Martes."
+      : googleNoticeCode === "disconnected"
+        ? "Google fue desconectado de Mi Martes."
+        : googleNoticeCode === "missing-refresh-token"
+          ? "Google no entregó permiso de actualización. Vuelve a conectar y acepta todos los permisos."
+          : googleNoticeCode === "disconnect-error" ||
+              googleNoticeCode === "error"
+            ? "No se pudo completar la conexión Google. Inténtalo nuevamente."
+            : null;
+  const googleNoticeTone =
+    googleNoticeCode === "connected" || googleNoticeCode === "disconnected"
+      ? "success"
+      : "error";
 
   return (
     <main className="p-8">
@@ -208,6 +267,16 @@ export default async function Page() {
             detail="Activos"
           />
         </section>
+
+        <PersonalWorkspacePanel
+          isConnected={Boolean(googleConnection)}
+          googleEmail={googleConnection?.google_email ?? null}
+          notice={googleNotice}
+          noticeTone={googleNoticeTone}
+          gmailSummary={gmailSummary}
+          calendarSummary={calendarSummary}
+          driveSummary={driveSummary}
+        />
 
         <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
           <MyTasksPanel

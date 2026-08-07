@@ -1,6 +1,6 @@
 # MARTES — Registro de trabajo
 
-Última actualización: 2026-08-04
+Última actualización: 2026-08-07
 
 Este documento es la fuente única para organizar, ejecutar y verificar el
 trabajo pendiente de MARTES.
@@ -30,6 +30,16 @@ Una tarea solo pasa a **Completada** cuando:
 7. Se comprueba el resultado en producción.
 
 ## Trabajo actual
+
+## Publicación 1.0.5 — 7 agosto 2026, 10:54
+
+- Se agregó conexión personal con Google Workspace en Mi Martes.
+- Cada usuario puede autorizar su propia cuenta Google para ver señales
+  rápidas de Gmail, Calendar y Drive.
+- Correo muestra no leídos y últimos correos nuevos sin leer el cuerpo de los
+  mensajes.
+- Agenda del día muestra varios eventos del calendario.
+- Drive muestra los tres archivos recientes y abre Drive general.
 
 ## Publicación 1.0.4 — 5 agosto 2026, 10:08
 
