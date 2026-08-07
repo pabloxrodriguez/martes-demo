@@ -31,6 +31,13 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 1.0.6 — 7 agosto 2026, 12:56
+
+- Se ajustó la tabla de tareas en Mi Martes para que la columna Tarea sea más
+  compacta.
+- Se agregó edición del responsable de cada tarea directamente desde Mi
+  Martes.
+
 ## Publicación 1.0.5 — 7 agosto 2026, 10:54
 
 - Se agregó conexión personal con Google Workspace en Mi Martes.

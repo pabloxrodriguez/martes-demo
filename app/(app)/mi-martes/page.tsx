@@ -188,6 +188,10 @@ export default async function Page({ searchParams }: PageProps) {
     value: status.id,
     label: status.nombre,
   }));
+  const peopleOptions = editOptions.people.map((person) => ({
+    value: person.id,
+    label: person.nombre,
+  }));
   const googleNotice =
     googleNoticeCode === "connected"
       ? "Google quedó conectado a Mi Martes."
@@ -282,6 +286,7 @@ export default async function Page({ searchParams }: PageProps) {
           <MyTasksPanel
             tasks={sortedTasks}
             taskStatusOptions={taskStatusOptions}
+            peopleOptions={peopleOptions}
           />
 
           <MyProjectsPanel projects={projects} />

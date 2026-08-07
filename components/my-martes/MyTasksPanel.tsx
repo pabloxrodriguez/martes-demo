@@ -23,6 +23,7 @@ type SelectOption = {
 type MyTasksPanelProps = {
   tasks: MyOpenTaskItem[];
   taskStatusOptions: SelectOption[];
+  peopleOptions: SelectOption[];
 };
 
 function formatDate(value: string | null) {
@@ -41,6 +42,7 @@ function formatDate(value: string | null) {
 export function MyTasksPanel({
   tasks,
   taskStatusOptions,
+  peopleOptions,
 }: MyTasksPanelProps) {
   const [rowError, setRowError] = useState<string | null>(null);
 
@@ -99,8 +101,8 @@ export function MyTasksPanel({
           </h2>
 
           <p className="mt-1 text-sm text-zinc-500">
-            Edita compromiso, estado, enlace y comentario sin salir
-            de esta vista.
+            Edita responsable, compromiso, estado, enlace y comentario
+            sin salir de esta vista.
           </p>
         </div>
 
@@ -116,15 +118,16 @@ export function MyTasksPanel({
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1120px] border-collapse text-left">
+        <table className="w-full min-w-[1180px] table-fixed border-collapse text-left">
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               <th className="w-14 px-4 py-3 text-center">✓</th>
-              <th className="px-4 py-3">Tarea</th>
-              <th className="px-4 py-3">Proyecto</th>
-              <th className="px-4 py-3">Compromiso</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3">Enlace</th>
+              <th className="w-56 px-4 py-3">Tarea</th>
+              <th className="w-48 px-4 py-3">Proyecto</th>
+              <th className="w-44 px-4 py-3">Responsable</th>
+              <th className="w-36 px-4 py-3">Compromiso</th>
+              <th className="w-40 px-4 py-3">Estado</th>
+              <th className="w-44 px-4 py-3">Enlace</th>
               <th className="px-4 py-3">Comentario</th>
             </tr>
           </thead>
@@ -165,6 +168,7 @@ export function MyTasksPanel({
                     <EditableCell
                       value={task.nombre}
                       placeholder="Sin nombre"
+                      multiline
                       onSave={(value) =>
                         saveTaskField(task.id, "nombre", value)
                       }
@@ -176,7 +180,7 @@ export function MyTasksPanel({
                       <>
                         <Link
                           href={`/proyectos/${task.proyectos.id}`}
-                          className="font-semibold text-zinc-950 hover:underline"
+                          className="line-clamp-2 font-semibold text-zinc-950 hover:underline"
                         >
                           {task.proyectos.nombre}
                         </Link>
@@ -189,6 +193,22 @@ export function MyTasksPanel({
                     ) : (
                       "Sin proyecto"
                     )}
+                  </td>
+
+                  <td className="px-2 py-3">
+                    <EditableSelectCell
+                      value={task.responsable?.id ?? null}
+                      options={peopleOptions}
+                      placeholder="Sin responsable"
+                      required
+                      onSave={(value) =>
+                        saveTaskField(
+                          task.id,
+                          "responsable_id",
+                          value
+                        )
+                      }
+                    />
                   </td>
 
                   <td className="px-2 py-3">
@@ -280,7 +300,7 @@ export function MyTasksPanel({
             {tasks.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-6 py-12 text-center text-zinc-500"
                 >
                   No tienes tareas abiertas asignadas.
