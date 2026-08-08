@@ -44,6 +44,7 @@ export async function getTeamOpenTasks() {
       proyectos (
         id,
         nombre,
+        eliminado,
         prioridad,
         fecha_evento_inicio,
         estados_proyecto (
@@ -73,22 +74,24 @@ export async function getTeamOpenTasks() {
     );
   }
 
-  return (data ?? []).map((task) => {
-    const project = one(task.proyectos);
+  return (data ?? [])
+    .map((task) => {
+      const project = one(task.proyectos);
 
-    return {
-      ...task,
-      estados_tarea: one(task.estados_tarea),
-      proyectos: project
-        ? {
-            ...project,
-            estados_proyecto: one(project.estados_proyecto),
-            tipos_proyecto: one(project.tipos_proyecto),
-            clientes: one(project.clientes),
-          }
-        : null,
-    };
-  });
+      return {
+        ...task,
+        estados_tarea: one(task.estados_tarea),
+        proyectos: project
+          ? {
+              ...project,
+              estados_proyecto: one(project.estados_proyecto),
+              tipos_proyecto: one(project.tipos_proyecto),
+              clientes: one(project.clientes),
+            }
+          : null,
+      };
+    })
+    .filter((task) => task.proyectos?.eliminado === false);
 }
 
 export type TeamPerson = Awaited<ReturnType<typeof getTeamPeople>>[number];

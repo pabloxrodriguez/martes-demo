@@ -47,6 +47,7 @@ export async function getProjects() {
         )
       )
     `)
+    .eq("eliminado", false)
     .order("fecha_evento_inicio", {
       ascending: false,
       nullsFirst: false,
@@ -103,6 +104,7 @@ export async function getMyOpenTasks(personId: string) {
       proyectos (
         id,
         nombre,
+        eliminado,
         prioridad,
         fecha_evento_inicio,
         estados_proyecto (
@@ -152,6 +154,7 @@ export async function getMyOpenTasks(personId: string) {
       const statusName = task.estados_tarea?.nombre;
 
       return (
+        task.proyectos?.eliminado === false &&
         statusName !== "Completada" &&
         statusName !== "Cancelada"
       );
@@ -194,6 +197,7 @@ export async function getMyActiveProjects(personId: string) {
       )
     `)
     .eq("responsable_id", personId)
+    .eq("eliminado", false)
     .order("prioridad", { ascending: true, nullsFirst: false })
     .order("fecha_evento_inicio", {
       ascending: true,
@@ -256,7 +260,8 @@ export async function getRecentTaskActivity(limit = 8) {
       ),
       proyectos (
         id,
-        nombre
+        nombre,
+        eliminado
       )
     `)
     .order("fecha_actualizacion", { ascending: false })
@@ -268,14 +273,16 @@ export async function getRecentTaskActivity(limit = 8) {
     );
   }
 
-  return (data ?? []).map((task) => ({
-    ...task,
-    creador: one(task.creador),
-    actualizador: one(task.actualizador),
-    eliminador: one(task.eliminador),
-    estados_tarea: one(task.estados_tarea),
-    proyectos: one(task.proyectos),
-  }));
+  return (data ?? [])
+    .map((task) => ({
+      ...task,
+      creador: one(task.creador),
+      actualizador: one(task.actualizador),
+      eliminador: one(task.eliminador),
+      estados_tarea: one(task.estados_tarea),
+      proyectos: one(task.proyectos),
+    }))
+    .filter((task) => task.proyectos?.eliminado === false);
 }
 
 export type RecentTaskActivityItem = Awaited<
@@ -377,6 +384,7 @@ export async function getProjectById(id: string) {
       )
     `)
     .eq("id", id)
+    .eq("eliminado", false)
     .single();
 
   if (error) {

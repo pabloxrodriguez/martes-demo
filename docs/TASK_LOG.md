@@ -31,6 +31,14 @@ Una tarea solo pasa a **Completada** cuando:
 
 ## Trabajo actual
 
+## Publicación 1.0.7 — 7 agosto 2026, 20:14
+
+- Se reemplazó el borrado físico de proyectos por borrado lógico.
+- Los proyectos quitados quedan ocultos en las vistas normales, pero conservan
+  su data para auditoría.
+- Se registra quién quitó el proyecto y cuándo lo hizo.
+- Se retiró la política RLS que permitía borrar físicamente proyectos.
+
 ## Publicación 1.0.6 — 7 agosto 2026, 12:56
 
 - Se ajustó la tabla de tareas en Mi Martes para que la columna Tarea sea más

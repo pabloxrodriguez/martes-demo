@@ -28,6 +28,7 @@ export async function getCalendarProjects() {
         nombre
       )
     `)
+    .eq("eliminado", false)
     .order("fecha_propuesta", {
       ascending: true,
       nullsFirst: false,

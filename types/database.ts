@@ -147,6 +147,9 @@ type ProyectosRow = {
   fecha_actualizacion: string;
   creado_por_id: string | null;
   actualizado_por_id: string | null;
+  eliminado: boolean;
+  fecha_eliminacion: string | null;
+  eliminado_por_id: string | null;
 };
 
 type TareasRow = {
@@ -428,6 +431,9 @@ export type Database = {
           fecha_actualizacion?: string;
           creado_por_id?: string | null;
           actualizado_por_id?: string | null;
+          eliminado?: boolean;
+          fecha_eliminacion?: string | null;
+          eliminado_por_id?: string | null;
         },
         [
           {
@@ -447,6 +453,13 @@ export type Database = {
           {
             foreignKeyName: "proyectos_creado_por_id_fkey";
             columns: ["creado_por_id"];
+            isOneToOne: false;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "proyectos_eliminado_por_id_fkey";
+            columns: ["eliminado_por_id"];
             isOneToOne: false;
             referencedRelation: "personas";
             referencedColumns: ["id"];

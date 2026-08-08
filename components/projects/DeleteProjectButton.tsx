@@ -23,7 +23,7 @@ export function DeleteProjectButton({
 
   async function handleClick() {
     const confirmed = window.confirm(
-      "¿Borrar proyecto?\n\nSe eliminará el proyecto junto con todas sus tareas y datos asociados.\n\nEsta acción no se puede deshacer."
+      "¿Quitar proyecto?\n\nEl proyecto dejará de aparecer en las vistas normales, pero su información quedará guardada para auditoría."
     );
 
     if (!confirmed) {
@@ -43,7 +43,7 @@ export function DeleteProjectButton({
       const message =
         error instanceof Error
           ? error.message
-          : "No se pudo borrar el proyecto.";
+              : "No se pudo quitar el proyecto.";
 
       window.alert(message);
     }
@@ -56,7 +56,7 @@ export function DeleteProjectButton({
       disabled={isDeleting}
       className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {isDeleting ? "Borrando..." : "Borrar proyecto"}
+      {isDeleting ? "Quitando..." : "Quitar proyecto"}
     </button>
   );
 }

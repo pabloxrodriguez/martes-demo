@@ -39,6 +39,7 @@ export async function getResultsProjects() {
         nombre
       )
     `)
+    .eq("eliminado", false)
     .order("fecha_evento_inicio", {
       ascending: true,
       nullsFirst: false,

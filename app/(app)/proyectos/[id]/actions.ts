@@ -176,6 +176,7 @@ async function updateProjectTimestamp(
     .from("proyectos")
     .update(updateData)
     .eq("id", projectId)
+    .eq("eliminado", false)
     .select("id")
     .maybeSingle();
 
@@ -1391,7 +1392,7 @@ export async function removeGaelBudgetAccess(
 }
 
 export async function deleteProject(projectId: string) {
-  const { supabase, user } = await requireEditablePerson();
+  const { supabase, user, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
 
   const { data: project, error: projectError } = await supabase
@@ -1403,6 +1404,7 @@ export async function deleteProject(projectId: string) {
       )
     `)
     .eq("id", cleanProjectId)
+    .eq("eliminado", false)
     .single();
 
   if (projectError || !project) {
@@ -1417,10 +1419,18 @@ export async function deleteProject(projectId: string) {
     throw new Error("Solo el responsable puede borrar este proyecto.");
   }
 
+  const now = new Date().toISOString();
   const { data: deletedProject, error: deleteError } = await supabase
     .from("proyectos")
-    .delete()
+    .update({
+      eliminado: true,
+      fecha_eliminacion: now,
+      eliminado_por_id: person.id,
+      fecha_actualizacion: now,
+      actualizado_por_id: person.id,
+    })
     .eq("id", cleanProjectId)
+    .eq("eliminado", false)
     .select("id")
     .maybeSingle();
 
