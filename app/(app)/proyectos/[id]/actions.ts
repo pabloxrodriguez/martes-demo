@@ -644,6 +644,98 @@ export async function removeProjectVenue(
   revalidatePath("/proyectos");
 }
 
+export async function duplicateProject(projectId: string) {
+  const { supabase, person } = await requireEditablePerson();
+  const cleanProjectId = requireUuid(projectId, "El proyecto");
+
+  const { data: project, error: projectError } = await supabase
+    .from("proyectos")
+    .select(`
+      nombre,
+      estado_id,
+      tipo_id,
+      responsable_id,
+      cliente_id,
+      prioridad,
+      fecha_propuesta,
+      fecha_evento_inicio,
+      fecha_evento_termino,
+      publico_esperado,
+      valor_venta,
+      notas,
+      proyecto_venues (
+        venue_id
+      )
+    `)
+    .eq("id", cleanProjectId)
+    .eq("eliminado", false)
+    .maybeSingle();
+
+  if (projectError) {
+    throw new Error(
+      `No se pudo obtener el proyecto a duplicar: ${projectError.message}`
+    );
+  }
+
+  if (!project) {
+    throw new Error("No se encontró el proyecto que intentas duplicar.");
+  }
+
+  const now = new Date().toISOString();
+  const { data: duplicatedProject, error: insertError } = await supabase
+    .from("proyectos")
+    .insert({
+      nombre: `Copia-${project.nombre}`,
+      estado_id: project.estado_id,
+      tipo_id: project.tipo_id,
+      responsable_id: project.responsable_id,
+      cliente_id: project.cliente_id,
+      prioridad: project.prioridad,
+      fecha_propuesta: project.fecha_propuesta,
+      fecha_evento_inicio: project.fecha_evento_inicio,
+      fecha_evento_termino: project.fecha_evento_termino,
+      publico_esperado: project.publico_esperado,
+      valor_venta: project.valor_venta,
+      notas: project.notas,
+      fecha_actualizacion: now,
+      creado_por_id: person.id,
+      actualizado_por_id: person.id,
+    })
+    .select("id")
+    .single();
+
+  if (insertError) {
+    throw new Error(
+      `No se pudo duplicar el proyecto: ${insertError.message}`
+    );
+  }
+
+  const venueRows =
+    project.proyecto_venues?.map((venue) => ({
+      proyecto_id: duplicatedProject.id,
+      venue_id: venue.venue_id,
+    })) ?? [];
+
+  if (venueRows.length > 0) {
+    const { error: venuesError } = await supabase
+      .from("proyecto_venues")
+      .insert(venueRows);
+
+    if (venuesError) {
+      throw new Error(
+        `El proyecto se duplicó, pero no se pudieron copiar los venues: ${venuesError.message}`
+      );
+    }
+  }
+
+  revalidatePath("/proyectos");
+  revalidatePath("/calendario");
+  revalidatePath("/resultados");
+  revalidatePath("/resultado-financiero");
+
+  redirect(`/proyectos/${duplicatedProject.id}`);
+}
+
 async function createProjectTaskOrThrow(
   projectId: string,
   input: CreateProjectTaskInput

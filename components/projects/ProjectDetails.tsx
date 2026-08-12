@@ -2,6 +2,7 @@ import { EditableField } from "@/components/forms/EditableField";
 import { SearchSelect } from "@/components/forms/SearchSelect";
 import { ProjectDetailsCard } from "./ProjectDetailsCard";
 import { DeleteProjectButton } from "./DeleteProjectButton";
+import { DuplicateProjectButton } from "./DuplicateProjectButton";
 
 type Option = {
   value: string;
@@ -34,6 +35,7 @@ type ProjectDetailsProps = {
   onSaveVenue: (value: string) => Promise<void>;
   onCreateVenue: (value: string) => Promise<void>;
   onRemoveVenue: (venueId: string) => Promise<void>;
+  onDuplicateProject: () => Promise<void>;
   onDeleteProject: () => Promise<void>;
 };
 
@@ -48,6 +50,7 @@ export function ProjectDetails({
   onSaveVenue,
   onCreateVenue,
   onRemoveVenue,
+  onDuplicateProject,
   onDeleteProject,
 }: ProjectDetailsProps) {
   return (
@@ -66,11 +69,10 @@ export function ProjectDetails({
               placeholder="Sin público esperado"
               onSave={onSaveAudience}
             />
-            <div className="mt-6">
-    <div className="mt-6">
-  <DeleteProjectButton onDelete={onDeleteProject} />
-</div>
-  </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <DuplicateProjectButton onDuplicate={onDuplicateProject} />
+              <DeleteProjectButton onDelete={onDeleteProject} />
+            </div>
           </div>
 
           <div>

@@ -19,6 +19,7 @@ import {
   createProjectVenue,
   deleteProject,
   deleteProjectTask,
+  duplicateProject,
   importGaelBudget,
   refreshGaelBudget,
   removeGaelBudget,
@@ -144,6 +145,7 @@ export default async function ProjectPage({
     project.id
   );
   const deleteTask = deleteProjectTask.bind(null, project.id);
+  const duplicateCurrentProject = duplicateProject.bind(null, project.id);
   const deleteCurrentProject = deleteProject.bind(null, project.id);
   const importBudget = importGaelBudget.bind(null, project.id);
   const refreshBudget = refreshGaelBudget.bind(null, project.id);
@@ -235,6 +237,7 @@ export default async function ProjectPage({
             onSaveVenue={saveVenue}
             onCreateVenue={createVenue}
             onRemoveVenue={removeVenue}
+            onDuplicateProject={duplicateCurrentProject}
             onDeleteProject={deleteCurrentProject}
           />
 

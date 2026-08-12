@@ -1,6 +1,6 @@
 # MARTES — Registro de trabajo
 
-Última actualización: 2026-08-07
+Última actualización: 2026-08-12
 
 Este documento es la fuente única para organizar, ejecutar y verificar el
 trabajo pendiente de MARTES.
@@ -30,6 +30,13 @@ Una tarea solo pasa a **Completada** cuando:
 7. Se comprueba el resultado en producción.
 
 ## Trabajo actual
+
+## Publicación 1.0.8 — 12 agosto 2026, 09:33
+
+- Se agregó la opción de duplicar un proyecto desde su ficha.
+- La copia conserva la información base y venues del proyecto original.
+- La copia se crea sin tareas, presupuestos Gael ni accesos Gael.
+- El nuevo proyecto se nombra como `Copia-Nombre Original`.
 
 ## Publicación 1.0.7 — 7 agosto 2026, 20:14
 
