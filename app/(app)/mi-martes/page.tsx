@@ -55,6 +55,39 @@ function todayAsDateOnly() {
   }).format(new Date());
 }
 
+function normalizeDateOnly(value: unknown, fallback: string) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const cleanValue = value.trim();
+  const parsedDate = new Date(`${cleanValue}T00:00:00Z`);
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(cleanValue) ||
+    Number.isNaN(parsedDate.getTime()) ||
+    parsedDate.toISOString().slice(0, 10) !== cleanValue
+  ) {
+    return fallback;
+  }
+
+  return cleanValue;
+}
+
+function shiftDateOnly(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00Z`);
+
+  date.setUTCDate(date.getUTCDate() + days);
+
+  return date.toISOString().slice(0, 10);
+}
+
+function buildAgendaHref(date: string, today: string) {
+  return date === today
+    ? "/mi-martes"
+    : `/mi-martes?agenda=${encodeURIComponent(date)}`;
+}
+
 function sortTasksByUrgency(tasks: MyOpenTaskItem[]) {
   return [...tasks].sort((a, b) => {
     const dateA = a.fecha_comprometida ?? "9999-12-31";
@@ -101,6 +134,7 @@ function buildActivityText(activity: RecentTaskActivityItem) {
 type PageProps = {
   searchParams?: Promise<{
     google?: string | string[];
+    agenda?: string | string[];
   }>;
 };
 
@@ -110,6 +144,7 @@ export default async function Page({ searchParams }: PageProps) {
     typeof params?.google === "string" ? params.google : null;
   const person = await getCurrentPerson();
   const today = todayAsDateOnly();
+  const selectedAgendaDate = normalizeDateOnly(params?.agenda, today);
   const supabase = await createClient();
 
   const [
@@ -138,6 +173,7 @@ export default async function Page({ searchParams }: PageProps) {
     getGoogleCalendarSummary({
       supabase,
       personId: person!.id,
+      date: selectedAgendaDate,
     }),
     getGoogleDriveSummary({
       supabase,
@@ -279,6 +315,15 @@ export default async function Page({ searchParams }: PageProps) {
           noticeTone={googleNoticeTone}
           gmailSummary={gmailSummary}
           calendarSummary={calendarSummary}
+          calendarDate={selectedAgendaDate}
+          previousCalendarHref={buildAgendaHref(
+            shiftDateOnly(selectedAgendaDate, -1),
+            today
+          )}
+          nextCalendarHref={buildAgendaHref(
+            shiftDateOnly(selectedAgendaDate, 1),
+            today
+          )}
           driveSummary={driveSummary}
         />
 

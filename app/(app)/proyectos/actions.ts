@@ -9,6 +9,8 @@ type CreateProjectInput = {
   responsable_id: string;
   estado_id: string;
   fecha_propuesta: string;
+  fecha_evento_inicio: string;
+  fecha_evento_termino: string;
 };
 
 export async function createProject(
@@ -34,6 +36,14 @@ export async function createProject(
     typeof input.fecha_propuesta === "string"
       ? input.fecha_propuesta.trim()
       : "";
+  const fechaEventoInicio =
+    typeof input.fecha_evento_inicio === "string"
+      ? input.fecha_evento_inicio.trim()
+      : "";
+  const fechaEventoTermino =
+    typeof input.fecha_evento_termino === "string"
+      ? input.fecha_evento_termino.trim()
+      : "";
 
   if (!nombre) {
     throw new Error("El nombre del proyecto es obligatorio.");
@@ -49,6 +59,14 @@ export async function createProject(
 
   if (!fechaPropuesta) {
     throw new Error("La fecha de propuesta es obligatoria.");
+  }
+
+  if (!fechaEventoInicio) {
+    throw new Error("La fecha de inicio del evento es obligatoria.");
+  }
+
+  if (!fechaEventoTermino) {
+    throw new Error("La fecha de término del evento es obligatoria.");
   }
 
   const uuidPattern =
@@ -74,6 +92,35 @@ export async function createProject(
     throw new Error("La fecha de propuesta no es válida.");
   }
 
+  const parsedEventStart = new Date(
+    `${fechaEventoInicio}T00:00:00Z`
+  );
+  const parsedEventEnd = new Date(
+    `${fechaEventoTermino}T00:00:00Z`
+  );
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(fechaEventoInicio) ||
+    Number.isNaN(parsedEventStart.getTime()) ||
+    parsedEventStart.toISOString().slice(0, 10) !== fechaEventoInicio
+  ) {
+    throw new Error("La fecha de inicio del evento no es válida.");
+  }
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(fechaEventoTermino) ||
+    Number.isNaN(parsedEventEnd.getTime()) ||
+    parsedEventEnd.toISOString().slice(0, 10) !== fechaEventoTermino
+  ) {
+    throw new Error("La fecha de término del evento no es válida.");
+  }
+
+  if (fechaEventoTermino < fechaEventoInicio) {
+    throw new Error(
+      "La fecha de término del evento no puede ser anterior a la fecha de inicio."
+    );
+  }
+
   const { data, error } = await supabase
     .from("proyectos")
     .insert({
@@ -81,6 +128,8 @@ export async function createProject(
       responsable_id: responsableId,
       estado_id: estadoId,
       fecha_propuesta: fechaPropuesta,
+      fecha_evento_inicio: fechaEventoInicio,
+      fecha_evento_termino: fechaEventoTermino,
       prioridad: 5,
       creado_por_id: person.id,
       actualizado_por_id: person.id,

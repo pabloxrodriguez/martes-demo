@@ -24,6 +24,7 @@ import {
   refreshGaelBudget,
   removeGaelBudget,
   removeProjectVenue,
+  updateProjectVenue,
   removeGaelBudgetAccess,
   toggleTaskCompleted,
   updateProjectField,
@@ -138,6 +139,7 @@ export default async function ProjectPage({
   const saveVenue = addProjectVenue.bind(null, project.id);
   const createVenue = createProjectVenue.bind(null, project.id);
   const removeVenue = removeProjectVenue.bind(null, project.id);
+  const updateVenue = updateProjectVenue.bind(null, project.id);
   const createTask = createProjectTask.bind(null, project.id);
   const updateTask = updateTaskField.bind(null, project.id);
   const toggleCompleted = toggleTaskCompleted.bind(
@@ -236,6 +238,7 @@ export default async function ProjectPage({
             onSaveNotes={saveField("notas")}
             onSaveVenue={saveVenue}
             onCreateVenue={createVenue}
+            onUpdateVenue={updateVenue}
             onRemoveVenue={removeVenue}
             onDuplicateProject={duplicateCurrentProject}
             onDeleteProject={deleteCurrentProject}

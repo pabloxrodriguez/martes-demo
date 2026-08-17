@@ -3,6 +3,7 @@ import { SearchSelect } from "@/components/forms/SearchSelect";
 import { ProjectDetailsCard } from "./ProjectDetailsCard";
 import { DeleteProjectButton } from "./DeleteProjectButton";
 import { DuplicateProjectButton } from "./DuplicateProjectButton";
+import { ProjectVenueEditor } from "./ProjectVenueEditor";
 
 type Option = {
   value: string;
@@ -12,9 +13,15 @@ type Option = {
 type VenueItem = {
   venue_id: string;
   venues?: {
+    id?: string | null;
     nombre?: string | null;
+    direccion?: string | null;
     comuna?: string | null;
     ciudad?: string | null;
+    capacidad?: number | null;
+    contacto_nombre?: string | null;
+    contacto_correo?: string | null;
+    contacto_celular?: string | null;
   } | null;
 };
 
@@ -34,9 +41,16 @@ type ProjectDetailsProps = {
   onSaveNotes: (value: string) => Promise<SaveResult>;
   onSaveVenue: (value: string) => Promise<void>;
   onCreateVenue: (value: string) => Promise<void>;
+  onUpdateVenue: (venueId: string, input: unknown) => Promise<void>;
   onRemoveVenue: (venueId: string) => Promise<void>;
   onDuplicateProject: () => Promise<void>;
-  onDeleteProject: () => Promise<void>;
+  onDeleteProject: () => Promise<
+    | void
+    | {
+        success: false;
+        error: string | null;
+      }
+  >;
 };
 
 
@@ -49,6 +63,7 @@ export function ProjectDetails({
   onSaveNotes,
   onSaveVenue,
   onCreateVenue,
+  onUpdateVenue,
   onRemoveVenue,
   onDuplicateProject,
   onDeleteProject,
@@ -93,36 +108,13 @@ export function ProjectDetails({
             {venues.length ? (
               <div className="mt-3 space-y-3">
                 {venues.map((item) => (
-                  <div
+                  <ProjectVenueEditor
                     key={item.venue_id}
-                    className="flex items-start justify-between rounded-xl border border-zinc-200 bg-white p-4"
-                  >
-                    <div>
-                      <div className="font-medium text-zinc-950">
-                        {item.venues?.nombre ?? "Venue sin nombre"}
-                      </div>
-
-                      <div className="mt-1 text-sm text-zinc-500">
-                        {[item.venues?.comuna, item.venues?.ciudad]
-                          .filter(Boolean)
-                          .join(", ") || "Sin ubicación"}
-                      </div>
-
-                      <div className="mt-2 text-xs text-zinc-400">
-                        Contacto: —
-                      </div>
-                    </div>
-
-                    <form action={onRemoveVenue.bind(null, item.venue_id)}>
-                      <button
-                        type="submit"
-                        className="rounded-md px-2 py-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-red-600"
-                        title="Quitar del proyecto"
-                      >
-                        ✕
-                      </button>
-                    </form>
-                  </div>
+                    venueId={item.venue_id}
+                    venue={item.venues}
+                    onUpdateVenue={onUpdateVenue}
+                    onRemoveVenue={onRemoveVenue}
+                  />
                 ))}
               </div>
             ) : (

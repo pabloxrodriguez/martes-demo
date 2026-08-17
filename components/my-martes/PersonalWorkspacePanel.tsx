@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { CalendarDays, FileText, Mail } from "lucide-react";
 
 type PersonalWorkspacePanelProps = {
@@ -25,6 +26,9 @@ type PersonalWorkspacePanelProps = {
       url: string | null;
     }[];
   };
+  calendarDate: string;
+  previousCalendarHref: string;
+  nextCalendarHref: string;
   driveSummary: {
     status: "ready" | "not_connected" | "error";
     recentCount: number;
@@ -43,8 +47,12 @@ export function PersonalWorkspacePanel({
   noticeTone,
   gmailSummary,
   calendarSummary,
+  calendarDate,
+  previousCalendarHref,
+  nextCalendarHref,
   driveSummary,
 }: PersonalWorkspacePanelProps) {
+  const calendarDayLabel = formatCalendarDate(calendarDate);
   const gmailLines =
     gmailSummary.status === "error"
       ? ["No se pudo actualizar Gmail", "Abre Gmail para revisar"]
@@ -69,10 +77,10 @@ export function PersonalWorkspacePanel({
     calendarSummary.status === "error"
       ? ["No se pudo actualizar Calendar", "Abre Google Calendar para revisar"]
       : calendarSummary.eventCount === 0
-        ? ["Sin eventos hoy", "Agenda despejada"]
+        ? [`Sin eventos el ${calendarDayLabel}`, "Agenda despejada"]
         : [
             `${calendarSummary.eventCount} ${
-              calendarSummary.eventCount === 1 ? "evento hoy" : "eventos hoy"
+              calendarSummary.eventCount === 1 ? "evento" : "eventos"
             }`,
             ...calendarSummary.events.map((event) =>
               formatCalendarEvent(event.startsAt, event.title)
@@ -154,6 +162,27 @@ export function PersonalWorkspacePanel({
               lines={calendarLines}
               href="https://calendar.google.com/"
               action="Abrir Calendar"
+              controls={
+                <div className="flex items-center gap-1 text-xs">
+                  <Link
+                    href={previousCalendarHref}
+                    className="rounded-md border border-zinc-200 bg-white px-2 py-1 font-medium text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-950"
+                    aria-label="Ver día anterior"
+                  >
+                    ←
+                  </Link>
+                  <span className="min-w-16 text-center text-zinc-500">
+                    {calendarDayLabel}
+                  </span>
+                  <Link
+                    href={nextCalendarHref}
+                    className="rounded-md border border-zinc-200 bg-white px-2 py-1 font-medium text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-950"
+                    aria-label="Ver día siguiente"
+                  >
+                    →
+                  </Link>
+                </div>
+              }
             />
             <WorkspaceWidget
               icon={<FileText size={18} />}
@@ -192,24 +221,37 @@ function formatCalendarEvent(value: string | null, title: string) {
   return `${time} · ${title}`;
 }
 
+function formatCalendarDate(value: string) {
+  return new Intl.DateTimeFormat("es-CL", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
 function WorkspaceWidget({
   icon,
   title,
   lines,
   href,
   action,
+  controls,
 }: {
   icon: ReactNode;
   title: string;
   lines: ReactNode[];
   href: string;
   action: string;
+  controls?: ReactNode;
 }) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-      <div className="flex items-center gap-2">
-        <span aria-hidden>{icon}</span>
-        <h3 className="font-semibold text-zinc-950">{title}</h3>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span aria-hidden>{icon}</span>
+          <h3 className="font-semibold text-zinc-950">{title}</h3>
+        </div>
+        {controls}
       </div>
 
       <div className="mt-3 space-y-1 text-sm text-zinc-500">

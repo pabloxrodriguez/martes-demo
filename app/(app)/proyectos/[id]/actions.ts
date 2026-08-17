@@ -52,6 +52,17 @@ type CreateProjectTaskInput = {
   comentario: string | null;
 };
 
+type ProjectVenueInput = {
+  nombre?: unknown;
+  direccion?: unknown;
+  comuna?: unknown;
+  ciudad?: unknown;
+  capacidad?: unknown;
+  contacto_nombre?: unknown;
+  contacto_correo?: unknown;
+  contacto_celular?: unknown;
+};
+
 type ServerSupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 const uuidPattern =
@@ -63,6 +74,81 @@ function requireString(value: unknown, label: string) {
   }
 
   return value.trim();
+}
+
+function optionalShortText(value: unknown, label: string) {
+  const cleanValue = typeof value === "string" ? value.trim() : "";
+
+  if (cleanValue.length > 200) {
+    throw new Error(`${label} no puede superar los 200 caracteres.`);
+  }
+
+  return cleanValue || null;
+}
+
+function normalizeProjectVenueInput(input: unknown): TableUpdate<"venues"> {
+  if (!input || typeof input !== "object") {
+    throw new Error("Los datos del venue no son válidos.");
+  }
+
+  const venue = input as ProjectVenueInput;
+  const nombre = requireString(venue.nombre, "El nombre del venue");
+
+  if (!nombre) {
+    throw new Error("El nombre del venue es obligatorio.");
+  }
+
+  if (nombre.length > 200) {
+    throw new Error("El nombre del venue no puede superar los 200 caracteres.");
+  }
+
+  const capacidadText =
+    typeof venue.capacidad === "string"
+      ? venue.capacidad.trim()
+      : venue.capacidad;
+  const capacidad =
+    capacidadText === "" || capacidadText === null || capacidadText === undefined
+      ? null
+      : Number(capacidadText);
+
+  if (
+    capacidad !== null &&
+    (!Number.isInteger(capacidad) || capacidad < 0 || capacidad > 10_000_000)
+  ) {
+    throw new Error(
+      "La capacidad debe ser un número entero entre 0 y 10.000.000."
+    );
+  }
+
+  const contactoCorreo =
+    typeof venue.contacto_correo === "string"
+      ? venue.contacto_correo.trim().toLowerCase()
+      : "";
+
+  if (
+    contactoCorreo &&
+    (contactoCorreo.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactoCorreo))
+  ) {
+    throw new Error("El correo del contacto no es válido.");
+  }
+
+  return {
+    nombre,
+    direccion: optionalShortText(venue.direccion, "La dirección"),
+    comuna: optionalShortText(venue.comuna, "La comuna"),
+    ciudad: optionalShortText(venue.ciudad, "La ciudad"),
+    capacidad,
+    contacto_nombre: optionalShortText(
+      venue.contacto_nombre,
+      "El nombre del contacto"
+    ),
+    contacto_correo: contactoCorreo || null,
+    contacto_celular: optionalShortText(
+      venue.contacto_celular,
+      "El celular del contacto"
+    ),
+  };
 }
 
 function requireUuid(value: unknown, label: string) {
@@ -642,6 +728,59 @@ export async function removeProjectVenue(
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
+}
+
+export async function updateProjectVenue(
+  projectId: string,
+  venueId: string,
+  input: unknown
+) {
+  const { supabase, person } = await requireEditablePerson();
+  const cleanProjectId = requireUuid(projectId, "El proyecto");
+  const cleanVenueId = requireUuid(venueId, "El venue");
+  const venue = normalizeProjectVenueInput(input);
+
+  const { data: relation, error: relationError } = await supabase
+    .from("proyecto_venues")
+    .select("id")
+    .eq("proyecto_id", cleanProjectId)
+    .eq("venue_id", cleanVenueId)
+    .maybeSingle();
+
+  if (relationError) {
+    throw new Error(
+      `No se pudo revisar el venue del proyecto: ${relationError.message}`
+    );
+  }
+
+  if (!relation) {
+    throw new Error("El venue no está asociado a este proyecto.");
+  }
+
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("venues")
+    .update({
+      ...venue,
+      fecha_actualizacion: now,
+    })
+    .eq("id", cleanVenueId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`No se pudo actualizar el venue: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("El venue no existe o no tienes permiso para modificarlo.");
+  }
+
+  await updateProjectTimestamp(supabase, cleanProjectId, now, person.id);
+
+  revalidatePath(`/proyectos/${cleanProjectId}`);
+  revalidatePath("/proyectos");
+  revalidatePath("/catalogos");
 }
 
 export async function duplicateProject(projectId: string) {
@@ -1484,56 +1623,70 @@ export async function removeGaelBudgetAccess(
 }
 
 export async function deleteProject(projectId: string) {
-  const { supabase, user, person } = await requireEditablePerson();
-  const cleanProjectId = requireUuid(projectId, "El proyecto");
+  let cleanProjectId: string;
 
-  const { data: project, error: projectError } = await supabase
-    .from("proyectos")
-    .select(`
-      id,
-      responsable:personas!proyectos_responsable_id_fkey (
-        auth_user_id
-      )
-    `)
-    .eq("id", cleanProjectId)
-    .eq("eliminado", false)
-    .single();
+  try {
+    const { supabase, user, person } = await requireEditablePerson();
+    cleanProjectId = requireUuid(projectId, "El proyecto");
 
-  if (projectError || !project) {
-    throw new Error("No se encontró el proyecto.");
-  }
+    const { data: project, error: projectError } = await supabase
+      .from("proyectos")
+      .select(`
+        id,
+        responsable:personas!proyectos_responsable_id_fkey (
+          auth_user_id
+        )
+      `)
+      .eq("id", cleanProjectId)
+      .eq("eliminado", false)
+      .single();
 
-  const responsable = Array.isArray(project.responsable)
-    ? project.responsable[0]
-    : project.responsable;
+    if (projectError || !project) {
+      throw new Error("No se encontró el proyecto.");
+    }
 
-  if (responsable?.auth_user_id !== user.id) {
-    throw new Error("Solo el responsable puede borrar este proyecto.");
-  }
+    const responsable = Array.isArray(project.responsable)
+      ? project.responsable[0]
+      : project.responsable;
 
-  const now = new Date().toISOString();
-  const { data: deletedProject, error: deleteError } = await supabase
-    .from("proyectos")
-    .update({
-      eliminado: true,
-      fecha_eliminacion: now,
-      eliminado_por_id: person.id,
-      fecha_actualizacion: now,
-      actualizado_por_id: person.id,
-    })
-    .eq("id", cleanProjectId)
-    .eq("eliminado", false)
-    .select("id")
-    .maybeSingle();
+    if (responsable?.auth_user_id !== user.id) {
+      throw new Error(
+        "Solo el responsable del proyecto puede quitarlo. Si necesitas retirarlo, pídele al responsable que lo haga o que te transfiera la responsabilidad."
+      );
+    }
 
-  if (deleteError) {
-    throw new Error(
-      `No se pudo borrar el proyecto: ${deleteError.message}`
-    );
-  }
+    const now = new Date().toISOString();
+    const { data: deletedProject, error: deleteError } = await supabase
+      .from("proyectos")
+      .update({
+        eliminado: true,
+        fecha_eliminacion: now,
+        eliminado_por_id: person.id,
+        fecha_actualizacion: now,
+        actualizado_por_id: person.id,
+      })
+      .eq("id", cleanProjectId)
+      .eq("eliminado", false)
+      .select("id")
+      .maybeSingle();
 
-  if (!deletedProject) {
-    throw new Error("No se encontró el proyecto que intentas borrar.");
+    if (deleteError) {
+      throw new Error(
+        `No se pudo quitar el proyecto: ${deleteError.message}`
+      );
+    }
+
+    if (!deletedProject) {
+      throw new Error("No se encontró el proyecto que intentas quitar.");
+    }
+  } catch (caughtError) {
+    return {
+      success: false as const,
+      error:
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo quitar el proyecto.",
+    };
   }
 
   revalidatePath("/proyectos");

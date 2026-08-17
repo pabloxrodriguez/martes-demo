@@ -102,15 +102,9 @@ export type GoogleDriveSummary = {
   }[];
 };
 
-function getTodayRangeInSantiago() {
-  const today = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Santiago",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-  const start = new Date(`${today}T00:00:00-04:00`);
-  const end = new Date(`${today}T23:59:59-04:00`);
+function getDayRangeInSantiago(date: string) {
+  const start = new Date(`${date}T00:00:00-04:00`);
+  const end = new Date(`${date}T23:59:59-04:00`);
 
   return {
     start: start.toISOString(),
@@ -339,9 +333,11 @@ export async function getGoogleGmailSummary({
 export async function getGoogleCalendarSummary({
   supabase,
   personId,
+  date,
 }: {
   supabase: SupabaseServerClient;
   personId: string;
+  date: string;
 }): Promise<GoogleCalendarSummary> {
   const { data: connection, error } = await supabase
     .from("google_connections")
@@ -375,7 +371,7 @@ export async function getGoogleCalendarSummary({
       personId,
       connection,
     });
-    const { start, end } = getTodayRangeInSantiago();
+    const { start, end } = getDayRangeInSantiago(date);
     const url = new URL(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events"
     );

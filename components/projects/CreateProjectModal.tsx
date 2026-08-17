@@ -63,6 +63,12 @@ export function CreateProjectModal({
       fecha_propuesta: String(
         formData.get("fecha_propuesta") ?? ""
       ),
+      fecha_evento_inicio: String(
+        formData.get("fecha_evento_inicio") ?? ""
+      ),
+      fecha_evento_termino: String(
+        formData.get("fecha_evento_termino") ?? ""
+      ),
     };
 
     startTransition(async () => {
@@ -217,6 +223,44 @@ export function CreateProjectModal({
               disabled={isPending}
               className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-950 outline-none focus:border-zinc-500 disabled:bg-zinc-100"
             />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="event-start-date"
+                className="text-sm font-medium text-zinc-700"
+              >
+                Inicio evento *
+              </label>
+
+              <input
+                id="event-start-date"
+                name="fecha_evento_inicio"
+                type="date"
+                required
+                disabled={isPending}
+                className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-950 outline-none focus:border-zinc-500 disabled:bg-zinc-100"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="event-end-date"
+                className="text-sm font-medium text-zinc-700"
+              >
+                Término evento *
+              </label>
+
+              <input
+                id="event-end-date"
+                name="fecha_evento_termino"
+                type="date"
+                required
+                disabled={isPending}
+                className="mt-2 w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-950 outline-none focus:border-zinc-500 disabled:bg-zinc-100"
+              />
+            </div>
           </div>
 
           {error && (

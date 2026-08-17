@@ -8,6 +8,11 @@ import {
 } from "@/lib/services/project.service";
 
 type ProjectItem = Awaited<ReturnType<typeof getProjects>>[number];
+type PageProps = {
+  searchParams?: Promise<{
+    q?: string | string[];
+  }>;
+};
 
 const HISTORIC_STATUS_CODES = [5, 6];
 
@@ -43,7 +48,28 @@ function sortHistoricProjects(a: ProjectItem, b: ProjectItem) {
   );
 }
 
-export default async function ProjectHistoryPage() {
+function getSearchText(project: ProjectItem) {
+  return [
+    project.nombre,
+    project.clientes?.nombre,
+    project.responsable?.nombre,
+    project.tipos_proyecto?.nombre,
+    project.estados_proyecto?.nombre,
+    project.fecha_propuesta,
+    project.fecha_evento_inicio,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("es");
+}
+
+export default async function ProjectHistoryPage({
+  searchParams,
+}: PageProps) {
+  const params = await searchParams;
+  const searchQuery =
+    typeof params?.q === "string" ? params.q.trim() : "";
+  const normalizedSearchQuery = searchQuery.toLocaleLowerCase("es");
   const currentYear = getCurrentYear();
   const [projects, editOptions] = await Promise.all([
     getProjects(),
@@ -63,6 +89,11 @@ export default async function ProjectHistoryPage() {
   }));
   const historicProjects = projects
     .filter((project) => isHistoricProject(project, currentYear))
+    .filter((project) =>
+      normalizedSearchQuery
+        ? getSearchText(project).includes(normalizedSearchQuery)
+        : true
+    )
     .sort(sortHistoricProjects);
 
   return (
@@ -93,6 +124,36 @@ export default async function ProjectHistoryPage() {
             {historicProjects.length === 1 ? "" : "s"}
           </span>
         </div>
+
+        <form
+          action="/proyectos/historico"
+          role="search"
+          className="mt-6 flex flex-wrap items-center gap-3"
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={searchQuery}
+            placeholder="Buscar proyecto, cliente o responsable"
+            className="h-11 min-w-72 rounded-xl border border-zinc-300 bg-white px-4 text-sm text-zinc-950 outline-none transition focus:border-zinc-500"
+          />
+
+          <button
+            type="submit"
+            className="h-11 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800"
+          >
+            Buscar
+          </button>
+
+          {searchQuery ? (
+            <Link
+              href="/proyectos/historico"
+              className="h-11 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
+            >
+              Limpiar
+            </Link>
+          ) : null}
+        </form>
 
         <div className="mt-8 space-y-12">
           {HISTORIC_STATUS_CODES.map((statusCode) => {

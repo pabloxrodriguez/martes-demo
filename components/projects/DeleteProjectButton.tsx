@@ -3,7 +3,13 @@
 import { useState } from "react";
 
 type DeleteProjectButtonProps = {
-  onDelete: () => Promise<void>;
+  onDelete: () => Promise<
+    | void
+    | {
+        success: false;
+        error: string | null;
+      }
+  >;
 };
 
 function isRedirectError(error: unknown) {
@@ -32,7 +38,12 @@ export function DeleteProjectButton({
 
     try {
       setIsDeleting(true);
-      await onDelete();
+      const result = await onDelete();
+
+      if (result?.success === false) {
+        setIsDeleting(false);
+        window.alert(result.error ?? "No se pudo quitar el proyecto.");
+      }
     } catch (error) {
       if (isRedirectError(error)) {
         throw error;

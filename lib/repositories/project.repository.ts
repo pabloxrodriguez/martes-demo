@@ -327,8 +327,13 @@ export async function getProjectById(id: string) {
         venues (
           id,
           nombre,
+          direccion,
           comuna,
-          ciudad
+          ciudad,
+          capacidad,
+          contacto_nombre,
+          contacto_correo,
+          contacto_celular
         )
       ),
       proyecto_presupuestos_gael (
