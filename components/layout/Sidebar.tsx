@@ -26,7 +26,7 @@ export async function Sidebar() {
   return (
     <aside className="flex min-h-screen w-64 flex-col border-r border-zinc-200 bg-white">
       <div className="border-b border-zinc-200 px-6 py-5">
-        <h1 className="text-2xl font-semibold text-zinc-900">Martes</h1>
+        <h1 className="text-2xl font-semibold text-zinc-900">Martes Demo</h1>
         <p className="mt-1 text-base text-zinc-500">
           Gestión de proyectos
         </p>

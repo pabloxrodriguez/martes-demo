@@ -76,7 +76,7 @@ function LoginContent() {
           </p>
 
           <p className="mt-1 text-sm text-zinc-400">
-            La Oreja Lab
+            Versión demo para clientes
           </p>
         </div>
 
@@ -123,11 +123,11 @@ function LoginContent() {
         )}
 
         <p className="mt-8 text-center text-sm text-zinc-400">
-          Acceso exclusivo para usuarios autorizados. Versión {APP_VERSION}
+          Acceso demo para usuarios autorizados. Versión {APP_VERSION}
         </p>
 
         <div className="mt-10 border-t pt-6 text-center text-xs text-zinc-400">
-          © {new Date().getFullYear()} La Oreja Lab - Pablo Rodríguez T.
+          © {new Date().getFullYear()} Martes Demo - Pablo Rodríguez T.
         </div>
       </div>
     </main>

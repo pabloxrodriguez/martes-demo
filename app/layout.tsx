@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Martes",
-  description: "Sistema de gestión de proyectos de La Oreja Lab",
+  title: "Martes Demo",
+  description: "Demo de gestión de proyectos para clientes",
 };
 
 export default function RootLayout({
