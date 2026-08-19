@@ -9,6 +9,10 @@ import {
 import Link from "next/link";
 
 import {
+  CommercialTargetComparison,
+  EditableWonProjectsTable,
+} from "@/components/results/FinancialResultsControls";
+import {
   getResultsDashboard,
   type ResultsDashboard,
 } from "@/lib/services/results.service";
@@ -63,7 +67,9 @@ export async function ResultsPageContent({
   showFinancialValues: boolean;
 }) {
   const params = await searchParams;
-  const dashboard = await getResultsDashboard(params);
+  const dashboard = await getResultsDashboard(params, {
+    includeFinancialData: showFinancialValues,
+  });
   const chartMode = showFinancialValues ? "money" : "projects";
   const detailParams = `from=${dashboard.period.from}&to=${dashboard.period.to}`;
 
@@ -115,6 +121,20 @@ export async function ResultsPageContent({
           Período: {formatDate(dashboard.period.from)} —{" "}
           {formatDate(dashboard.period.to)}
         </p>
+
+        {showFinancialValues && dashboard.commercialTarget && (
+          <CommercialTargetComparison
+            target={dashboard.commercialTarget}
+            salesValue={dashboard.summary.wonSalesValue}
+          />
+        )}
+
+        {showFinancialValues && !dashboard.commercialTarget && (
+          <p className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+            La meta comercial se compara por año. Selecciona un período dentro
+            de un mismo año para verla y editarla.
+          </p>
+        )}
 
         <section
           className={`mt-8 grid gap-4 md:grid-cols-2 ${
@@ -214,7 +234,11 @@ export async function ResultsPageContent({
           </Panel>
         </section>
 
-        <section className="mt-8 grid gap-8 xl:grid-cols-3">
+        <section
+          className={`mt-8 grid gap-8 ${
+            showFinancialValues ? "xl:grid-cols-2" : "xl:grid-cols-3"
+          }`}
+        >
           <Panel
             title={
               showFinancialValues ? "Ventas por cliente" : "Proyectos por cliente"
@@ -232,15 +256,6 @@ export async function ResultsPageContent({
             />
           </Panel>
 
-          <Panel title="Proyectos por tipo">
-            <MetricTable
-              items={dashboard.projectsByType.slice(0, 6)}
-              valueLabel={showFinancialValues ? "Ventas" : "Proyectos"}
-              emptyText="No hay proyectos para el período."
-              showFinancialValues={showFinancialValues}
-            />
-          </Panel>
-
           {showFinancialValues ? (
             <Panel title="Ventas por tipo de proyecto">
               <MetricList
@@ -250,15 +265,44 @@ export async function ResultsPageContent({
               />
             </Panel>
           ) : (
-            <Panel title="Proyectos por estado">
-              <MetricList
-                items={dashboard.pipeline}
-                emptyText="No hay proyectos en pipeline para el período."
-                showFinancialValues={false}
-              />
-            </Panel>
+            <>
+              <Panel title="Proyectos por tipo">
+                <MetricTable
+                  items={dashboard.projectsByType.slice(0, 6)}
+                  valueLabel="Proyectos"
+                  emptyText="No hay proyectos para el período."
+                  showFinancialValues={false}
+                />
+              </Panel>
+
+              <Panel title="Proyectos por estado">
+                <MetricList
+                  items={dashboard.pipeline}
+                  emptyText="No hay proyectos en pipeline para el período."
+                  showFinancialValues={false}
+                />
+              </Panel>
+            </>
           )}
         </section>
+
+        {showFinancialValues && (
+          <section className="mt-8">
+            <Panel
+              title={
+                dashboard.commercialTarget
+                  ? `Proyectos ganados ${dashboard.commercialTarget.year}`
+                  : "Proyectos ganados del período"
+              }
+              subtitle="En ejecución y realizados según la fecha comercial usada por el informe"
+            >
+              <EditableWonProjectsTable
+                projects={dashboard.wonProjectList}
+                clientOptions={dashboard.clientOptions}
+              />
+            </Panel>
+          </section>
+        )}
 
         <section className="mt-8 grid gap-8 lg:grid-cols-2">
           <Panel

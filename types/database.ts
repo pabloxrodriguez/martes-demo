@@ -72,6 +72,14 @@ type GoogleConnectionsRow = {
   fecha_actualizacion: string;
 };
 
+type MetasComercialesRow = {
+  anio: number;
+  meta: number;
+  actualizado_por_id: string | null;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+};
+
 type PlantillasTareaRow = {
   id: string;
   nombre: string;
@@ -254,6 +262,25 @@ export type Database = {
             foreignKeyName: "google_connections_persona_id_fkey";
             columns: ["persona_id"];
             isOneToOne: true;
+            referencedRelation: "personas";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
+      metas_comerciales: TableDefinition<
+        MetasComercialesRow,
+        {
+          anio: number;
+          meta?: number;
+          actualizado_por_id?: string | null;
+          fecha_creacion?: string;
+          fecha_actualizacion?: string;
+        },
+        [
+          {
+            foreignKeyName: "metas_comerciales_actualizado_por_id_fkey";
+            columns: ["actualizado_por_id"];
+            isOneToOne: false;
             referencedRelation: "personas";
             referencedColumns: ["id"];
           },

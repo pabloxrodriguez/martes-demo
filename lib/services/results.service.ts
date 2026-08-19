@@ -1,4 +1,6 @@
 import {
+  getCommercialTarget,
+  getResultsClients,
   getResultsProjects,
   type ResultsProject,
 } from "@/lib/repositories/results.repository";
@@ -46,6 +48,12 @@ export type ResultsPeriod = {
 
 export type ResultsDashboard = {
   period: ResultsPeriod;
+  commercialTarget: {
+    year: number;
+    value: number;
+    achievement: number;
+    gap: number;
+  } | null;
   summary: {
     wonSalesValue: number;
     managedProjects: number;
@@ -69,6 +77,19 @@ export type ResultsDashboard = {
     projects: number;
     value: number;
   };
+  wonProjectList: {
+    id: string;
+    name: string;
+    clientId: string | null;
+    clientName: string;
+    commercialDate: string | null;
+    commercialDateSource: "evento" | "propuesta";
+    value: number;
+  }[];
+  clientOptions: {
+    value: string;
+    label: string;
+  }[];
   reminders: {
     noOlvidar: number;
   };
@@ -285,10 +306,22 @@ export async function getResultsDashboard(
   params: {
     from?: string | string[];
     to?: string | string[];
+  } = {},
+  options: {
+    includeFinancialData?: boolean;
   } = {}
 ): Promise<ResultsDashboard> {
   const period = normalizePeriod(params.from, params.to);
-  const projects = (await getResultsProjects()).map(asResultsProject);
+  const isSingleYear = period.from.slice(0, 4) === period.to.slice(0, 4);
+  const targetYear = Number(period.from.slice(0, 4));
+  const [rawProjects, clients, targetValue] = await Promise.all([
+    getResultsProjects(),
+    options.includeFinancialData ? getResultsClients() : Promise.resolve([]),
+    options.includeFinancialData && isSingleYear
+      ? getCommercialTarget(targetYear)
+      : Promise.resolve(0),
+  ]);
+  const projects = rawProjects.map(asResultsProject);
 
   const commercialProjects = projects.filter(
     (project) =>
@@ -326,14 +359,26 @@ export async function getResultsDashboard(
   });
 
   const closedProjects = wonProjects.length + lostProjects.length;
+  const wonSalesValue = wonProjects.reduce(
+    (total, project) => total + project.value,
+    0
+  );
 
   return {
     period,
+    commercialTarget: options.includeFinancialData && isSingleYear
+      ? {
+          year: targetYear,
+          value: targetValue,
+          achievement:
+            targetValue > 0
+              ? Math.round((wonSalesValue / targetValue) * 1000) / 10
+              : 0,
+          gap: targetValue - wonSalesValue,
+        }
+      : null,
     summary: {
-      wonSalesValue: wonProjects.reduce(
-        (total, project) => total + project.value,
-        0
-      ),
+      wonSalesValue,
       managedProjects: commercialProjects.length,
       wonProjects: wonProjects.length,
       lostProjects: lostProjects.length,
@@ -375,6 +420,29 @@ export async function getResultsDashboard(
         0
       ),
     },
+    wonProjectList: wonProjects
+      .map((project) => ({
+        id: project.id,
+        name: project.nombre,
+        clientId: project.cliente_id,
+        clientName: project.clientes?.nombre ?? "Sin cliente",
+        commercialDate: project.metricDate,
+        commercialDateSource: project.fecha_evento_inicio
+          ? ("evento" as const)
+          : ("propuesta" as const),
+        value: project.value,
+      }))
+      .sort((a, b) => {
+        const dateComparison = (a.commercialDate ?? "9999-12-31").localeCompare(
+          b.commercialDate ?? "9999-12-31"
+        );
+
+        return dateComparison || a.name.localeCompare(b.name, "es");
+      }),
+    clientOptions: clients.map((client) => ({
+      value: client.id,
+      label: client.nombre,
+    })),
     reminders: {
       noOlvidar: projects.filter(
         (project) =>

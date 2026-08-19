@@ -414,3 +414,14 @@ Para cada sesión:
   puedan operar.
 - Funciones legacy de acceso versionadas para reducir drift entre producción y
   migraciones.
+
+## Publicación 1.2 — 19 agosto 2026, 17:21
+
+- Resultado Financiero incorpora una meta comercial editable por año para
+  Admin y Dirección.
+- El encabezado compara ventas ganadas, cumplimiento y diferencia respecto de
+  la meta anual.
+- Se agrega una tabla editable de proyectos ganados con proyecto, cliente,
+  fecha comercial, valor de venta y total del período.
+- Se elimina la visualización financiera duplicada de proyectos por tipo y se
+  conserva Ventas por tipo de proyecto.
