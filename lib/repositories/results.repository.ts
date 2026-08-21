@@ -60,23 +60,6 @@ export async function getResultsProjects() {
   }));
 }
 
-export async function getResultsClients() {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("clientes")
-    .select("id, nombre")
-    .eq("activo", true)
-    .order("nombre", { ascending: true });
-
-  if (error) {
-    throw new Error(
-      `No se pudieron obtener los clientes: ${error.message}`
-    );
-  }
-
-  return data ?? [];
-}
-
 export async function getCommercialTarget(year: number) {
   const supabase = await createClient();
   const { data, error } = await supabase

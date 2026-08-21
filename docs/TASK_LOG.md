@@ -425,3 +425,12 @@ Para cada sesión:
   fecha comercial, valor de venta y total del período.
 - Se elimina la visualización financiera duplicada de proyectos por tipo y se
   conserva Ventas por tipo de proyecto.
+
+## Publicación 1.2.1 — 21 agosto 2026, 12:00
+
+- La lista de proyectos ganados pasa a modo de consulta y enlaza cada nombre
+  con su ficha de proyecto.
+- Los proyectos ganados se agrupan en En ejecución y Realizados, con cantidad,
+  subtotal por grupo y total general.
+- Se elimina de Resultado Financiero el bloque redundante de Proyectos
+  realizados; la vista operativa de Resultados lo conserva.

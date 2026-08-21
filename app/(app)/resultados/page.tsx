@@ -10,7 +10,7 @@ import Link from "next/link";
 
 import {
   CommercialTargetComparison,
-  EditableWonProjectsTable,
+  WonProjectsTable,
 } from "@/components/results/FinancialResultsControls";
 import {
   getResultsDashboard,
@@ -296,48 +296,31 @@ export async function ResultsPageContent({
               }
               subtitle="En ejecución y realizados según la fecha comercial usada por el informe"
             >
-              <EditableWonProjectsTable
-                projects={dashboard.wonProjectList}
-                clientOptions={dashboard.clientOptions}
-              />
+              <WonProjectsTable projects={dashboard.wonProjectList} />
             </Panel>
           </section>
         )}
 
-        <section className="mt-8 grid gap-8 lg:grid-cols-2">
-          <Panel
-            title="Proyectos realizados"
-            subtitle="Eventos ejecutados dentro del período"
-          >
-            <div className="flex items-center justify-between gap-6">
-              <div className="rounded-full bg-green-50 p-8 text-center text-green-700">
-                <div className="text-4xl font-semibold">
-                  {dashboard.realized.projects}
+        <section
+          className={`mt-8 grid gap-8 ${
+            showFinancialValues ? "lg:grid-cols-1" : "lg:grid-cols-2"
+          }`}
+        >
+          {!showFinancialValues && (
+            <Panel
+              title="Proyectos realizados"
+              subtitle="Eventos ejecutados dentro del período"
+            >
+              <div className="flex items-center justify-between gap-6">
+                <div className="rounded-full bg-green-50 p-8 text-center text-green-700">
+                  <div className="text-4xl font-semibold">
+                    {dashboard.realized.projects}
+                  </div>
+                  <div className="mt-1 text-sm">eventos</div>
                 </div>
-                <div className="mt-1 text-sm">eventos</div>
               </div>
-
-              {showFinancialValues && (
-                <div className="flex-1 space-y-3 text-sm">
-                  <MetricLine
-                    label="Ventas realizadas"
-                    value={formatMoney(dashboard.realized.value)}
-                  />
-                  <MetricLine
-                    label="Ticket promedio"
-                    value={
-                      dashboard.realized.projects > 0
-                        ? formatMoney(
-                            dashboard.realized.value /
-                              dashboard.realized.projects
-                          )
-                        : "—"
-                    }
-                  />
-                </div>
-              )}
-            </div>
-          </Panel>
+            </Panel>
+          )}
 
           <Panel title="Notas del reporte">
             <div className="space-y-3 text-sm text-zinc-600">
@@ -770,21 +753,6 @@ function MetricTable({
           ))}
         </tbody>
       </table>
-    </div>
-  );
-}
-
-function MetricLine({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex justify-between border-b border-zinc-100 pb-2">
-      <span className="text-zinc-500">{label}</span>
-      <span className="font-semibold text-zinc-950">{value}</span>
     </div>
   );
 }

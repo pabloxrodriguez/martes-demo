@@ -1,6 +1,5 @@
 import {
   getCommercialTarget,
-  getResultsClients,
   getResultsProjects,
   type ResultsProject,
 } from "@/lib/repositories/results.repository";
@@ -82,13 +81,11 @@ export type ResultsDashboard = {
     name: string;
     clientId: string | null;
     clientName: string;
+    statusCode: number;
+    statusName: string;
     commercialDate: string | null;
     commercialDateSource: "evento" | "propuesta";
     value: number;
-  }[];
-  clientOptions: {
-    value: string;
-    label: string;
   }[];
   reminders: {
     noOlvidar: number;
@@ -314,9 +311,8 @@ export async function getResultsDashboard(
   const period = normalizePeriod(params.from, params.to);
   const isSingleYear = period.from.slice(0, 4) === period.to.slice(0, 4);
   const targetYear = Number(period.from.slice(0, 4));
-  const [rawProjects, clients, targetValue] = await Promise.all([
+  const [rawProjects, targetValue] = await Promise.all([
     getResultsProjects(),
-    options.includeFinancialData ? getResultsClients() : Promise.resolve([]),
     options.includeFinancialData && isSingleYear
       ? getCommercialTarget(targetYear)
       : Promise.resolve(0),
@@ -426,6 +422,8 @@ export async function getResultsDashboard(
         name: project.nombre,
         clientId: project.cliente_id,
         clientName: project.clientes?.nombre ?? "Sin cliente",
+        statusCode: project.statusCode,
+        statusName: project.statusName,
         commercialDate: project.metricDate,
         commercialDateSource: project.fecha_evento_inicio
           ? ("evento" as const)
@@ -439,10 +437,6 @@ export async function getResultsDashboard(
 
         return dateComparison || a.name.localeCompare(b.name, "es");
       }),
-    clientOptions: clients.map((client) => ({
-      value: client.id,
-      label: client.nombre,
-    })),
     reminders: {
       noOlvidar: projects.filter(
         (project) =>
