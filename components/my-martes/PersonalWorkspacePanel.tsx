@@ -53,6 +53,10 @@ export function PersonalWorkspacePanel({
   driveSummary,
 }: PersonalWorkspacePanelProps) {
   const calendarDayLabel = formatCalendarDate(calendarDate);
+  const hasGoogleError =
+    gmailSummary.status === "error" ||
+    calendarSummary.status === "error" ||
+    driveSummary.status === "error";
   const gmailLines =
     gmailSummary.status === "error"
       ? ["No se pudo actualizar Gmail", "Abre Gmail para revisar"]
@@ -144,9 +148,16 @@ export function PersonalWorkspacePanel({
 
       {isConnected ? (
         <>
-          <p className="mt-5 text-sm text-zinc-500">
-            Google conectado{googleEmail ? ` como ${googleEmail}` : ""}.
-          </p>
+          {hasGoogleError ? (
+            <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              La conexión Google necesita renovarse. Presiona “Google conectado
+              · Desconectar” y vuelve a conectarla.
+            </p>
+          ) : (
+            <p className="mt-5 text-sm text-zinc-500">
+              Google conectado{googleEmail ? ` como ${googleEmail}` : ""}.
+            </p>
+          )}
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
             <WorkspaceWidget

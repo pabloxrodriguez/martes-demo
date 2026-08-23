@@ -28,6 +28,7 @@ type GaelBudgetLine = {
   prev_precio_unit?: number | null;
   prev_precio_total?: number | null;
   operacion?: string | null;
+  observaciones?: string | null;
 };
 
 export type ImportedGaelBudget = {
@@ -50,6 +51,7 @@ export type ImportedGaelBudget = {
     unitario: number | null;
     total_proyectado: number | null;
     operacion: string | null;
+    notas: string | null;
     orden: number;
     raw: Record<string, unknown>;
   }>;
@@ -95,6 +97,7 @@ export async function fetchGaelBudget(
       unitario: line.prev_precio_unit ?? null,
       total_proyectado: line.prev_precio_total ?? null,
       operacion: line.operacion ?? null,
+      notas: line.observaciones?.trim() || null,
       orden: index + 1,
       raw: line as Record<string, unknown>,
     })),

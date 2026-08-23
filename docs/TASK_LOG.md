@@ -434,3 +434,16 @@ Para cada sesión:
   subtotal por grupo y total general.
 - Se elimina de Resultado Financiero el bloque redundante de Proyectos
   realizados; la vista operativa de Resultados lo conserva.
+
+## Publicación 1.3.0 — 23 agosto 2026, 11:25
+
+- La ficha de proyecto permite crear y guardar un borrador permanente de
+  presupuesto antes de ingresarlo en Gael.
+- El borrador se exporta al formato Excel compatible con la importación de
+  líneas de Gael.
+- Al ingresar el número oficial de Gael, Martes convierte el mismo registro y
+  reemplaza sus líneas preliminares por la copia oficial.
+- Los conceptos y notas del borrador se conservan cuando la API de Gael no los
+  devuelve.
+- La creación, edición y exportación del borrador queda disponible para las
+  mismas personas autorizadas a importar presupuestos Gael en el proyecto.

@@ -12,6 +12,7 @@ import {
   canImportProjectGaelBudgets,
 } from "@/lib/auth/projectGaelAccess";
 import { fetchGaelBudget } from "@/lib/integrations/gael/budgets";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Json, TableUpdate } from "@/types/database";
 
@@ -1365,42 +1366,179 @@ async function upsertGaelBudgetForProject(
     );
   }
 
-  const { data: budget, error: budgetError } = await supabase
-    .from("proyecto_presupuestos_gael")
-    .upsert(
-      {
-        proyecto_id: cleanProjectId,
-        gael_presupuesto_id:
-          importedBudget.header.gael_presupuesto_id,
-        nombre: importedBudget.header.nombre,
-        estado: importedBudget.header.estado,
-        empresa_nombre: importedBudget.header.empresa_nombre,
-        ucontrol_nombre: importedBudget.header.ucontrol_nombre,
-        valor_proyectado: importedBudget.header.valor_proyectado,
-        fecha_creacion_gael:
-          importedBudget.header.fecha_creacion_gael,
-        fecha_actualizacion: now,
-        actualizado_por_id: person.id,
-        creado_por_id: person.id,
-        raw: importedBudget.header.raw as Json,
-      },
-      {
-        onConflict: "proyecto_id,gael_presupuesto_id",
-      }
-    )
-    .select("id")
-    .single();
+  const budgetStore = createAdminClient();
 
-  if (budgetError) {
+  const { data: existingOfficial, error: officialLookupError } = await budgetStore
+    .from("proyecto_presupuestos_gael")
+    .select(`
+      id,
+      proyecto_presupuesto_gael_lineas (
+        categoria,
+        concepto,
+        cantidad,
+        veces,
+        unitario,
+        operacion,
+        notas,
+        orden
+      )
+    `)
+    .eq("proyecto_id", cleanProjectId)
+    .eq("gael_presupuesto_id", importedBudget.header.gael_presupuesto_id)
+    .maybeSingle();
+
+  if (officialLookupError) {
     throw new Error(
-      `No se pudo guardar el presupuesto Gael: ${budgetError.message}`
+      `No se pudo buscar el presupuesto Gael: ${officialLookupError.message}`
     );
   }
 
-  const { error: deleteLinesError } = await supabase
+  const { data: draft, error: draftLookupError } = await budgetStore
+    .from("proyecto_presupuestos_gael")
+    .select(`
+      id,
+      proyecto_presupuesto_gael_lineas (
+        categoria,
+        concepto,
+        cantidad,
+        veces,
+        unitario,
+        operacion,
+        notas,
+        orden
+      )
+    `)
+    .eq("proyecto_id", cleanProjectId)
+    .eq("origen", "martes")
+    .eq("estado_registro", "borrador")
+    .maybeSingle();
+
+  if (draftLookupError) {
+    throw new Error(
+      `No se pudo buscar el borrador de Martes: ${draftLookupError.message}`
+    );
+  }
+
+  const conceptSourceLines = (
+    draft?.proyecto_presupuesto_gael_lineas ??
+    existingOfficial?.proyecto_presupuesto_gael_lineas ??
+    []
+  ).sort((a, b) => a.orden - b.orden);
+  const usedSourceLineIndexes = new Set<number>();
+  const normalizedText = (value: string | null) =>
+    value?.trim().toLocaleLowerCase("es-CL") ?? "";
+  const normalizedNumber = (value: number | null) => Number(value ?? 0);
+
+  const officialLines = importedBudget.lines.map((line) => {
+    const matchingIndex = conceptSourceLines.findIndex(
+      (sourceLine, index) =>
+        !usedSourceLineIndexes.has(index) &&
+        normalizedText(sourceLine.categoria) ===
+          normalizedText(line.categoria) &&
+        normalizedNumber(sourceLine.cantidad) ===
+          normalizedNumber(line.cantidad) &&
+        normalizedNumber(sourceLine.veces) ===
+          normalizedNumber(line.veces) &&
+        normalizedNumber(sourceLine.unitario) ===
+          normalizedNumber(line.unitario) &&
+        normalizedText(sourceLine.operacion) ===
+          normalizedText(line.operacion)
+    );
+    const sourceLine =
+      matchingIndex >= 0 ? conceptSourceLines[matchingIndex] : null;
+
+    if (matchingIndex >= 0) {
+      usedSourceLineIndexes.add(matchingIndex);
+    }
+
+    return {
+      ...line,
+      concepto: line.concepto?.trim() || sourceLine?.concepto?.trim() || null,
+      notas: line.notas?.trim() || sourceLine?.notas?.trim() || null,
+    };
+  });
+
+  const officialValues = {
+    gael_presupuesto_id: importedBudget.header.gael_presupuesto_id,
+    origen: "gael",
+    estado_registro: "oficial",
+    nombre: importedBudget.header.nombre,
+    estado: importedBudget.header.estado,
+    empresa_nombre: importedBudget.header.empresa_nombre,
+    ucontrol_nombre: importedBudget.header.ucontrol_nombre,
+    valor_proyectado: importedBudget.header.valor_proyectado,
+    fecha_creacion_gael: importedBudget.header.fecha_creacion_gael,
+    fecha_importacion: now,
+    fecha_actualizacion: now,
+    actualizado_por_id: person.id,
+    raw: importedBudget.header.raw as Json,
+  };
+
+  let budgetId: string;
+
+  if (existingOfficial) {
+    const { error: updateError } = await budgetStore
+      .from("proyecto_presupuestos_gael")
+      .update(officialValues)
+      .eq("id", existingOfficial.id);
+
+    if (updateError) {
+      throw new Error(
+        `No se pudo actualizar el presupuesto Gael: ${updateError.message}`
+      );
+    }
+
+    budgetId = existingOfficial.id;
+
+    if (draft && draft.id !== budgetId) {
+      const { error: removeDraftError } = await budgetStore
+        .from("proyecto_presupuestos_gael")
+        .delete()
+        .eq("id", draft.id);
+
+      if (removeDraftError) {
+        throw new Error(
+          `No se pudo reemplazar el borrador: ${removeDraftError.message}`
+        );
+      }
+    }
+  } else if (draft) {
+    const { error: convertDraftError } = await budgetStore
+      .from("proyecto_presupuestos_gael")
+      .update(officialValues)
+      .eq("id", draft.id);
+
+    if (convertDraftError) {
+      throw new Error(
+        `No se pudo convertir el borrador en presupuesto oficial: ${convertDraftError.message}`
+      );
+    }
+
+    budgetId = draft.id;
+  } else {
+    const { data: createdBudget, error: insertError } = await budgetStore
+      .from("proyecto_presupuestos_gael")
+      .insert({
+        proyecto_id: cleanProjectId,
+        creado_por_id: person.id,
+        ...officialValues,
+      })
+      .select("id")
+      .single();
+
+    if (insertError) {
+      throw new Error(
+        `No se pudo guardar el presupuesto Gael: ${insertError.message}`
+      );
+    }
+
+    budgetId = createdBudget.id;
+  }
+
+  const { error: deleteLinesError } = await budgetStore
     .from("proyecto_presupuesto_gael_lineas")
     .delete()
-    .eq("presupuesto_id", budget.id);
+    .eq("presupuesto_id", budgetId);
 
   if (deleteLinesError) {
     throw new Error(
@@ -1408,12 +1546,12 @@ async function upsertGaelBudgetForProject(
     );
   }
 
-  if (importedBudget.lines.length > 0) {
-    const { error: insertLinesError } = await supabase
+  if (officialLines.length > 0) {
+    const { error: insertLinesError } = await budgetStore
       .from("proyecto_presupuesto_gael_lineas")
       .insert(
-        importedBudget.lines.map((line) => ({
-          presupuesto_id: budget.id,
+        officialLines.map((line) => ({
+          presupuesto_id: budgetId,
           gael_linea_id: line.gael_linea_id,
           categoria: line.categoria,
           concepto: line.concepto,
@@ -1422,6 +1560,7 @@ async function upsertGaelBudgetForProject(
           unitario: line.unitario,
           total_proyectado: line.total_proyectado,
           operacion: line.operacion,
+          notas: line.notas,
           orden: line.orden,
           raw: line.raw as Json,
         }))

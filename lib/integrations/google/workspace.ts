@@ -193,6 +193,13 @@ function timestampToIso(value: string | undefined) {
     : null;
 }
 
+function logGoogleSummaryFailure(service: string, caughtError: unknown) {
+  const detail =
+    caughtError instanceof Error ? caughtError.message : "Error desconocido";
+
+  console.warn(`No se pudo actualizar ${service}: ${detail}`);
+}
+
 export async function getGoogleGmailSummary({
   supabase,
   personId,
@@ -319,7 +326,7 @@ export async function getGoogleGmailSummary({
       recentMessages,
     };
   } catch (caughtError) {
-    console.error("No se pudo consultar Gmail.", caughtError);
+    logGoogleSummaryFailure("Gmail", caughtError);
 
     return {
       status: "error",
@@ -406,7 +413,7 @@ export async function getGoogleCalendarSummary({
       })),
     };
   } catch (caughtError) {
-    console.error("No se pudo consultar Google Calendar.", caughtError);
+    logGoogleSummaryFailure("Google Calendar", caughtError);
 
     return {
       status: "error",
@@ -489,7 +496,7 @@ export async function getGoogleDriveSummary({
       })),
     };
   } catch (caughtError) {
-    console.error("No se pudo consultar Google Drive.", caughtError);
+    logGoogleSummaryFailure("Google Drive", caughtError);
 
     return {
       status: "error",

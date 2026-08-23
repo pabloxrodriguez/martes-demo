@@ -339,6 +339,8 @@ export async function getProjectById(id: string) {
       proyecto_presupuestos_gael (
         id,
         gael_presupuesto_id,
+        origen,
+        estado_registro,
         nombre,
         estado,
         empresa_nombre,
@@ -355,6 +357,7 @@ export async function getProjectById(id: string) {
           unitario,
           total_proyectado,
           operacion,
+          notas,
           orden
         )
       ),
@@ -422,7 +425,8 @@ export async function getProjectById(id: string) {
         }))
         .sort(
           (a, b) =>
-            a.gael_presupuesto_id - b.gael_presupuesto_id
+            (a.gael_presupuesto_id ?? 0) -
+            (b.gael_presupuesto_id ?? 0)
         ) ?? [],
 
     proyecto_presupuesto_gael_accesos:

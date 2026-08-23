@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 type GaelBudgetLine = {
   id: string;
   categoria: string | null;
@@ -42,6 +44,7 @@ type ProjectGaelBudgetsProps = {
   canManageAccess?: boolean;
   notice?: string | null;
   noticeTone?: "success" | "error";
+  draftExporter?: ReactNode;
 };
 
 const currencyFormatter = new Intl.NumberFormat("es-CL", {
@@ -94,6 +97,7 @@ export function ProjectGaelBudgets({
   canManageAccess = false,
   notice = null,
   noticeTone = "success",
+  draftExporter = null,
 }: ProjectGaelBudgetsProps) {
   const authorizedPersonIds = new Set(
     accessList.map((access) => access.persona_id)
@@ -147,6 +151,8 @@ export function ProjectGaelBudgets({
           {notice}
         </div>
       ) : null}
+
+      {budgets.length === 0 ? draftExporter : null}
 
       {canManageAccess ? (
         <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
@@ -217,7 +223,8 @@ export function ProjectGaelBudgets({
 
       {budgets.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-zinc-500">
-          Este proyecto todavía no tiene presupuestos Gael importados.
+          Este proyecto todavía no tiene un presupuesto oficial importado desde
+          Gael.
         </div>
       ) : (
         <div className="mt-6 space-y-6">

@@ -42,15 +42,21 @@ export function decryptGoogleToken(payload: string) {
     throw new Error("El token cifrado de Google no tiene un formato válido.");
   }
 
-  const decipher = crypto.createDecipheriv(
-    algorithm,
-    getEncryptionKey(),
-    Buffer.from(ivValue, "base64url")
-  );
-  decipher.setAuthTag(Buffer.from(authTagValue, "base64url"));
+  try {
+    const decipher = crypto.createDecipheriv(
+      algorithm,
+      getEncryptionKey(),
+      Buffer.from(ivValue, "base64url")
+    );
+    decipher.setAuthTag(Buffer.from(authTagValue, "base64url"));
 
-  return Buffer.concat([
-    decipher.update(Buffer.from(encryptedValue, "base64url")),
-    decipher.final(),
-  ]).toString("utf8");
+    return Buffer.concat([
+      decipher.update(Buffer.from(encryptedValue, "base64url")),
+      decipher.final(),
+    ]).toString("utf8");
+  } catch {
+    throw new Error(
+      "La conexión Google fue cifrada con otra clave. Desconecta Google y vuelve a conectarlo."
+    );
+  }
 }

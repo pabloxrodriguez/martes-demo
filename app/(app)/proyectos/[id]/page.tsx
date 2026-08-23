@@ -1,5 +1,6 @@
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
 import { ProjectGaelBudgets } from "@/components/projects/ProjectGaelBudgets";
+import { ProjectGaelBudgetDraftExporter } from "@/components/projects/ProjectGaelBudgetDraftExporter";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";
 import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
@@ -172,6 +173,20 @@ export default async function ProjectPage({
     person: currentPerson,
     projectResponsibleId: project.responsable?.id ?? null,
   });
+  const projectBudgets = project.proyecto_presupuestos_gael ?? [];
+  const draftBudget = projectBudgets.find(
+    (budget) =>
+      budget.origen === "martes" &&
+      budget.estado_registro === "borrador"
+  );
+  const officialBudgets = projectBudgets.filter(
+    (
+      budget
+    ): budget is typeof budget & { gael_presupuesto_id: number } =>
+      budget.origen === "gael" &&
+      budget.estado_registro === "oficial" &&
+      budget.gael_presupuesto_id !== null
+  );
   const gaelAccessPeopleOptions = editOptions.people
     .filter((person) => person.id !== project.responsable?.id)
     .map((person) => ({
@@ -246,7 +261,7 @@ export default async function ProjectPage({
 
           {canViewGaelBudgets ? (
             <ProjectGaelBudgets
-              budgets={project.proyecto_presupuestos_gael ?? []}
+              budgets={officialBudgets}
               accessList={project.proyecto_presupuesto_gael_accesos ?? []}
               peopleOptions={gaelAccessPeopleOptions}
               onImport={importBudget}
@@ -259,6 +274,34 @@ export default async function ProjectPage({
               notice={gaelNotice}
               noticeTone={
                 gaelNoticeCode === "error" ? "error" : "success"
+              }
+              draftExporter={
+                canImportGaelBudgets ? (
+                  <ProjectGaelBudgetDraftExporter
+                    project={{ id: project.id, nombre: project.nombre }}
+                    initialDraft={
+                      draftBudget
+                        ? {
+                            id: draftBudget.id,
+                            lines:
+                              draftBudget.proyecto_presupuesto_gael_lineas.map(
+                                (line) => ({
+                                  id: line.id,
+                                  categoria: line.categoria ?? "Catering",
+                                  concepto: line.concepto ?? "",
+                                  cantidad: line.cantidad ?? 1,
+                                  veces: line.veces ?? 1,
+                                  unitario: line.unitario ?? 0,
+                                  operacion:
+                                    line.operacion ?? "Compra Afecta",
+                                  notas: line.notas ?? "",
+                                })
+                              ),
+                          }
+                        : null
+                    }
+                  />
+                ) : null
               }
             />
           ) : null}

@@ -99,7 +99,9 @@ type ProyectoVenuesRow = {
 type ProyectoPresupuestosGaelRow = {
   id: string;
   proyecto_id: string;
-  gael_presupuesto_id: number;
+  gael_presupuesto_id: number | null;
+  origen: string;
+  estado_registro: string;
   nombre: string | null;
   estado: string | null;
   empresa_nombre: string | null;
@@ -116,7 +118,7 @@ type ProyectoPresupuestosGaelRow = {
 type ProyectoPresupuestoGaelLineasRow = {
   id: string;
   presupuesto_id: string;
-  gael_linea_id: number;
+  gael_linea_id: number | null;
   categoria: string | null;
   concepto: string | null;
   cantidad: number | null;
@@ -124,6 +126,7 @@ type ProyectoPresupuestoGaelLineasRow = {
   unitario: number | null;
   total_proyectado: number | null;
   operacion: string | null;
+  notas: string | null;
   orden: number;
   raw: Json | null;
 };
@@ -341,7 +344,7 @@ export type Database = {
         {
           id?: string;
           presupuesto_id: string;
-          gael_linea_id: number;
+          gael_linea_id?: number | null;
           categoria?: string | null;
           concepto?: string | null;
           cantidad?: number | null;
@@ -349,6 +352,7 @@ export type Database = {
           unitario?: number | null;
           total_proyectado?: number | null;
           operacion?: string | null;
+          notas?: string | null;
           orden?: number;
           raw?: Json | null;
         },
@@ -400,7 +404,9 @@ export type Database = {
         {
           id?: string;
           proyecto_id: string;
-          gael_presupuesto_id: number;
+          gael_presupuesto_id?: number | null;
+          origen?: string;
+          estado_registro?: string;
           nombre?: string | null;
           estado?: string | null;
           empresa_nombre?: string | null;
