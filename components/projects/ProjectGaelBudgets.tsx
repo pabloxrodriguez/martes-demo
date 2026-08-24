@@ -114,8 +114,9 @@ export function ProjectGaelBudgets({
             Presupuestos Gael
           </h2>
           <p className="mt-1 text-sm text-zinc-500">
-            Importa presupuestos de gasto por número. La ejecución se mantiene
-            en Gael; Martes solo muestra una copia de consulta.
+            {canImport
+              ? "Crea un borrador en Martes o importa el presupuesto definitivo desde Gael."
+              : "Crea, guarda y exporta un borrador compatible con Gael desde este proyecto."}
           </p>
         </div>
 

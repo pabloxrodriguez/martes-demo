@@ -56,6 +56,10 @@ export function canImportProjectGaelBudgets(
   return canViewProjectGaelBudgets(input);
 }
 
+export function canCreateProjectGaelBudgetDraft(person: Person | null) {
+  return Boolean(person && person.rol !== "lector");
+}
+
 export function canManageProjectGaelBudgetAccess({
   person,
   projectResponsibleId,

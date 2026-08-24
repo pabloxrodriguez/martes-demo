@@ -5,6 +5,7 @@ import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";
 import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
 import {
+  canCreateProjectGaelBudgetDraft,
   canImportProjectGaelBudgets,
   canManageProjectGaelBudgetAccess,
   canViewProjectGaelBudgets,
@@ -169,6 +170,8 @@ export default async function ProjectPage({
     projectResponsibleId: project.responsable?.id ?? null,
     explicitAccessPersonIds: gaelAccessPersonIds,
   });
+  const canCreateGaelBudgetDraft =
+    canCreateProjectGaelBudgetDraft(currentPerson);
   const canManageGaelAccess = canManageProjectGaelBudgetAccess({
     person: currentPerson,
     projectResponsibleId: project.responsable?.id ?? null,
@@ -259,7 +262,7 @@ export default async function ProjectPage({
             onDeleteProject={deleteCurrentProject}
           />
 
-          {canViewGaelBudgets ? (
+          {canViewGaelBudgets || canCreateGaelBudgetDraft ? (
             <ProjectGaelBudgets
               budgets={officialBudgets}
               accessList={project.proyecto_presupuesto_gael_accesos ?? []}
@@ -276,7 +279,7 @@ export default async function ProjectPage({
                 gaelNoticeCode === "error" ? "error" : "success"
               }
               draftExporter={
-                canImportGaelBudgets ? (
+                canCreateGaelBudgetDraft ? (
                   <ProjectGaelBudgetDraftExporter
                     project={{ id: project.id, nombre: project.nombre }}
                     initialDraft={

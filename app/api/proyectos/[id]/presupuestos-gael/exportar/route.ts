@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { canImportProjectGaelBudgets } from "@/lib/auth/projectGaelAccess";
+import { canCreateProjectGaelBudgetDraft } from "@/lib/auth/projectGaelAccess";
 import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 import {
   buildGaelBudgetFileName,
@@ -56,16 +56,7 @@ export async function POST(
       );
     }
 
-    if (
-      !canImportProjectGaelBudgets({
-        person,
-        projectResponsibleId: project.responsable_id,
-        explicitAccessPersonIds:
-          project.proyecto_presupuesto_gael_accesos?.map(
-            (access) => access.persona_id
-          ) ?? [],
-      })
-    ) {
+    if (!canCreateProjectGaelBudgetDraft(person)) {
       return NextResponse.json(
         { error: "No tienes acceso para exportar este presupuesto." },
         { status: 403 }

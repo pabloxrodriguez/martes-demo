@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { canImportProjectGaelBudgets } from "@/lib/auth/projectGaelAccess";
+import { canCreateProjectGaelBudgetDraft } from "@/lib/auth/projectGaelAccess";
 import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 import { validateGaelBudgetLines } from "@/lib/integrations/gael/export-budget";
 import type { GaelBudgetExportPayload } from "@/lib/integrations/gael/import-template-config";
@@ -50,16 +50,7 @@ export async function PUT(
       );
     }
 
-    if (
-      !canImportProjectGaelBudgets({
-        person,
-        projectResponsibleId: project.responsable_id,
-        explicitAccessPersonIds:
-          project.proyecto_presupuesto_gael_accesos?.map(
-            (access) => access.persona_id
-          ) ?? [],
-      })
-    ) {
+    if (!canCreateProjectGaelBudgetDraft(person)) {
       return NextResponse.json(
         { error: "No tienes acceso para guardar este presupuesto." },
         { status: 403 }
