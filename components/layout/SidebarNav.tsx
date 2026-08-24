@@ -15,6 +15,7 @@ const menuItems = [
     financialOnly: true,
   },
   { label: "Catálogos", href: "/catalogos", editorOnly: true },
+  { label: "Guía", href: "/guia" },
   {
     label: "Administración",
     href: "/administracion",
