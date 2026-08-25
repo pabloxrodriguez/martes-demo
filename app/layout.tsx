@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Martes Demo",
   description: "Demo de gestión de proyectos para clientes",
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#fafafa",
 };
 
 export default function RootLayout({
