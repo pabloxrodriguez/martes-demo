@@ -4,6 +4,7 @@ import { ProjectGaelBudgetDraftExporter } from "@/components/projects/ProjectGae
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";
 import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
+import { todayInSantiago } from "@/lib/tasks/today";
 import {
   canCreateProjectGaelBudgetDraft,
   canImportProjectGaelBudgets,
@@ -98,18 +99,6 @@ export default async function ProjectPage({
       label: template.nombre,
     })
   );
-
-  const taskStatusOptions = editOptions.taskStatuses.map(
-    (status) => ({
-      value: status.id,
-      label: status.nombre,
-    })
-  );
-
-  const defaultTaskStatusId =
-    taskStatusOptions.find(
-      (status) => status.label.toLowerCase() === "pendiente"
-    )?.value ?? taskStatusOptions[0]?.value ?? "";
 
   const associatedVenueIds = new Set(
     project.proyecto_venues?.map((item) => item.venue_id) ?? []
@@ -237,10 +226,10 @@ export default async function ProjectPage({
         <div className="mx-auto w-full max-w-screen-2xl px-5 py-10 sm:px-8">
           <TaskTable
             tasks={project.tareas}
+            currentPersonId={currentPerson!.id}
+            today={todayInSantiago()}
             peopleOptions={peopleOptions}
             taskTemplateOptions={taskTemplateOptions}
-            taskStatusOptions={taskStatusOptions}
-            defaultTaskStatusId={defaultTaskStatusId}
             onCreate={createTask}
             onUpdate={updateTask}
             onToggleCompleted={toggleCompleted}

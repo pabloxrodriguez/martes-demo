@@ -84,7 +84,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
       <div className="mt-5">
         <div className="flex items-center justify-between text-xs text-zinc-500">
-          <span>Tareas</span>
+          <span>Compromisos</span>
           <span>
             {completedTasks} / {totalTasks}
           </span>

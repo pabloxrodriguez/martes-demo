@@ -9,11 +9,13 @@ import {
   updateMyTaskField,
 } from "@/app/(app)/mi-martes/actions";
 import {
+  CommitmentStatusBadge,
   EditableCell,
   EditableSelectCell,
   type EditableTaskField,
 } from "@/components/tasks/TaskRow";
 import type { MyOpenTaskItem } from "@/lib/services/project.service";
+import { getCommitmentStatus } from "@/lib/tasks/commitment-status";
 
 type SelectOption = {
   value: string;
@@ -22,8 +24,9 @@ type SelectOption = {
 
 type MyTasksPanelProps = {
   tasks: MyOpenTaskItem[];
-  taskStatusOptions: SelectOption[];
   peopleOptions: SelectOption[];
+  currentPersonId: string;
+  today: string;
 };
 
 function formatDate(value: string | null) {
@@ -41,8 +44,9 @@ function formatDate(value: string | null) {
 
 export function MyTasksPanel({
   tasks,
-  taskStatusOptions,
   peopleOptions,
+  currentPersonId,
+  today,
 }: MyTasksPanelProps) {
   const [rowError, setRowError] = useState<string | null>(null);
 
@@ -66,14 +70,14 @@ export function MyTasksPanel({
       setRowError(
         error instanceof Error
           ? error.message
-          : "No se pudo cambiar el estado de la tarea."
+          : "No se pudo cambiar el estado del compromiso."
       );
     }
   }
 
   async function deleteTask(task: MyOpenTaskItem) {
     const confirmed = window.confirm(
-      `¿Quitar la tarea “${task.nombre}”?`
+      `¿Eliminar el compromiso “${task.nombre}”?`
     );
 
     if (!confirmed) {
@@ -87,7 +91,7 @@ export function MyTasksPanel({
       setRowError(
         error instanceof Error
           ? error.message
-          : "No se pudo eliminar la tarea."
+          : "No se pudo eliminar el compromiso."
       );
     }
   }
@@ -97,12 +101,12 @@ export function MyTasksPanel({
       <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-5 py-4">
         <div>
           <h2 className="text-lg font-semibold text-zinc-950">
-            Mis tareas
+            Mis compromisos
           </h2>
 
           <p className="mt-1 text-sm text-zinc-500">
-            Edita responsable, compromiso, estado, enlace y comentario
-            sin salir de esta vista.
+            Los estados cambian automáticamente según la fecha. Solo quien
+            creó un compromiso puede modificarlo.
           </p>
         </div>
 
@@ -122,10 +126,10 @@ export function MyTasksPanel({
           <thead className="border-b border-zinc-200 bg-zinc-50">
             <tr className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
               <th className="w-14 px-4 py-3 text-center">✓</th>
-              <th className="w-56 px-4 py-3">Tarea</th>
+              <th className="w-56 px-4 py-3">Compromiso</th>
               <th className="w-48 px-4 py-3">Proyecto</th>
               <th className="w-44 px-4 py-3">Responsable</th>
-              <th className="w-36 px-4 py-3">Compromiso</th>
+              <th className="w-36 px-4 py-3">Fecha límite</th>
               <th className="w-40 px-4 py-3">Estado</th>
               <th className="w-44 px-4 py-3">Enlace</th>
               <th className="px-4 py-3">Comentario</th>
@@ -134,9 +138,9 @@ export function MyTasksPanel({
 
           <tbody>
             {tasks.map((task) => {
-              const completed =
-                task.estados_tarea?.nombre === "Completada" ||
-                Boolean(task.fecha_completada);
+              const status = getCommitmentStatus(task, today);
+              const completed = status === "completed";
+              const canEdit = task.creada_por_id === currentPersonId;
 
               return (
                 <tr
@@ -146,18 +150,19 @@ export function MyTasksPanel({
                   <td className="px-4 py-4 text-center">
                     <button
                       type="button"
+                      disabled={!canEdit}
                       onClick={() =>
                         void toggleCompleted(task.id, !completed)
                       }
-                      className={`inline-flex h-6 w-6 items-center justify-center rounded border text-xs transition ${
+                      className={`inline-flex h-6 w-6 items-center justify-center rounded border text-xs transition disabled:cursor-not-allowed disabled:opacity-50 ${
                         completed
                           ? "border-zinc-800 bg-zinc-800 text-white"
                           : "border-zinc-300 bg-white text-transparent hover:border-zinc-500"
                       }`}
                       title={
                         completed
-                          ? "Marcar como pendiente"
-                          : "Marcar como completada"
+                          ? "Reabrir compromiso"
+                          : "Marcar como cumplido"
                       }
                     >
                       ✓
@@ -166,6 +171,7 @@ export function MyTasksPanel({
 
                   <td className="px-2 py-3">
                     <EditableCell
+                      canEdit={canEdit}
                       value={task.nombre}
                       placeholder="Sin nombre"
                       multiline
@@ -197,6 +203,7 @@ export function MyTasksPanel({
 
                   <td className="px-2 py-3">
                     <EditableSelectCell
+                      canEdit={canEdit}
                       value={task.responsable?.id ?? null}
                       options={peopleOptions}
                       placeholder="Sin responsable"
@@ -213,6 +220,7 @@ export function MyTasksPanel({
 
                   <td className="px-2 py-3">
                     <EditableCell
+                      canEdit={canEdit}
                       value={task.fecha_comprometida}
                       displayValue={formatDate(task.fecha_comprometida)}
                       placeholder="Sin fecha"
@@ -227,16 +235,13 @@ export function MyTasksPanel({
                     />
                   </td>
 
-                  <td className="px-2 py-3">
-                    <EditableSelectCell
-                      value={task.estados_tarea?.id ?? null}
-                      options={taskStatusOptions}
-                      placeholder="Sin estado"
-                      required
-                      onSave={(value) =>
-                        saveTaskField(task.id, "estado_id", value)
-                      }
-                    />
+                  <td className="px-4 py-4">
+                    <CommitmentStatusBadge status={status} />
+                    {!canEdit && (
+                      <div className="mt-1 text-xs text-zinc-400">
+                        Solo lectura
+                      </div>
+                    )}
                   </td>
 
                   <td className="px-2 py-3">
@@ -255,6 +260,7 @@ export function MyTasksPanel({
 
                       <div className="w-32">
                         <EditableCell
+                          canEdit={canEdit}
                           value={task.url}
                           placeholder="Sin enlace"
                           type="url"
@@ -270,6 +276,7 @@ export function MyTasksPanel({
                     <div className="flex items-start gap-2">
                       <div className="min-w-64 flex-1">
                         <EditableCell
+                          canEdit={canEdit}
                           value={task.comentario}
                           placeholder="Sin comentario"
                           multiline
@@ -285,9 +292,10 @@ export function MyTasksPanel({
 
                       <button
                         type="button"
+                        disabled={!canEdit}
                         onClick={() => void deleteTask(task)}
-                        className="rounded-md px-2 py-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-red-600"
-                        title="Eliminar tarea"
+                        className="rounded-md px-2 py-1 text-zinc-400 transition enabled:hover:bg-zinc-100 enabled:hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                        title={canEdit ? "Eliminar compromiso" : "Solo quien creó el compromiso puede eliminarlo"}
                       >
                         ✕
                       </button>
@@ -303,7 +311,7 @@ export function MyTasksPanel({
                   colSpan={8}
                   className="px-6 py-12 text-center text-zinc-500"
                 >
-                  No tienes tareas abiertas asignadas.
+                  No tienes compromisos abiertos asignados.
                 </td>
               </tr>
             )}

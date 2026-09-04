@@ -23,7 +23,7 @@ export function DuplicateProjectButton({
 
   async function handleClick() {
     const confirmed = window.confirm(
-      "¿Duplicar proyecto?\n\nSe creará una copia con la misma información base y venues, pero sin tareas."
+      "¿Duplicar proyecto?\n\nSe creará una copia con la misma información base y venues, pero sin compromisos."
     );
 
     if (!confirmed) {

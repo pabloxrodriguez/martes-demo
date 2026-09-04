@@ -181,14 +181,14 @@ export default async function Page({ searchParams }: PageProps) {
           <SummaryCard
             title="Proyectos activos"
             value={dashboard.summary.activeProjects.toString()}
-            detail="Con tareas abiertas"
+            detail="Con compromisos abiertos"
             icon={<BriefcaseBusiness className="h-6 w-6" />}
             tone="blue"
           />
           <SummaryCard
-            title="Tareas asignadas"
+            title="Compromisos asignados"
             value={dashboard.summary.assignedTasks.toString()}
-            detail="Pendientes o en curso"
+            detail="En curso, para hoy o atrasados"
             icon={<CheckCircle2 className="h-6 w-6" />}
             tone="amber"
           />
@@ -249,7 +249,7 @@ export default async function Page({ searchParams }: PageProps) {
                       </div>
 
                       <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-700">
-                        {row.totalOpenTasks} tarea
+                        {row.totalOpenTasks} compromiso
                         {row.totalOpenTasks === 1 ? "" : "s"} abiertas
                       </div>
                     </td>
@@ -295,7 +295,7 @@ export default async function Page({ searchParams }: PageProps) {
                                             {project.clientName}
                                           </span>
                                           <span className="shrink-0">
-                                            {project.taskCount} tarea
+                                            {project.taskCount} compromiso
                                             {project.taskCount === 1
                                               ? ""
                                               : "s"}
@@ -336,9 +336,9 @@ export default async function Page({ searchParams }: PageProps) {
         </section>
 
         <p className="mt-4 text-center text-xs text-zinc-500">
-          Cuenta tareas abiertas asignadas en proyectos activos, incluyendo
-          Administrativo - Interno. No incluye tareas completadas, canceladas
-          ni eliminadas.
+          Cuenta compromisos abiertos asignados en proyectos activos,
+          incluyendo Administrativo - Interno. No incluye compromisos
+          cumplidos ni eliminados.
         </p>
       </div>
     </main>

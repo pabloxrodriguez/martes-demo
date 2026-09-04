@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 
+import {
+  COMMITMENT_STATUS_LABELS,
+  getCommitmentStatus,
+  type CommitmentStatus,
+} from "@/lib/tasks/commitment-status";
+
 type SelectOption = {
   value: string;
   label: string;
@@ -27,6 +33,7 @@ export type TaskRowData = {
   url: string | null;
   comentario: string | null;
   orden: number;
+  creada_por_id: string | null;
   responsable: TaskPerson | null;
   estados_tarea: TaskStatus | null;
 };
@@ -34,15 +41,15 @@ export type TaskRowData = {
 export type EditableTaskField =
   | "nombre"
   | "responsable_id"
-  | "estado_id"
   | "fecha_comprometida"
   | "url"
   | "comentario";
 
 type TaskRowProps = {
   task: TaskRowData;
+  currentPersonId: string;
+  today: string;
   peopleOptions: SelectOption[];
-  taskStatusOptions: SelectOption[];
   onUpdate: (
     taskId: string,
     field: EditableTaskField,
@@ -61,6 +68,7 @@ type EditableCellProps = {
   placeholder: string;
   type?: "text" | "date" | "url";
   multiline?: boolean;
+  canEdit?: boolean;
   onSave: (value: string) => Promise<void>;
 };
 
@@ -70,6 +78,7 @@ export function EditableCell({
   placeholder,
   type = "text",
   multiline = false,
+  canEdit = true,
   onSave,
 }: EditableCellProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -112,13 +121,14 @@ export function EditableCell({
     return (
       <button
         type="button"
+        disabled={!canEdit}
         onClick={() => {
           setDraft(value ?? "");
           setError(null);
           setIsEditing(true);
         }}
-        className="block min-h-9 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-2 py-1.5 text-left transition hover:bg-zinc-100"
-        title="Haz clic para editar"
+        className="block min-h-9 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md px-2 py-1.5 text-left transition enabled:hover:bg-zinc-100 disabled:cursor-default"
+        title={canEdit ? "Haz clic para editar" : "Solo quien creó el compromiso puede modificarlo"}
       >
         {value ? (
           displayValue ?? value
@@ -210,6 +220,7 @@ type EditableSelectCellProps = {
   options: SelectOption[];
   placeholder: string;
   required?: boolean;
+  canEdit?: boolean;
   onSave: (value: string) => Promise<void>;
 };
 
@@ -218,6 +229,7 @@ export function EditableSelectCell({
   options,
   placeholder,
   required = false,
+  canEdit = true,
   onSave,
 }: EditableSelectCellProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -260,13 +272,14 @@ export function EditableSelectCell({
     return (
       <button
         type="button"
+        disabled={!canEdit}
         onClick={() => {
           setDraft(value ?? "");
           setError(null);
           setIsEditing(true);
         }}
-        className="block min-h-9 w-full rounded-md px-2 py-1.5 text-left transition hover:bg-zinc-100"
-        title="Haz clic para editar"
+        className="block min-h-9 w-full rounded-md px-2 py-1.5 text-left transition enabled:hover:bg-zinc-100 disabled:cursor-default"
+        title={canEdit ? "Haz clic para editar" : "Solo quien creó el compromiso puede modificarlo"}
       >
         {selectedOption?.label ?? (
           <span className="text-zinc-400">
@@ -356,8 +369,9 @@ function formatDate(value: string | null) {
 
 export function TaskRow({
   task,
+  currentPersonId,
+  today,
   peopleOptions,
-  taskStatusOptions,
   onUpdate,
   onToggleCompleted,
   onDelete,
@@ -368,9 +382,9 @@ export function TaskRow({
   const [successMessage, setSuccessMessage] =
     useState<string | null>(null);
 
-  const completed =
-    task.estados_tarea?.nombre === "Completada" ||
-    Boolean(task.fecha_completada);
+  const status = getCommitmentStatus(task, today);
+  const completed = status === "completed";
+  const canEdit = task.creada_por_id === currentPersonId;
 
   async function toggleCompleted() {
     try {
@@ -381,8 +395,8 @@ export function TaskRow({
 
       setSuccessMessage(
         completed
-          ? "La tarea volvió a estado pendiente."
-          : "Tarea marcada como completada."
+          ? "El compromiso volvió a estado abierto."
+          : "Compromiso marcado como cumplido."
       );
 
       window.setTimeout(() => {
@@ -392,7 +406,7 @@ export function TaskRow({
       setRowError(
         caughtError instanceof Error
           ? caughtError.message
-          : "No se pudo cambiar el estado de la tarea."
+          : "No se pudo cambiar el estado del compromiso."
       );
     } finally {
       setIsCompleting(false);
@@ -401,7 +415,7 @@ export function TaskRow({
 
   async function deleteTask() {
     const confirmed = window.confirm(
-      `¿Quitar la tarea “${task.nombre}”?`
+      `¿Eliminar el compromiso “${task.nombre}”?`
     );
 
     if (!confirmed) {
@@ -416,7 +430,7 @@ export function TaskRow({
       setRowError(
         caughtError instanceof Error
           ? caughtError.message
-          : "No se pudo eliminar la tarea."
+          : "No se pudo eliminar el compromiso."
       );
       setIsDeleting(false);
     }
@@ -434,7 +448,7 @@ export function TaskRow({
         <td className="px-4 py-4 text-center">
           <button
             type="button"
-            disabled={isCompleting || isDeleting}
+            disabled={!canEdit || isCompleting || isDeleting}
             onClick={() => void toggleCompleted()}
             className={`inline-flex h-6 w-6 items-center justify-center rounded border text-xs transition disabled:opacity-50 ${
               completed
@@ -443,8 +457,8 @@ export function TaskRow({
             }`}
             title={
               completed
-                ? "Marcar como pendiente"
-                : "Marcar como completada"
+                ? "Reabrir compromiso"
+                : "Marcar como cumplido"
             }
           >
             ✓
@@ -454,6 +468,7 @@ export function TaskRow({
         <td className="px-2 py-3">
           <div className={completed ? "line-through" : ""}>
             <EditableCell
+              canEdit={canEdit}
               value={task.nombre}
               placeholder="Sin nombre"
               onSave={(value) =>
@@ -465,6 +480,7 @@ export function TaskRow({
 
         <td className="px-2 py-3">
           <EditableSelectCell
+            canEdit={canEdit}
             value={task.responsable?.id ?? null}
             options={peopleOptions}
             placeholder="Sin responsable"
@@ -481,6 +497,7 @@ export function TaskRow({
 
         <td className="px-2 py-3">
           <EditableCell
+            canEdit={canEdit}
             value={task.fecha_comprometida}
             displayValue={formatDate(task.fecha_comprometida)}
             placeholder="Sin fecha"
@@ -496,16 +513,13 @@ export function TaskRow({
 
         </td>
 
-        <td className="px-2 py-3">
-          <EditableSelectCell
-            value={task.estados_tarea?.id ?? null}
-            options={taskStatusOptions}
-            placeholder="Sin estado"
-            required
-            onSave={(value) =>
-              onUpdate(task.id, "estado_id", value)
-            }
-          />
+        <td className="px-4 py-4">
+          <CommitmentStatusBadge status={status} />
+          {!canEdit && (
+            <div className="mt-1 text-xs text-zinc-400">
+              Solo lectura
+            </div>
+          )}
         </td>
 
         <td className="px-2 py-3">
@@ -524,6 +538,7 @@ export function TaskRow({
 
             <div className="w-28">
               <EditableCell
+                canEdit={canEdit}
                 value={task.url}
                 placeholder="Sin enlace"
                 type="url"
@@ -539,6 +554,7 @@ export function TaskRow({
           <div className="flex items-start gap-2">
             <div className="min-w-64 flex-1">
               <EditableCell
+                canEdit={canEdit}
                 value={task.comentario}
                 placeholder="Sin comentario"
                 multiline
@@ -554,10 +570,10 @@ export function TaskRow({
 
             <button
               type="button"
-              disabled={isDeleting || isCompleting}
+              disabled={!canEdit || isDeleting || isCompleting}
               onClick={() => void deleteTask()}
               className="rounded-md px-2 py-1 text-zinc-400 transition hover:bg-zinc-100 hover:text-red-600 disabled:opacity-50"
-              title="Eliminar tarea"
+              title={canEdit ? "Eliminar compromiso" : "Solo quien creó el compromiso puede eliminarlo"}
             >
               {isDeleting ? "…" : "✕"}
             </button>
@@ -591,5 +607,26 @@ export function TaskRow({
           document.body
         )}
     </>
+  );
+}
+
+const STATUS_BADGE_CLASSES: Record<CommitmentStatus, string> = {
+  in_progress: "bg-blue-50 text-blue-700 ring-blue-200",
+  due_today: "bg-amber-50 text-amber-800 ring-amber-200",
+  overdue: "bg-red-50 text-red-700 ring-red-200",
+  completed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+};
+
+export function CommitmentStatusBadge({
+  status,
+}: {
+  status: CommitmentStatus;
+}) {
+  return (
+    <span
+      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${STATUS_BADGE_CLASSES[status]}`}
+    >
+      {COMMITMENT_STATUS_LABELS[status]}
+    </span>
   );
 }

@@ -34,7 +34,6 @@ const allowedFields = [
 const editableTaskFields = [
   "nombre",
   "responsable_id",
-  "estado_id",
   "fecha_comprometida",
   "url",
   "comentario",
@@ -47,7 +46,6 @@ type CreateProjectTaskInput = {
   plantilla_tarea_id: string | null;
   nombre: string;
   responsable_id: string;
-  estado_id: string;
   fecha_comprometida: string | null;
   url: string | null;
   comentario: string | null;
@@ -884,15 +882,14 @@ async function createProjectTaskOrThrow(
   const projectIdClean = requireUuid(projectId, "El proyecto");
 
   if (!input || typeof input !== "object") {
-    throw new Error("Los datos de la tarea no son válidos.");
+    throw new Error("Los datos del compromiso no son válidos.");
   }
 
-  const taskName = requireString(input.nombre, "El nombre de la tarea");
+  const taskName = requireString(input.nombre, "El nombre del compromiso");
   const responsibleId = requireUuid(
     input.responsable_id,
     "El responsable"
   );
-  const statusId = requireUuid(input.estado_id, "El estado");
   const templateId = optionalUuid(
     input.plantilla_tarea_id ?? "",
     "La plantilla"
@@ -908,14 +905,24 @@ async function createProjectTaskOrThrow(
       : requireString(input.comentario, "El comentario") || null;
 
   if (!taskName) {
-    throw new Error("El nombre de la tarea es obligatorio.");
+    throw new Error("El nombre del compromiso es obligatorio.");
   }
 
   if (taskName.length > 500) {
-    throw new Error("El nombre de la tarea es demasiado largo.");
+    throw new Error("El nombre del compromiso es demasiado largo.");
   }
 
   const now = new Date().toISOString();
+  const { data: pendingStatus, error: pendingStatusError } = await supabase
+    .from("estados_tarea")
+    .select("id")
+    .eq("nombre", "Pendiente")
+    .single();
+
+  if (pendingStatusError || !pendingStatus) {
+    throw new Error("No se pudo encontrar el estado inicial del compromiso.");
+  }
+
   const { data: lastTask, error: orderError } = await supabase
     .from("tareas")
     .select("orden")
@@ -940,7 +947,7 @@ async function createProjectTaskOrThrow(
       plantilla_tarea_id: templateId,
       nombre: taskName,
       responsable_id: responsibleId,
-      estado_id: statusId,
+      estado_id: pendingStatus.id,
       fecha_comprometida: committedDate,
       url,
       comentario: comment,
@@ -956,17 +963,17 @@ async function createProjectTaskOrThrow(
   if (error) {
     if (error.code === "23505" && templateId) {
       throw new Error(
-        "Esta tarea de plantilla ya existe en el proyecto."
+        "Este compromiso de plantilla ya existe en el proyecto."
       );
     }
 
     throw new Error(
-      `No se pudo crear la tarea: ${error.message}`
+      `No se pudo crear el compromiso: ${error.message}`
     );
   }
 
   if (!data) {
-    throw new Error("No se pudo confirmar la creación de la tarea.");
+    throw new Error("No se pudo confirmar la creación del compromiso.");
   }
 
   try {
@@ -978,7 +985,7 @@ async function createProjectTaskOrThrow(
     );
   } catch (timestampError) {
     console.error(
-      "La tarea se creó, pero no se pudo actualizar la fecha del proyecto.",
+      "El compromiso se creó, pero no se pudo actualizar la fecha del proyecto.",
       {
         projectId: projectIdClean,
         error: timestampError,
@@ -992,14 +999,14 @@ async function createProjectTaskOrThrow(
 
 function taskCreationErrorMessage(error: unknown) {
   if (!(error instanceof Error)) {
-    return "No se pudo crear la tarea. Revisa los datos e inténtalo nuevamente.";
+    return "No se pudo crear el compromiso. Revisa los datos e inténtalo nuevamente.";
   }
 
   if (
-    error.message.startsWith("No se pudo crear la tarea:") ||
+    error.message.startsWith("No se pudo crear el compromiso:") ||
     error.message.startsWith("No se pudo preparar la nueva tarea:")
   ) {
-    return "No se pudo guardar la tarea. Revisa tus permisos e inténtalo nuevamente.";
+    return "No se pudo guardar el compromiso. Revisa tus permisos e inténtalo nuevamente.";
   }
 
   return error.message;
@@ -1017,7 +1024,7 @@ export async function createProjectTask(
       error: null,
     };
   } catch (error) {
-    console.error("No se pudo crear una tarea.", {
+    console.error("No se pudo crear un compromiso.", {
       projectId,
       error,
     });
@@ -1037,7 +1044,7 @@ export async function updateTaskField(
 ) {
   const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
-  const cleanTaskId = requireUuid(taskId, "La tarea");
+  const cleanTaskId = requireUuid(taskId, "El compromiso");
 
   if (!editableTaskFields.includes(field)) {
     throw new Error("El campo que intentas modificar no está permitido.");
@@ -1045,21 +1052,28 @@ export async function updateTaskField(
 
   const cleanValue = requireString(value, "El valor");
 
+  await requireTaskCreatedByPerson(
+    supabase,
+    cleanProjectId,
+    cleanTaskId,
+    person.id
+  );
+
   if (field === "nombre" && !cleanValue) {
-    throw new Error("El nombre de la tarea es obligatorio.");
+    throw new Error("El nombre del compromiso es obligatorio.");
   }
 
   if (field === "nombre" && cleanValue.length > 500) {
-    throw new Error("El nombre de la tarea es demasiado largo.");
+    throw new Error("El nombre del compromiso es demasiado largo.");
   }
 
   let normalizedValue: string | null =
     cleanValue === "" ? null : cleanValue;
 
-  if (field === "responsable_id" || field === "estado_id") {
+  if (field === "responsable_id") {
     normalizedValue = requireUuid(
       cleanValue,
-      field === "responsable_id" ? "El responsable" : "El estado"
+      "El responsable"
     );
   }
 
@@ -1092,12 +1106,12 @@ export async function updateTaskField(
 
   if (error) {
     throw new Error(
-      `No se pudo actualizar la tarea: ${error.message}`
+      `No se pudo actualizar el compromiso: ${error.message}`
     );
   }
 
   if (!data) {
-    throw new Error("No se encontró la tarea que intentas actualizar.");
+    throw new Error("No se encontró el compromiso que intentas actualizar.");
   }
 
   await updateProjectTimestamp(
@@ -1118,11 +1132,18 @@ export async function toggleTaskCompleted(
 ) {
   const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
-  const cleanTaskId = requireUuid(taskId, "La tarea");
+  const cleanTaskId = requireUuid(taskId, "El compromiso");
 
   if (typeof completed !== "boolean") {
-    throw new Error("El estado de la tarea no es válido.");
+    throw new Error("El estado del compromiso no es válido.");
   }
+
+  await requireTaskCreatedByPerson(
+    supabase,
+    cleanProjectId,
+    cleanTaskId,
+    person.id
+  );
 
   const targetStatusName = completed
     ? "Completada"
@@ -1162,12 +1183,12 @@ export async function toggleTaskCompleted(
 
   if (error) {
     throw new Error(
-      `No se pudo cambiar el estado de la tarea: ${error.message}`
+      `No se pudo cambiar el estado del compromiso: ${error.message}`
     );
   }
 
   if (!data) {
-    throw new Error("No se encontró la tarea que intentas actualizar.");
+    throw new Error("No se encontró el compromiso que intentas actualizar.");
   }
 
   await updateProjectTimestamp(
@@ -1187,11 +1208,11 @@ export async function deleteProjectTask(
 ) {
   const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
-  const cleanTaskId = requireUuid(taskId, "La tarea");
+  const cleanTaskId = requireUuid(taskId, "El compromiso");
 
   const { data: existingTask, error: lookupError } = await supabase
     .from("tareas")
-    .select("id, responsable_id")
+    .select("id, creada_por_id")
     .eq("id", cleanTaskId)
     .eq("proyecto_id", cleanProjectId)
     .eq("eliminada", false)
@@ -1199,37 +1220,17 @@ export async function deleteProjectTask(
 
   if (lookupError) {
     throw new Error(
-      `No se pudo verificar la tarea: ${lookupError.message}`
+      `No se pudo verificar el compromiso: ${lookupError.message}`
     );
   }
 
   if (!existingTask) {
-    throw new Error("La tarea ya no existe o pertenece a otro proyecto.");
+    throw new Error("El compromiso ya no existe o pertenece a otro proyecto.");
   }
 
-  const { data: project, error: projectError } = await supabase
-    .from("proyectos")
-    .select("responsable_id")
-    .eq("id", cleanProjectId)
-    .maybeSingle();
-
-  if (projectError) {
+  if (existingTask.creada_por_id !== person.id) {
     throw new Error(
-      `No se pudo verificar el proyecto: ${projectError.message}`
-    );
-  }
-
-  if (!project) {
-    throw new Error("El proyecto ya no existe.");
-  }
-
-  const canDelete =
-    existingTask.responsable_id === person.id ||
-    project.responsable_id === person.id;
-
-  if (!canDelete) {
-    throw new Error(
-      "Solo la persona asignada a la tarea o el responsable del proyecto pueden eliminarla."
+      "Solo quien creó el compromiso puede eliminarlo."
     );
   }
 
@@ -1251,13 +1252,13 @@ export async function deleteProjectTask(
 
   if (error) {
     throw new Error(
-      `No se pudo eliminar la tarea: ${error.message}`
+      `No se pudo eliminar el compromiso: ${error.message}`
     );
   }
 
   if (!deletedTask) {
     throw new Error(
-      "La tarea no se pudo eliminar. Revisa tus permisos e inténtalo nuevamente."
+      "El compromiso no se pudo eliminar. Revisa tus permisos e inténtalo nuevamente."
     );
   }
 
@@ -1270,6 +1271,33 @@ export async function deleteProjectTask(
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
   revalidatePath("/proyectos");
+}
+
+async function requireTaskCreatedByPerson(
+  supabase: ServerSupabaseClient,
+  projectId: string,
+  taskId: string,
+  personId: string
+) {
+  const { data, error } = await supabase
+    .from("tareas")
+    .select("id, creada_por_id")
+    .eq("id", taskId)
+    .eq("proyecto_id", projectId)
+    .eq("eliminada", false)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`No se pudo verificar el compromiso: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("No se encontró el compromiso que intentas modificar.");
+  }
+
+  if (data.creada_por_id !== personId) {
+    throw new Error("Solo quien creó el compromiso puede modificarlo.");
+  }
 }
 
 export async function importGaelBudget(

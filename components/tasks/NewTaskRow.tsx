@@ -2,6 +2,19 @@
 
 import { useState } from "react";
 
+import {
+  COMMITMENT_STATUS_LABELS,
+  getCommitmentStatus,
+  type CommitmentStatus,
+} from "@/lib/tasks/commitment-status";
+
+const STATUS_BADGE_CLASSES: Record<CommitmentStatus, string> = {
+  in_progress: "bg-blue-50 text-blue-700 ring-blue-200",
+  due_today: "bg-amber-50 text-amber-800 ring-amber-200",
+  overdue: "bg-red-50 text-red-700 ring-red-200",
+  completed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+};
+
 type SelectOption = {
   value: string;
   label: string;
@@ -11,7 +24,6 @@ type CreateTaskInput = {
   plantilla_tarea_id: string | null;
   nombre: string;
   responsable_id: string;
-  estado_id: string;
   fecha_comprometida: string | null;
   url: string | null;
   comentario: string | null;
@@ -23,18 +35,16 @@ type CreateTaskResult = {
 };
 
 type NewTaskRowProps = {
+  today: string;
   peopleOptions: SelectOption[];
   taskTemplateOptions: SelectOption[];
-  taskStatusOptions: SelectOption[];
-  defaultTaskStatusId: string;
   onCreate: (input: CreateTaskInput) => Promise<CreateTaskResult>;
 };
 
 export function NewTaskRow({
+  today,
   peopleOptions,
   taskTemplateOptions,
-  taskStatusOptions,
-  defaultTaskStatusId,
   onCreate,
 }: NewTaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -45,21 +55,24 @@ export function NewTaskRow({
   );
   const [responsibleId, setResponsibleId] = useState("");
   const [committedDate, setCommittedDate] = useState("");
-  const [statusId, setStatusId] = useState(
-    defaultTaskStatusId
-  );
   const [url, setUrl] = useState("");
   const [comment, setComment] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const initialStatus = getCommitmentStatus(
+    {
+      fecha_comprometida: committedDate || null,
+      fecha_completada: null,
+    },
+    today
+  );
 
   function resetForm() {
     setTaskName("");
     setTemplateId(null);
     setResponsibleId("");
     setCommittedDate("");
-    setStatusId(defaultTaskStatusId);
     setUrl("");
     setComment("");
     setError(null);
@@ -93,17 +106,12 @@ export function NewTaskRow({
     const cleanTaskName = taskName.trim();
 
     if (!cleanTaskName) {
-      setError("Debes escribir o seleccionar una tarea.");
+      setError("Debes escribir o seleccionar un compromiso.");
       return;
     }
 
     if (!responsibleId) {
       setError("Debes seleccionar un responsable.");
-      return;
-    }
-
-    if (!statusId) {
-      setError("Debes seleccionar un estado.");
       return;
     }
 
@@ -115,7 +123,6 @@ export function NewTaskRow({
         plantilla_tarea_id: templateId,
         nombre: cleanTaskName,
         responsable_id: responsibleId,
-        estado_id: statusId,
         fecha_comprometida:
           committedDate.trim() || null,
         url: url.trim() || null,
@@ -123,7 +130,7 @@ export function NewTaskRow({
       });
 
       if (!result.success) {
-        setError(result.error ?? "No se pudo crear la tarea.");
+        setError(result.error ?? "No se pudo crear el compromiso.");
         return;
       }
 
@@ -133,7 +140,7 @@ export function NewTaskRow({
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "No se pudo crear la tarea."
+          : "No se pudo crear el compromiso."
       );
     } finally {
       setIsSaving(false);
@@ -151,7 +158,7 @@ export function NewTaskRow({
             onClick={() => setIsEditing(true)}
             className="font-medium text-zinc-500 transition hover:text-zinc-950"
           >
-            + Nueva tarea…
+            + Nuevo compromiso…
           </button>
         </td>
       </tr>
@@ -172,7 +179,7 @@ export function NewTaskRow({
             list="task-template-options"
             value={taskName}
             disabled={isSaving}
-            placeholder="Buscar o escribir tarea"
+            placeholder="Buscar o escribir compromiso"
             onChange={(event) =>
               handleTaskNameChange(event.target.value)
             }
@@ -195,11 +202,11 @@ export function NewTaskRow({
 
           {templateId ? (
             <p className="mt-1 text-xs text-zinc-400">
-              Tarea de plantilla
+              Compromiso de plantilla
             </p>
           ) : taskName.trim() ? (
             <p className="mt-1 text-xs text-zinc-400">
-              Tarea libre
+              Compromiso libre
             </p>
           ) : null}
         </td>
@@ -247,30 +254,11 @@ export function NewTaskRow({
         </td>
 
         <td className="px-3 py-3">
-          <select
-            value={statusId}
-            disabled={isSaving}
-            onChange={(event) =>
-              {
-                clearError();
-                setStatusId(event.target.value);
-              }
-            }
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none focus:border-zinc-500"
+          <span
+            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${STATUS_BADGE_CLASSES[initialStatus]}`}
           >
-            <option value="">
-              Seleccionar estado
-            </option>
-
-            {taskStatusOptions.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-              >
-                {option.label}
-              </option>
-            ))}
-          </select>
+            {COMMITMENT_STATUS_LABELS[initialStatus]}
+          </span>
         </td>
 
         <td className="px-3 py-3">
@@ -315,7 +303,7 @@ export function NewTaskRow({
             >
               {isSaving
                 ? "Creando..."
-                : "Crear tarea"}
+                : "Crear compromiso"}
             </button>
 
             <button

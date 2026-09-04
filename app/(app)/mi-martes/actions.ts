@@ -17,7 +17,7 @@ function requireTaskId(value: string) {
   const taskId = value.trim();
 
   if (!uuidPattern.test(taskId)) {
-    throw new Error("La tarea seleccionada no es válida.");
+    throw new Error("El compromiso seleccionado no es válido.");
   }
 
   return taskId;
@@ -35,12 +35,12 @@ async function getTaskProjectId(taskId: string) {
 
   if (error) {
     throw new Error(
-      `No se pudo verificar la tarea: ${error.message}`
+      `No se pudo verificar el compromiso: ${error.message}`
     );
   }
 
   if (!data) {
-    throw new Error("La tarea ya no existe.");
+    throw new Error("El compromiso ya no existe.");
   }
 
   return data.proyecto_id;

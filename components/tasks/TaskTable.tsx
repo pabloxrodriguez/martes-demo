@@ -15,7 +15,6 @@ type CreateTaskInput = {
   plantilla_tarea_id: string | null;
   nombre: string;
   responsable_id: string;
-  estado_id: string;
   fecha_comprometida: string | null;
   url: string | null;
   comentario: string | null;
@@ -28,10 +27,10 @@ type CreateTaskResult = {
 
 type TaskTableProps = {
   tasks: TaskRowData[] | null;
+  currentPersonId: string;
+  today: string;
   peopleOptions: SelectOption[];
   taskTemplateOptions: SelectOption[];
-  taskStatusOptions: SelectOption[];
-  defaultTaskStatusId: string;
   onCreate: (input: CreateTaskInput) => Promise<CreateTaskResult>;
   onUpdate: (
     taskId: string,
@@ -52,15 +51,7 @@ function isCompleted(task: TaskRowData) {
   );
 }
 
-function isCancelled(task: TaskRowData) {
-  return task.estados_tarea?.nombre === "Cancelada";
-}
-
 function getTaskGroup(task: TaskRowData) {
-  if (isCancelled(task)) {
-    return 3;
-  }
-
   if (isCompleted(task)) {
     return 2;
   }
@@ -74,10 +65,10 @@ function getTaskGroup(task: TaskRowData) {
 
 export function TaskTable({
   tasks,
+  currentPersonId,
+  today,
   peopleOptions,
   taskTemplateOptions,
-  taskStatusOptions,
-  defaultTaskStatusId,
   onCreate,
   onUpdate,
   onToggleCompleted,
@@ -110,14 +101,14 @@ export function TaskTable({
     <section>
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold text-zinc-950">
-          Tareas
+          Compromisos
         </h2>
 
         <span className="text-sm text-zinc-500">
           {sortedTasks.length}{" "}
           {sortedTasks.length === 1
-            ? "tarea"
-            : "tareas"}
+            ? "compromiso"
+            : "compromisos"}
         </span>
       </div>
 
@@ -130,7 +121,7 @@ export function TaskTable({
               </th>
 
               <th className="min-w-64 px-4 py-3">
-                Tarea
+                Compromiso
               </th>
 
               <th className="min-w-48 px-4 py-3">
@@ -138,7 +129,7 @@ export function TaskTable({
               </th>
 
               <th className="min-w-40 px-4 py-3">
-                Compromiso
+                Fecha límite
               </th>
 
               <th className="min-w-40 px-4 py-3">
@@ -160,8 +151,9 @@ export function TaskTable({
               <TaskRow
                 key={task.id}
                 task={task}
+                currentPersonId={currentPersonId}
+                today={today}
                 peopleOptions={peopleOptions}
-                taskStatusOptions={taskStatusOptions}
                 onUpdate={onUpdate}
                 onToggleCompleted={onToggleCompleted}
                 onDelete={onDelete}
@@ -174,16 +166,15 @@ export function TaskTable({
                   colSpan={7}
                   className="px-6 py-12 text-center text-zinc-500"
                 >
-                  Este proyecto todavía no tiene tareas.
+                  Este proyecto todavía no tiene compromisos.
                 </td>
               </tr>
             )}
 
             <NewTaskRow
+              today={today}
               peopleOptions={peopleOptions}
               taskTemplateOptions={taskTemplateOptions}
-              taskStatusOptions={taskStatusOptions}
-              defaultTaskStatusId={defaultTaskStatusId}
               onCreate={onCreate}
             />
                     </tbody>

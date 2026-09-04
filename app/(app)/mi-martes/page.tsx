@@ -220,10 +220,6 @@ export default async function Page({ searchParams }: PageProps) {
       )
     )[0];
 
-  const taskStatusOptions = editOptions.taskStatuses.map((status) => ({
-    value: status.id,
-    label: status.nombre,
-  }));
   const peopleOptions = editOptions.people.map((person) => ({
     value: person.id,
     label: person.nombre,
@@ -255,7 +251,7 @@ export default async function Page({ searchParams }: PageProps) {
 
             <p className="mt-2 text-sm text-zinc-500">
               Buenos días, {person!.nombre}. Esta es tu vista de
-              tareas, proyectos y movimientos recientes.
+              compromisos, proyectos y movimientos recientes.
             </p>
           </div>
 
@@ -269,7 +265,7 @@ export default async function Page({ searchParams }: PageProps) {
 
         <section className="mt-8 grid gap-4 md:grid-cols-4">
           <SummaryCard
-            title="Tareas atrasadas"
+            title="Compromisos atrasados"
             value={overdueTasks.length}
             detail="Requieren atención"
           />
@@ -328,10 +324,11 @@ export default async function Page({ searchParams }: PageProps) {
         />
 
         <section className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
-          <MyTasksPanel
-            tasks={sortedTasks}
-            taskStatusOptions={taskStatusOptions}
-            peopleOptions={peopleOptions}
+      <MyTasksPanel
+        tasks={sortedTasks}
+        peopleOptions={peopleOptions}
+        currentPersonId={person!.id}
+        today={today}
           />
 
           <MyProjectsPanel projects={projects} />
@@ -445,7 +442,7 @@ function MyProjectsPanel({
                 </span>
 
                 <span>
-                  {completedTasks} / {totalTasks} tareas
+                  {completedTasks} / {totalTasks} compromisos
                 </span>
               </div>
             </Link>
@@ -476,7 +473,7 @@ function RecentActivityPanel({
           </h2>
 
           <p className="mt-1 text-sm text-zinc-500">
-            Cambios recientes sobre tareas.
+            Cambios recientes sobre compromisos.
           </p>
         </div>
       </div>

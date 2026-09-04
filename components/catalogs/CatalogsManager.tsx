@@ -85,7 +85,7 @@ const sections: { id: SectionId; label: string }[] = [
   { id: "clients", label: "Clientes" },
   { id: "projectTypes", label: "Tipos de proyecto" },
   { id: "venues", label: "Venues" },
-  { id: "taskTemplates", label: "Plantillas de tareas" },
+  { id: "taskTemplates", label: "Plantillas de compromisos" },
 ];
 
 const namedSectionConfig = {
@@ -95,7 +95,7 @@ const namedSectionConfig = {
     placeholder: "Nombre del nuevo tipo",
   },
   taskTemplates: {
-    title: "Plantillas de tareas",
+    title: "Plantillas de compromisos",
     singular: "plantilla",
     placeholder: "Nombre de la nueva plantilla",
   },

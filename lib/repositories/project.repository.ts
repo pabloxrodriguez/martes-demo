@@ -93,6 +93,7 @@ export async function getMyOpenTasks(personId: string) {
       url,
       comentario,
       orden,
+      creada_por_id,
       responsable:personas!tareas_responsable_id_fkey (
         id,
         nombre
@@ -381,6 +382,7 @@ export async function getProjectById(id: string) {
         comentario,
         orden,
         eliminada,
+        creada_por_id,
         responsable:personas!tareas_responsable_id_fkey (
           id,
           nombre
@@ -458,7 +460,6 @@ export async function getProjectEditOptions() {
     { data: clients, error: clientsError },
     { data: venues, error: venuesError },
     { data: taskTemplates, error: taskTemplatesError },
-    { data: taskStatuses, error: taskStatusesError },
   ] = await Promise.all([
     supabase
       .from("estados_proyecto")
@@ -496,11 +497,6 @@ export async function getProjectEditOptions() {
       .eq("activa", true)
       .order("nombre"),
 
-    supabase
-      .from("estados_tarea")
-      .select("id, nombre")
-      .eq("activo", true)
-      .order("nombre"),
   ]);
 
   if (statusesError) {
@@ -539,12 +535,6 @@ export async function getProjectEditOptions() {
     );
   }
 
-  if (taskStatusesError) {
-    throw new Error(
-      `No se pudieron obtener los estados de tarea: ${taskStatusesError.message}`
-    );
-  }
-
   return {
     statuses: statuses ?? [],
     types: types ?? [],
@@ -552,6 +542,5 @@ export async function getProjectEditOptions() {
     clients: clients ?? [],
     venues: venues ?? [],
     taskTemplates: taskTemplates ?? [],
-    taskStatuses: taskStatuses ?? [],
   };
 }
