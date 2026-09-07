@@ -1,6 +1,7 @@
 import {
   getTeamOpenTasks,
   getTeamPeople,
+  getTeamProjectStatuses,
   type TeamOpenTask,
   type TeamPerson,
 } from "@/lib/repositories/team.repository";
@@ -59,9 +60,10 @@ function isVisibleTask(task: TeamOpenTask) {
 }
 
 export async function getTeamDashboard(): Promise<TeamDashboard> {
-  const [people, tasks] = await Promise.all([
+  const [people, tasks, projectStatuses] = await Promise.all([
     getTeamPeople(),
     getTeamOpenTasks(),
+    getTeamProjectStatuses(),
   ]);
   const visibleTasks = tasks.filter(isVisibleTask);
   const statusMap = new Map<
@@ -119,11 +121,14 @@ export async function getTeamDashboard(): Promise<TeamDashboard> {
 
   const statuses = ACTIVE_PROJECT_STATUS_CODES.map((code) => {
     const status = statusMap.get(code);
+    const catalogStatus = projectStatuses.find(
+      (projectStatus) => Number(projectStatus.codigo) === code
+    );
 
     return {
       code,
-      name: status?.name ?? `Estado ${code}`,
-      order: status?.order ?? code,
+      name: status?.name ?? catalogStatus?.nombre ?? `Estado ${code}`,
+      order: status?.order ?? Number(catalogStatus?.orden ?? code),
       projectCount: status?.projectIds.size ?? 0,
     };
   }).sort((a, b) => a.order - b.order);

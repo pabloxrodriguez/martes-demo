@@ -26,6 +26,24 @@ export async function getTeamPeople() {
   return data ?? [];
 }
 
+export async function getTeamProjectStatuses() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("estados_proyecto")
+    .select("codigo, nombre, orden")
+    .eq("activo", true)
+    .order("orden");
+
+  if (error) {
+    throw new Error(
+      `No se pudieron obtener los estados de proyecto del equipo: ${error.message}`
+    );
+  }
+
+  return data ?? [];
+}
+
 export async function getTeamOpenTasks() {
   const supabase = await createClient();
 
