@@ -34,4 +34,3 @@ export function getCommitmentStatus(
 
   return "overdue";
 }
-
