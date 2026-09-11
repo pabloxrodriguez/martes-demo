@@ -15,21 +15,21 @@ const modules = [
   {
     title: "Mi Martes",
     description:
-      "Reúne tus tareas pendientes, proyectos activos, agenda y actividad reciente en un solo escritorio.",
+      "Reúne tus compromisos abiertos, proyectos activos, agenda y actividad reciente en un solo escritorio.",
     href: "/mi-martes",
     icon: LayoutDashboard,
   },
   {
     title: "Proyectos",
     description:
-      "Organiza cada oportunidad por etapa, responsable, fechas, tareas, clientes, venues y presupuesto.",
+      "Organiza cada oportunidad por etapa, responsable, fechas, compromisos, clientes, venues y presupuesto.",
     href: "/proyectos",
     icon: FolderKanban,
   },
   {
     title: "Equipo",
     description:
-      "Permite ver las tareas abiertas de cada persona y los proyectos en los que está participando.",
+      "Permite ver los compromisos abiertos de cada persona y los proyectos en los que está participando.",
     href: "/equipo",
     icon: Users,
   },
@@ -78,8 +78,8 @@ export default function GuidePage() {
           <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-600">
             Martes acompaña el ciclo completo de un proyecto: desde que aparece
             una oportunidad hasta que se ejecuta y queda registrada en los
-            resultados. Centraliza responsables, fechas, tareas y contexto para
-            que el equipo trabaje sobre la misma información.
+            resultados. Centraliza responsables, fechas, compromisos y contexto
+            para que el equipo trabaje sobre la misma información.
           </p>
         </header>
 
@@ -160,7 +160,8 @@ export default function GuidePage() {
             <ol className="mt-5 space-y-4">
               {[
                 "Crea un proyecto y define sus fechas principales.",
-                "Asigna un responsable y agrega tareas al equipo.",
+                "Crea compromisos, asigna responsables y define sus fechas.",
+                "Observa cómo su estado cambia automáticamente según la fecha y el cumplimiento.",
                 "Cambia su estado para observar cómo se mueve en Proyectos.",
                 "Revisa su aparición en Calendario, Equipo y Resultados.",
                 "Prepara un borrador de presupuesto desde su ficha.",
