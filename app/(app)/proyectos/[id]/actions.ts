@@ -7,14 +7,11 @@ import {
   requireEditablePerson,
 } from "@/lib/auth/requireActivePerson";
 import {
-  canManageProjectGaelBudgetAccess,
+  canManageProjectBudgetAccess,
   canTransferProjectResponsible,
-  canImportProjectGaelBudgets,
-} from "@/lib/auth/projectGaelAccess";
-import { fetchGaelBudget } from "@/lib/integrations/gael/budgets";
-import { createAdminClient } from "@/lib/supabase/admin";
+} from "@/lib/auth/projectBudgetAccess";
 import { createClient } from "@/lib/supabase/server";
-import type { Json, TableUpdate } from "@/types/database";
+import type { TableUpdate } from "@/types/database";
 
 const allowedFields = [
   "nombre",
@@ -216,31 +213,6 @@ function optionalHttpUrl(value: unknown) {
   }
 
   return cleanValue;
-}
-
-function requirePositiveInteger(value: unknown, label: string) {
-  const cleanValue = requireString(value, label);
-  const parsedValue = Number(cleanValue);
-
-  if (
-    !cleanValue ||
-    !Number.isInteger(parsedValue) ||
-    parsedValue <= 0
-  ) {
-    throw new Error(`${label} debe ser un número válido.`);
-  }
-
-  return parsedValue;
-}
-
-function gaelStatusHref(projectId: string, status: string) {
-  return `/proyectos/${projectId}?gael=${encodeURIComponent(status)}`;
-}
-
-function gaelErrorHref(projectId: string, message: string) {
-  return `/proyectos/${projectId}?gael=error&gael_error=${encodeURIComponent(
-    message
-  )}`;
 }
 
 async function updateProjectTimestamp(
@@ -1300,382 +1272,7 @@ async function requireTaskCreatedByPerson(
   }
 }
 
-export async function importGaelBudget(
-  projectId: string,
-  formData: FormData
-) {
-  const cleanProjectId = requireUuid(projectId, "El proyecto");
-  const budgetNumber = requirePositiveInteger(
-    formData.get("gael_presupuesto_id"),
-    "El presupuesto Gael"
-  );
-
-  try {
-    await upsertGaelBudgetForProject(cleanProjectId, budgetNumber);
-  } catch (error) {
-    redirect(
-      gaelErrorHref(
-        cleanProjectId,
-        error instanceof Error
-          ? error.message
-          : "No se pudo importar el presupuesto Gael."
-      )
-    );
-  }
-
-  redirect(gaelStatusHref(cleanProjectId, "budget-imported"));
-}
-
-export async function refreshGaelBudget(
-  projectId: string,
-  budgetNumber: number
-) {
-  const cleanProjectId = requireUuid(projectId, "El proyecto");
-
-  try {
-    await upsertGaelBudgetForProject(cleanProjectId, budgetNumber);
-  } catch (error) {
-    redirect(
-      gaelErrorHref(
-        cleanProjectId,
-        error instanceof Error
-          ? error.message
-          : "No se pudo actualizar el presupuesto Gael."
-      )
-    );
-  }
-
-  redirect(gaelStatusHref(cleanProjectId, "budget-refreshed"));
-}
-
-async function upsertGaelBudgetForProject(
-  cleanProjectId: string,
-  budgetNumber: number
-) {
-  const { supabase, person } = await requireEditablePerson();
-
-  const importedBudget = await fetchGaelBudget(budgetNumber);
-  const now = new Date().toISOString();
-
-  const { data: project, error: projectError } = await supabase
-    .from("proyectos")
-    .select(`
-      id,
-      responsable_id,
-      proyecto_presupuesto_gael_accesos (
-        persona_id
-      )
-    `)
-    .eq("id", cleanProjectId)
-    .maybeSingle();
-
-  if (projectError) {
-    throw new Error(
-      `No se pudo verificar el proyecto: ${projectError.message}`
-    );
-  }
-
-  if (!project) {
-    throw new Error("No se encontró el proyecto.");
-  }
-
-  if (
-    !canImportProjectGaelBudgets({
-      person,
-      projectResponsibleId: project.responsable_id,
-      explicitAccessPersonIds:
-        project.proyecto_presupuesto_gael_accesos?.map(
-          (access) => access.persona_id
-        ) ?? [],
-    })
-  ) {
-    throw new Error(
-      "No tienes acceso para importar presupuestos Gael en este proyecto."
-    );
-  }
-
-  const budgetStore = createAdminClient();
-
-  const { data: existingOfficial, error: officialLookupError } = await budgetStore
-    .from("proyecto_presupuestos_gael")
-    .select(`
-      id,
-      proyecto_presupuesto_gael_lineas (
-        categoria,
-        concepto,
-        cantidad,
-        veces,
-        unitario,
-        operacion,
-        notas,
-        orden
-      )
-    `)
-    .eq("proyecto_id", cleanProjectId)
-    .eq("gael_presupuesto_id", importedBudget.header.gael_presupuesto_id)
-    .maybeSingle();
-
-  if (officialLookupError) {
-    throw new Error(
-      `No se pudo buscar el presupuesto Gael: ${officialLookupError.message}`
-    );
-  }
-
-  const { data: draft, error: draftLookupError } = await budgetStore
-    .from("proyecto_presupuestos_gael")
-    .select(`
-      id,
-      proyecto_presupuesto_gael_lineas (
-        categoria,
-        concepto,
-        cantidad,
-        veces,
-        unitario,
-        operacion,
-        notas,
-        orden
-      )
-    `)
-    .eq("proyecto_id", cleanProjectId)
-    .eq("origen", "martes")
-    .eq("estado_registro", "borrador")
-    .maybeSingle();
-
-  if (draftLookupError) {
-    throw new Error(
-      `No se pudo buscar el borrador de Martes: ${draftLookupError.message}`
-    );
-  }
-
-  const conceptSourceLines = (
-    draft?.proyecto_presupuesto_gael_lineas ??
-    existingOfficial?.proyecto_presupuesto_gael_lineas ??
-    []
-  ).sort((a, b) => a.orden - b.orden);
-  const usedSourceLineIndexes = new Set<number>();
-  const normalizedText = (value: string | null) =>
-    value?.trim().toLocaleLowerCase("es-CL") ?? "";
-  const normalizedNumber = (value: number | null) => Number(value ?? 0);
-
-  const officialLines = importedBudget.lines.map((line) => {
-    const matchingIndex = conceptSourceLines.findIndex(
-      (sourceLine, index) =>
-        !usedSourceLineIndexes.has(index) &&
-        normalizedText(sourceLine.categoria) ===
-          normalizedText(line.categoria) &&
-        normalizedNumber(sourceLine.cantidad) ===
-          normalizedNumber(line.cantidad) &&
-        normalizedNumber(sourceLine.veces) ===
-          normalizedNumber(line.veces) &&
-        normalizedNumber(sourceLine.unitario) ===
-          normalizedNumber(line.unitario) &&
-        normalizedText(sourceLine.operacion) ===
-          normalizedText(line.operacion)
-    );
-    const sourceLine =
-      matchingIndex >= 0 ? conceptSourceLines[matchingIndex] : null;
-
-    if (matchingIndex >= 0) {
-      usedSourceLineIndexes.add(matchingIndex);
-    }
-
-    return {
-      ...line,
-      concepto: line.concepto?.trim() || sourceLine?.concepto?.trim() || null,
-      notas: line.notas?.trim() || sourceLine?.notas?.trim() || null,
-    };
-  });
-
-  const officialValues = {
-    gael_presupuesto_id: importedBudget.header.gael_presupuesto_id,
-    origen: "gael",
-    estado_registro: "oficial",
-    nombre: importedBudget.header.nombre,
-    estado: importedBudget.header.estado,
-    empresa_nombre: importedBudget.header.empresa_nombre,
-    ucontrol_nombre: importedBudget.header.ucontrol_nombre,
-    valor_proyectado: importedBudget.header.valor_proyectado,
-    fecha_creacion_gael: importedBudget.header.fecha_creacion_gael,
-    fecha_importacion: now,
-    fecha_actualizacion: now,
-    actualizado_por_id: person.id,
-    raw: importedBudget.header.raw as Json,
-  };
-
-  let budgetId: string;
-
-  if (existingOfficial) {
-    const { error: updateError } = await budgetStore
-      .from("proyecto_presupuestos_gael")
-      .update(officialValues)
-      .eq("id", existingOfficial.id);
-
-    if (updateError) {
-      throw new Error(
-        `No se pudo actualizar el presupuesto Gael: ${updateError.message}`
-      );
-    }
-
-    budgetId = existingOfficial.id;
-
-    if (draft && draft.id !== budgetId) {
-      const { error: removeDraftError } = await budgetStore
-        .from("proyecto_presupuestos_gael")
-        .delete()
-        .eq("id", draft.id);
-
-      if (removeDraftError) {
-        throw new Error(
-          `No se pudo reemplazar el borrador: ${removeDraftError.message}`
-        );
-      }
-    }
-  } else if (draft) {
-    const { error: convertDraftError } = await budgetStore
-      .from("proyecto_presupuestos_gael")
-      .update(officialValues)
-      .eq("id", draft.id);
-
-    if (convertDraftError) {
-      throw new Error(
-        `No se pudo convertir el borrador en presupuesto oficial: ${convertDraftError.message}`
-      );
-    }
-
-    budgetId = draft.id;
-  } else {
-    const { data: createdBudget, error: insertError } = await budgetStore
-      .from("proyecto_presupuestos_gael")
-      .insert({
-        proyecto_id: cleanProjectId,
-        creado_por_id: person.id,
-        ...officialValues,
-      })
-      .select("id")
-      .single();
-
-    if (insertError) {
-      throw new Error(
-        `No se pudo guardar el presupuesto Gael: ${insertError.message}`
-      );
-    }
-
-    budgetId = createdBudget.id;
-  }
-
-  const { error: deleteLinesError } = await budgetStore
-    .from("proyecto_presupuesto_gael_lineas")
-    .delete()
-    .eq("presupuesto_id", budgetId);
-
-  if (deleteLinesError) {
-    throw new Error(
-      `No se pudieron actualizar las líneas Gael: ${deleteLinesError.message}`
-    );
-  }
-
-  if (officialLines.length > 0) {
-    const { error: insertLinesError } = await budgetStore
-      .from("proyecto_presupuesto_gael_lineas")
-      .insert(
-        officialLines.map((line) => ({
-          presupuesto_id: budgetId,
-          gael_linea_id: line.gael_linea_id,
-          categoria: line.categoria,
-          concepto: line.concepto,
-          cantidad: line.cantidad,
-          veces: line.veces,
-          unitario: line.unitario,
-          total_proyectado: line.total_proyectado,
-          operacion: line.operacion,
-          notas: line.notas,
-          orden: line.orden,
-          raw: line.raw as Json,
-        }))
-      );
-
-    if (insertLinesError) {
-      throw new Error(
-        `No se pudieron guardar las líneas Gael: ${insertLinesError.message}`
-      );
-    }
-  }
-
-  await updateProjectTimestamp(
-    supabase,
-    cleanProjectId,
-    now,
-    person.id
-  );
-
-  revalidatePath(`/proyectos/${cleanProjectId}`);
-}
-
-export async function removeGaelBudget(
-  projectId: string,
-  budgetId: string
-) {
-  const { supabase, person } = await requireEditablePerson();
-  const cleanProjectId = requireUuid(projectId, "El proyecto");
-  const cleanBudgetId = requireUuid(budgetId, "El presupuesto");
-
-  const { data: project, error: projectError } = await supabase
-    .from("proyectos")
-    .select(`
-      id,
-      responsable_id,
-      proyecto_presupuesto_gael_accesos (
-        persona_id
-      )
-    `)
-    .eq("id", cleanProjectId)
-    .maybeSingle();
-
-  if (projectError) {
-    throw new Error(
-      `No se pudo verificar el proyecto: ${projectError.message}`
-    );
-  }
-
-  if (
-    !project ||
-    !canImportProjectGaelBudgets({
-      person,
-      projectResponsibleId: project.responsable_id,
-      explicitAccessPersonIds:
-        project.proyecto_presupuesto_gael_accesos?.map(
-          (access) => access.persona_id
-        ) ?? [],
-    })
-  ) {
-    redirect(
-      gaelErrorHref(
-        cleanProjectId,
-        "No tienes acceso para quitar presupuestos Gael en este proyecto."
-      )
-    );
-  }
-
-  const { error } = await supabase
-    .from("proyecto_presupuestos_gael")
-    .delete()
-    .eq("id", cleanBudgetId)
-    .eq("proyecto_id", cleanProjectId);
-
-  if (error) {
-    redirect(
-      gaelErrorHref(
-        cleanProjectId,
-        `No se pudo quitar el presupuesto Gael: ${error.message}`
-      )
-    );
-  }
-
-  revalidatePath(`/proyectos/${cleanProjectId}`);
-  redirect(gaelStatusHref(cleanProjectId, "budget-removed"));
-}
-
-async function assertCanManageGaelBudgetAccess(projectId: string) {
+async function assertCanManageProjectBudgetAccess(projectId: string) {
   const { supabase, person } = await requireEditablePerson();
   const cleanProjectId = requireUuid(projectId, "El proyecto");
 
@@ -1696,13 +1293,13 @@ async function assertCanManageGaelBudgetAccess(projectId: string) {
   }
 
   if (
-    !canManageProjectGaelBudgetAccess({
+    !canManageProjectBudgetAccess({
       person,
       projectResponsibleId: project.responsable_id,
     })
   ) {
     throw new Error(
-      "Solo el responsable del proyecto, Dirección o Admin pueden administrar accesos Gael."
+      "Solo el responsable del proyecto, Dirección o Admin pueden administrar accesos al presupuesto."
     );
   }
 
@@ -1713,12 +1310,12 @@ async function assertCanManageGaelBudgetAccess(projectId: string) {
   };
 }
 
-export async function addGaelBudgetAccess(
+export async function addProjectBudgetAccess(
   projectId: string,
   formData: FormData
 ) {
   const { supabase, person, cleanProjectId } =
-    await assertCanManageGaelBudgetAccess(projectId);
+    await assertCanManageProjectBudgetAccess(projectId);
   const targetPersonId = requireUuid(
     formData.get("persona_id"),
     "La persona"
@@ -1743,7 +1340,7 @@ export async function addGaelBudgetAccess(
   }
 
   const { error } = await supabase
-    .from("proyecto_presupuesto_gael_accesos")
+    .from("proyecto_presupuesto_accesos")
     .upsert(
       {
         proyecto_id: cleanProjectId,
@@ -1762,19 +1359,19 @@ export async function addGaelBudgetAccess(
   }
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
-  redirect(`/proyectos/${cleanProjectId}?gael=access-added`);
+  redirect(`/proyectos/${cleanProjectId}`);
 }
 
-export async function removeGaelBudgetAccess(
+export async function removeProjectBudgetAccess(
   projectId: string,
   accessId: string
 ) {
   const { supabase, cleanProjectId } =
-    await assertCanManageGaelBudgetAccess(projectId);
+    await assertCanManageProjectBudgetAccess(projectId);
   const cleanAccessId = requireUuid(accessId, "El acceso");
 
   const { error } = await supabase
-    .from("proyecto_presupuesto_gael_accesos")
+    .from("proyecto_presupuesto_accesos")
     .delete()
     .eq("id", cleanAccessId)
     .eq("proyecto_id", cleanProjectId);
@@ -1786,7 +1383,7 @@ export async function removeGaelBudgetAccess(
   }
 
   revalidatePath(`/proyectos/${cleanProjectId}`);
-  redirect(`/proyectos/${cleanProjectId}?gael=access-removed`);
+  redirect(`/proyectos/${cleanProjectId}`);
 }
 
 export async function deleteProject(projectId: string) {

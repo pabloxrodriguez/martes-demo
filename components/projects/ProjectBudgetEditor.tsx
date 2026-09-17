@@ -4,12 +4,12 @@ import { Download, Plus, Save, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import {
-  GAEL_BUDGET_CATEGORIES,
-  GAEL_BUDGET_OPERATIONS,
-  type GaelBudgetDraftLine,
-} from "@/lib/integrations/gael/import-template-config";
+  BUDGET_CATEGORIES,
+  BUDGET_OPERATIONS,
+  type BudgetLineInput,
+} from "@/lib/budgets/config";
 
-type DraftLine = GaelBudgetDraftLine & { id: string };
+type DraftLine = BudgetLineInput & { id: string };
 
 const INITIAL_LINE: DraftLine = {
   id: "line-1",
@@ -47,14 +47,14 @@ function formatEditableNumber(value: number, maximumFractionDigits = 2) {
   }).format(value);
 }
 
-export function ProjectGaelBudgetDraftExporter({
+export function ProjectBudgetEditor({
   project,
   initialDraft = null,
 }: {
   project: { id: string; nombre: string };
   initialDraft?: {
     id: string;
-    lines: Array<GaelBudgetDraftLine & { id: string }>;
+    lines: Array<BudgetLineInput & { id: string }>;
   } | null;
 }) {
   const initialLines = initialDraft?.lines.length
@@ -75,10 +75,10 @@ export function ProjectGaelBudgetDraftExporter({
     [lines]
   );
 
-  function updateLine<K extends keyof GaelBudgetDraftLine>(
+  function updateLine<K extends keyof BudgetLineInput>(
     id: string,
     field: K,
-    value: GaelBudgetDraftLine[K]
+    value: BudgetLineInput[K]
   ) {
     setLines((current) =>
       current.map((line) => (line.id === id ? { ...line, [field]: value } : line))
@@ -124,7 +124,7 @@ export function ProjectGaelBudgetDraftExporter({
 
   async function persistDraft(showConfirmation = true) {
     const response = await fetch(
-      `/api/proyectos/${project.id}/presupuestos-gael/borrador`,
+      `/api/proyectos/${project.id}/presupuestos/borrador`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -171,7 +171,7 @@ export function ProjectGaelBudgetDraftExporter({
     try {
       await persistDraft(false);
       const response = await fetch(
-        `/api/proyectos/${project.id}/presupuestos-gael/exportar`,
+        `/api/proyectos/${project.id}/presupuestos/exportar`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -190,7 +190,7 @@ export function ProjectGaelBudgetDraftExporter({
       const disposition = response.headers.get("content-disposition") ?? "";
       const fileName =
         disposition.match(/filename="?([^";]+)"?/i)?.[1] ??
-        "presupuesto-gael.xlsx";
+        "presupuesto.xlsx";
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -199,9 +199,7 @@ export function ProjectGaelBudgetDraftExporter({
       anchor.click();
       anchor.remove();
       URL.revokeObjectURL(url);
-      setMessage(
-        "Excel generado. Impórtalo en Gael y luego ingresa arriba el número asignado para reemplazar este borrador."
-      );
+      setMessage("Presupuesto exportado correctamente a Excel.");
     } catch (exportError) {
       setError(
         exportError instanceof Error
@@ -219,16 +217,15 @@ export function ProjectGaelBudgetDraftExporter({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold text-zinc-950">
-              Borrador de presupuesto
+              Presupuesto del proyecto
             </h3>
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-              Borrador Martes
+              En edición
             </span>
           </div>
           <p className="mt-1 max-w-3xl text-sm text-zinc-500">
-            Arma y guarda un borrador permanente en Martes. Descarga el Excel
-            compatible con Gael y, cuando el presupuesto oficial exista, ingresa
-            su número arriba para reemplazar este borrador.
+            Crea y guarda el presupuesto directamente en Martes. Puedes
+            descargar una copia en Excel cuando la necesites.
           </p>
           <p className="mt-1 text-sm font-medium text-zinc-700">
             Proyecto: {project.nombre}
@@ -265,7 +262,7 @@ export function ProjectGaelBudgetDraftExporter({
                     onChange={(event) => updateLine(line.id, "categoria", event.target.value)}
                     className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm"
                   >
-                    {GAEL_BUDGET_CATEGORIES.map((category) => (
+                    {BUDGET_CATEGORIES.map((category) => (
                       <option key={category} value={category}>{category}</option>
                     ))}
                   </select>
@@ -321,7 +318,7 @@ export function ProjectGaelBudgetDraftExporter({
                     onChange={(event) => updateLine(line.id, "operacion", event.target.value)}
                     className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-2 text-sm"
                   >
-                    {GAEL_BUDGET_OPERATIONS.map((operation) => (
+                    {BUDGET_OPERATIONS.map((operation) => (
                       <option key={operation} value={operation}>{operation}</option>
                     ))}
                   </select>
@@ -381,7 +378,7 @@ export function ProjectGaelBudgetDraftExporter({
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Download size={16} />
-            {isExporting ? "Generando…" : "Exportar para Gael"}
+            {isExporting ? "Generando…" : "Exportar Excel"}
           </button>
         </div>
       </div>

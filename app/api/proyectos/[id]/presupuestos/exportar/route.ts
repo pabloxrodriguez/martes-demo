@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { canCreateProjectGaelBudgetDraft } from "@/lib/auth/projectGaelAccess";
+import { canEditProjectBudget } from "@/lib/auth/projectBudgetAccess";
 import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
 import {
-  buildGaelBudgetFileName,
-  createGaelBudgetWorkbook,
-} from "@/lib/integrations/gael/export-budget";
-import type { GaelBudgetExportPayload } from "@/lib/integrations/gael/import-template-config";
+  buildBudgetFileName,
+  createBudgetWorkbook,
+} from "@/lib/budgets/export";
+import type { BudgetPayload } from "@/lib/budgets/config";
 
 export const runtime = "nodejs";
 
@@ -18,7 +18,7 @@ export async function POST(
     const { supabase, person } = await requireEditablePerson();
     const { id: projectId } = await params;
 
-    const payload = (await request.json()) as GaelBudgetExportPayload;
+    const payload = (await request.json()) as BudgetPayload;
 
     if (
       !payload.projectId ||
@@ -37,7 +37,7 @@ export async function POST(
         id,
         nombre,
         responsable_id,
-        proyecto_presupuesto_gael_accesos (
+        proyecto_presupuesto_accesos (
           persona_id
         )
       `)
@@ -56,15 +56,15 @@ export async function POST(
       );
     }
 
-    if (!canCreateProjectGaelBudgetDraft(person)) {
+    if (!canEditProjectBudget(person)) {
       return NextResponse.json(
         { error: "No tienes acceso para exportar este presupuesto." },
         { status: 403 }
       );
     }
 
-    const workbook = await createGaelBudgetWorkbook(payload.lines);
-    const fileName = buildGaelBudgetFileName(project.nombre);
+    const workbook = await createBudgetWorkbook(payload.lines);
+    const fileName = buildBudgetFileName(project.nombre);
 
     return new Response(new Uint8Array(workbook), {
       headers: {
@@ -78,7 +78,7 @@ export async function POST(
     const message =
       error instanceof Error
         ? error.message
-        : "No se pudo generar el archivo para Gael.";
+        : "No se pudo generar el archivo de presupuesto.";
 
     return NextResponse.json({ error: message }, { status: 400 });
   }

@@ -1,10 +1,10 @@
 import ExcelJS from "exceljs";
 
 import {
-  GAEL_BUDGET_CATEGORIES,
-  GAEL_BUDGET_OPERATIONS,
-  type GaelBudgetDraftLine,
-} from "@/lib/integrations/gael/import-template-config";
+  BUDGET_CATEGORIES,
+  BUDGET_OPERATIONS,
+  type BudgetLineInput,
+} from "@/lib/budgets/config";
 
 const HEADER_FILL = "FFFFFF00";
 
@@ -18,7 +18,7 @@ function assertFiniteNumber(
   }
 }
 
-export function validateGaelBudgetLines(lines: GaelBudgetDraftLine[]) {
+export function validateBudgetLines(lines: BudgetLineInput[]) {
   if (!Array.isArray(lines) || lines.length === 0) {
     throw new Error("Agrega al menos una línea al presupuesto.");
   }
@@ -29,8 +29,8 @@ export function validateGaelBudgetLines(lines: GaelBudgetDraftLine[]) {
     const concepto = line.concepto?.trim();
     const operacion = line.operacion?.trim();
 
-    if (!GAEL_BUDGET_CATEGORIES.includes(
-      categoria as (typeof GAEL_BUDGET_CATEGORIES)[number]
+    if (!BUDGET_CATEGORIES.includes(
+      categoria as (typeof BUDGET_CATEGORIES)[number]
     )) {
       throw new Error(`La categoría de la línea ${row} no es válida.`);
     }
@@ -39,8 +39,8 @@ export function validateGaelBudgetLines(lines: GaelBudgetDraftLine[]) {
       throw new Error(`El concepto de la línea ${row} es obligatorio.`);
     }
 
-    if (!GAEL_BUDGET_OPERATIONS.includes(
-      operacion as (typeof GAEL_BUDGET_OPERATIONS)[number]
+    if (!BUDGET_OPERATIONS.includes(
+      operacion as (typeof BUDGET_OPERATIONS)[number]
     )) {
       throw new Error(`La operación de la línea ${row} no es válida.`);
     }
@@ -61,10 +61,10 @@ export function validateGaelBudgetLines(lines: GaelBudgetDraftLine[]) {
   });
 }
 
-export async function createGaelBudgetWorkbook(
-  lines: GaelBudgetDraftLine[]
+export async function createBudgetWorkbook(
+  lines: BudgetLineInput[]
 ) {
-  const validatedLines = validateGaelBudgetLines(lines);
+  const validatedLines = validateBudgetLines(lines);
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Hoja1", {
     views: [{ state: "frozen", ySplit: 1 }],
@@ -84,8 +84,8 @@ export async function createGaelBudgetWorkbook(
 
   const catalogRows = Math.max(
     validatedLines.length,
-    GAEL_BUDGET_CATEGORIES.length,
-    GAEL_BUDGET_OPERATIONS.length
+    BUDGET_CATEGORIES.length,
+    BUDGET_OPERATIONS.length
   );
 
   for (let index = 0; index < catalogRows; index += 1) {
@@ -99,8 +99,8 @@ export async function createGaelBudgetWorkbook(
       line?.unitario ?? null,
       line?.operacion ?? null,
       line?.notas || null,
-      GAEL_BUDGET_CATEGORIES[index] ?? null,
-      GAEL_BUDGET_OPERATIONS[index] ?? null,
+      BUDGET_CATEGORIES[index] ?? null,
+      BUDGET_OPERATIONS[index] ?? null,
     ]);
   }
 
@@ -125,8 +125,8 @@ export async function createGaelBudgetWorkbook(
     { width: 48 },
   ];
 
-  const lastCategoryRow = GAEL_BUDGET_CATEGORIES.length + 1;
-  const lastOperationRow = GAEL_BUDGET_OPERATIONS.length + 1;
+  const lastCategoryRow = BUDGET_CATEGORIES.length + 1;
+  const lastOperationRow = BUDGET_OPERATIONS.length + 1;
 
   for (let row = 2; row <= Math.max(200, catalogRows + 1); row += 1) {
     worksheet.getCell(`A${row}`).dataValidation = {
@@ -164,7 +164,7 @@ function formatSantiagoTimestamp(date: Date) {
   return `${value("year")}${value("month")}${value("day")}_${value("hour")}${value("minute")}`;
 }
 
-export function buildGaelBudgetFileName(
+export function buildBudgetFileName(
   projectName: string,
   createdAt = new Date()
 ) {

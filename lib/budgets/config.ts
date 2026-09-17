@@ -1,4 +1,4 @@
-export const GAEL_BUDGET_CATEGORIES = [
+export const BUDGET_CATEGORIES = [
   "Ambientación",
   "Artística",
   "Aseo",
@@ -25,7 +25,7 @@ export const GAEL_BUDGET_CATEGORIES = [
   "Viaticos",
 ] as const;
 
-export const GAEL_BUDGET_OPERATIONS = [
+export const BUDGET_OPERATIONS = [
   "Compra Afecta",
   "Compra Afecta + Imp. Especifico",
   "Compra Afecta en Otra Moneda",
@@ -50,7 +50,7 @@ export const GAEL_BUDGET_OPERATIONS = [
   "Requisicion Interna (Despacho)",
 ] as const;
 
-export type GaelBudgetDraftLine = {
+export type BudgetLineInput = {
   categoria: string;
   concepto: string;
   cantidad: number;
@@ -60,8 +60,8 @@ export type GaelBudgetDraftLine = {
   notas: string;
 };
 
-export type GaelBudgetExportPayload = {
+export type BudgetPayload = {
   projectId: string;
   projectName: string;
-  lines: GaelBudgetDraftLine[];
+  lines: BudgetLineInput[];
 };

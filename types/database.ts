@@ -96,10 +96,10 @@ type ProyectoVenuesRow = {
   fecha_creacion: string;
 };
 
-type ProyectoPresupuestosGaelRow = {
+type ProyectoPresupuestosRow = {
   id: string;
   proyecto_id: string;
-  gael_presupuesto_id: number | null;
+  numero_referencia: number | null;
   origen: string;
   estado_registro: string;
   nombre: string | null;
@@ -107,7 +107,7 @@ type ProyectoPresupuestosGaelRow = {
   empresa_nombre: string | null;
   ucontrol_nombre: string | null;
   valor_proyectado: number | null;
-  fecha_creacion_gael: string | null;
+  fecha_origen: string | null;
   fecha_importacion: string;
   fecha_actualizacion: string;
   creado_por_id: string | null;
@@ -115,10 +115,10 @@ type ProyectoPresupuestosGaelRow = {
   raw: Json | null;
 };
 
-type ProyectoPresupuestoGaelLineasRow = {
+type ProyectoPresupuestoLineasRow = {
   id: string;
   presupuesto_id: string;
-  gael_linea_id: number | null;
+  linea_externa_id: number | null;
   categoria: string | null;
   concepto: string | null;
   cantidad: number | null;
@@ -131,7 +131,7 @@ type ProyectoPresupuestoGaelLineasRow = {
   raw: Json | null;
 };
 
-type ProyectoPresupuestoGaelAccesosRow = {
+type ProyectoPresupuestoAccesosRow = {
   id: string;
   proyecto_id: string;
   persona_id: string;
@@ -339,12 +339,12 @@ export type Database = {
           },
         ]
       >;
-      proyecto_presupuesto_gael_lineas: TableDefinition<
-        ProyectoPresupuestoGaelLineasRow,
+      proyecto_presupuesto_lineas: TableDefinition<
+        ProyectoPresupuestoLineasRow,
         {
           id?: string;
           presupuesto_id: string;
-          gael_linea_id?: number | null;
+          linea_externa_id?: number | null;
           categoria?: string | null;
           concepto?: string | null;
           cantidad?: number | null;
@@ -358,16 +358,16 @@ export type Database = {
         },
         [
           {
-            foreignKeyName: "proyecto_presupuesto_gael_lineas_presupuesto_id_fkey";
+            foreignKeyName: "proyecto_presupuesto_lineas_presupuesto_id_fkey";
             columns: ["presupuesto_id"];
             isOneToOne: false;
-            referencedRelation: "proyecto_presupuestos_gael";
+            referencedRelation: "proyecto_presupuestos";
             referencedColumns: ["id"];
           },
         ]
       >;
-      proyecto_presupuesto_gael_accesos: TableDefinition<
-        ProyectoPresupuestoGaelAccesosRow,
+      proyecto_presupuesto_accesos: TableDefinition<
+        ProyectoPresupuestoAccesosRow,
         {
           id?: string;
           proyecto_id: string;
@@ -377,21 +377,21 @@ export type Database = {
         },
         [
           {
-            foreignKeyName: "proyecto_presupuesto_gael_accesos_proyecto_id_fkey";
+            foreignKeyName: "proyecto_presupuesto_accesos_proyecto_id_fkey";
             columns: ["proyecto_id"];
             isOneToOne: false;
             referencedRelation: "proyectos";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "proyecto_presupuesto_gael_accesos_persona_id_fkey";
+            foreignKeyName: "proyecto_presupuesto_accesos_persona_id_fkey";
             columns: ["persona_id"];
             isOneToOne: false;
             referencedRelation: "personas";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "proyecto_presupuesto_gael_accesos_creado_por_id_fkey";
+            foreignKeyName: "proyecto_presupuesto_accesos_creado_por_id_fkey";
             columns: ["creado_por_id"];
             isOneToOne: false;
             referencedRelation: "personas";
@@ -399,12 +399,12 @@ export type Database = {
           },
         ]
       >;
-      proyecto_presupuestos_gael: TableDefinition<
-        ProyectoPresupuestosGaelRow,
+      proyecto_presupuestos: TableDefinition<
+        ProyectoPresupuestosRow,
         {
           id?: string;
           proyecto_id: string;
-          gael_presupuesto_id?: number | null;
+          numero_referencia?: number | null;
           origen?: string;
           estado_registro?: string;
           nombre?: string | null;
@@ -412,7 +412,7 @@ export type Database = {
           empresa_nombre?: string | null;
           ucontrol_nombre?: string | null;
           valor_proyectado?: number | null;
-          fecha_creacion_gael?: string | null;
+          fecha_origen?: string | null;
           fecha_importacion?: string;
           fecha_actualizacion?: string;
           creado_por_id?: string | null;
@@ -421,21 +421,21 @@ export type Database = {
         },
         [
           {
-            foreignKeyName: "proyecto_presupuestos_gael_proyecto_id_fkey";
+            foreignKeyName: "proyecto_presupuestos_proyecto_id_fkey";
             columns: ["proyecto_id"];
             isOneToOne: false;
             referencedRelation: "proyectos";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "proyecto_presupuestos_gael_creado_por_id_fkey";
+            foreignKeyName: "proyecto_presupuestos_creado_por_id_fkey";
             columns: ["creado_por_id"];
             isOneToOne: false;
             referencedRelation: "personas";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "proyecto_presupuestos_gael_actualizado_por_id_fkey";
+            foreignKeyName: "proyecto_presupuestos_actualizado_por_id_fkey";
             columns: ["actualizado_por_id"];
             isOneToOne: false;
             referencedRelation: "personas";

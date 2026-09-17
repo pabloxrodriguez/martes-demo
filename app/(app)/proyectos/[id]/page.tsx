@@ -1,34 +1,30 @@
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
-import { ProjectGaelBudgets } from "@/components/projects/ProjectGaelBudgets";
-import { ProjectGaelBudgetDraftExporter } from "@/components/projects/ProjectGaelBudgetDraftExporter";
+import { ProjectBudgets } from "@/components/projects/ProjectBudgets";
+import { ProjectBudgetEditor } from "@/components/projects/ProjectBudgetEditor";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { ProjectDetails } from "@/components/projects/ProjectDetails";
 import { getCurrentPerson } from "@/lib/auth/getCurrentPerson";
 import { todayInSantiago } from "@/lib/tasks/today";
 import {
-  canCreateProjectGaelBudgetDraft,
-  canImportProjectGaelBudgets,
-  canManageProjectGaelBudgetAccess,
-  canViewProjectGaelBudgets,
-} from "@/lib/auth/projectGaelAccess";
+  canEditProjectBudget,
+  canManageProjectBudgetAccess,
+  canViewProjectBudgets,
+} from "@/lib/auth/projectBudgetAccess";
 import {
   getProjectById,
   getProjectEditOptions,
 } from "@/lib/services/project.service";
 import {
   addProjectVenue,
-  addGaelBudgetAccess,
+  addProjectBudgetAccess,
   createProjectTask,
   createProjectVenue,
   deleteProject,
   deleteProjectTask,
   duplicateProject,
-  importGaelBudget,
-  refreshGaelBudget,
-  removeGaelBudget,
   removeProjectVenue,
   updateProjectVenue,
-  removeGaelBudgetAccess,
+  removeProjectBudgetAccess,
   toggleTaskCompleted,
   updateProjectField,
   updateTaskField,
@@ -38,22 +34,12 @@ type ProjectPageProps = {
   params: Promise<{
     id: string;
   }>;
-  searchParams?: Promise<{
-    gael?: string | string[];
-    gael_error?: string | string[];
-  }>;
 };
 
 export default async function ProjectPage({
   params,
-  searchParams,
 }: ProjectPageProps) {
   const { id } = await params;
-  const query = await searchParams;
-  const gaelNoticeCode =
-    typeof query?.gael === "string" ? query.gael : null;
-  const gaelErrorMessage =
-    typeof query?.gael_error === "string" ? query.gael_error : null;
 
   const [project, editOptions, currentPerson] = await Promise.all([
     getProjectById(id),
@@ -140,66 +126,37 @@ export default async function ProjectPage({
   const deleteTask = deleteProjectTask.bind(null, project.id);
   const duplicateCurrentProject = duplicateProject.bind(null, project.id);
   const deleteCurrentProject = deleteProject.bind(null, project.id);
-  const importBudget = importGaelBudget.bind(null, project.id);
-  const refreshBudget = refreshGaelBudget.bind(null, project.id);
-  const removeBudget = removeGaelBudget.bind(null, project.id);
-  const addBudgetAccess = addGaelBudgetAccess.bind(null, project.id);
-  const removeBudgetAccess = removeGaelBudgetAccess.bind(null, project.id);
-  const gaelAccessPersonIds =
-    project.proyecto_presupuesto_gael_accesos?.map(
+  const addBudgetAccess = addProjectBudgetAccess.bind(null, project.id);
+  const removeBudgetAccess = removeProjectBudgetAccess.bind(null, project.id);
+  const budgetAccessPersonIds =
+    project.proyecto_presupuesto_accesos?.map(
       (access) => access.persona_id
     ) ?? [];
-  const canViewGaelBudgets = canViewProjectGaelBudgets({
+  const canViewBudgets = canViewProjectBudgets({
     person: currentPerson,
     projectResponsibleId: project.responsable?.id ?? null,
-    explicitAccessPersonIds: gaelAccessPersonIds,
+    explicitAccessPersonIds: budgetAccessPersonIds,
   });
-  const canImportGaelBudgets = canImportProjectGaelBudgets({
-    person: currentPerson,
-    projectResponsibleId: project.responsable?.id ?? null,
-    explicitAccessPersonIds: gaelAccessPersonIds,
-  });
-  const canCreateGaelBudgetDraft =
-    canCreateProjectGaelBudgetDraft(currentPerson);
-  const canManageGaelAccess = canManageProjectGaelBudgetAccess({
+  const canEditBudget = canEditProjectBudget(currentPerson);
+  const canManageBudgetAccess = canManageProjectBudgetAccess({
     person: currentPerson,
     projectResponsibleId: project.responsable?.id ?? null,
   });
-  const projectBudgets = project.proyecto_presupuestos_gael ?? [];
+  const projectBudgets = project.proyecto_presupuestos ?? [];
   const draftBudget = projectBudgets.find(
     (budget) =>
       budget.origen === "martes" &&
       budget.estado_registro === "borrador"
   );
-  const officialBudgets = projectBudgets.filter(
-    (
-      budget
-    ): budget is typeof budget & { gael_presupuesto_id: number } =>
-      budget.origen === "gael" &&
-      budget.estado_registro === "oficial" &&
-      budget.gael_presupuesto_id !== null
+  const existingBudgets = projectBudgets.filter(
+    (budget) => budget.estado_registro === "oficial"
   );
-  const gaelAccessPeopleOptions = editOptions.people
+  const budgetAccessPeopleOptions = editOptions.people
     .filter((person) => person.id !== project.responsable?.id)
     .map((person) => ({
       value: person.id,
       label: person.nombre,
     }));
-  const gaelNotice =
-    gaelNoticeCode === "budget-imported"
-      ? "Presupuesto importado desde Gael."
-      : gaelNoticeCode === "budget-refreshed"
-        ? "Presupuesto actualizado desde Gael."
-        : gaelNoticeCode === "budget-removed"
-          ? "Presupuesto Gael quitado de este proyecto."
-          : gaelNoticeCode === "access-added"
-            ? "Persona autorizada para ver presupuestos Gael."
-            : gaelNoticeCode === "access-removed"
-              ? "Acceso a presupuestos Gael quitado."
-              : gaelNoticeCode === "error"
-                ? gaelErrorMessage ??
-                  "No se pudo completar la acción de Gael."
-                : null;
 
   return (
     <>
@@ -251,32 +208,24 @@ export default async function ProjectPage({
             onDeleteProject={deleteCurrentProject}
           />
 
-          {canViewGaelBudgets || canCreateGaelBudgetDraft ? (
-            <ProjectGaelBudgets
-              budgets={officialBudgets}
-              accessList={project.proyecto_presupuesto_gael_accesos ?? []}
-              peopleOptions={gaelAccessPeopleOptions}
-              onImport={importBudget}
-              onRefresh={refreshBudget}
-              onRemoveBudget={removeBudget}
+          {canViewBudgets || canEditBudget ? (
+            <ProjectBudgets
+              budgets={existingBudgets}
+              accessList={project.proyecto_presupuesto_accesos ?? []}
+              peopleOptions={budgetAccessPeopleOptions}
               onAddAccess={addBudgetAccess}
               onRemoveAccess={removeBudgetAccess}
-              canImport={canImportGaelBudgets}
-              canManageAccess={canManageGaelAccess}
-              notice={gaelNotice}
-              noticeTone={
-                gaelNoticeCode === "error" ? "error" : "success"
-              }
-              draftExporter={
-                canCreateGaelBudgetDraft ? (
-                  <ProjectGaelBudgetDraftExporter
+              canManageAccess={canManageBudgetAccess}
+              editor={
+                canEditBudget ? (
+                  <ProjectBudgetEditor
                     project={{ id: project.id, nombre: project.nombre }}
                     initialDraft={
                       draftBudget
                         ? {
                             id: draftBudget.id,
                             lines:
-                              draftBudget.proyecto_presupuesto_gael_lineas.map(
+                              draftBudget.proyecto_presupuesto_lineas.map(
                                 (line) => ({
                                   id: line.id,
                                   categoria: line.categoria ?? "Catering",

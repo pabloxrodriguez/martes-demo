@@ -1,10 +1,10 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { canCreateProjectGaelBudgetDraft } from "@/lib/auth/projectGaelAccess";
+import { canEditProjectBudget } from "@/lib/auth/projectBudgetAccess";
 import { requireEditablePerson } from "@/lib/auth/requireActivePerson";
-import { validateGaelBudgetLines } from "@/lib/integrations/gael/export-budget";
-import type { GaelBudgetExportPayload } from "@/lib/integrations/gael/import-template-config";
+import { validateBudgetLines } from "@/lib/budgets/export";
+import type { BudgetPayload } from "@/lib/budgets/config";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,7 @@ export async function PUT(
     const { supabase, person } = await requireEditablePerson();
     const { id: projectId } = await params;
 
-    const payload = (await request.json()) as GaelBudgetExportPayload;
+    const payload = (await request.json()) as BudgetPayload;
 
     if (!payload.projectId || payload.projectId !== projectId) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function PUT(
         id,
         nombre,
         responsable_id,
-        proyecto_presupuesto_gael_accesos (
+        proyecto_presupuesto_accesos (
           persona_id
         )
       `)
@@ -50,14 +50,14 @@ export async function PUT(
       );
     }
 
-    if (!canCreateProjectGaelBudgetDraft(person)) {
+    if (!canEditProjectBudget(person)) {
       return NextResponse.json(
         { error: "No tienes acceso para guardar este presupuesto." },
         { status: 403 }
       );
     }
 
-    const lines = validateGaelBudgetLines(payload.lines);
+    const lines = validateBudgetLines(payload.lines);
     const now = new Date().toISOString();
     const total = lines.reduce(
       (sum, line) => sum + line.cantidad * line.veces * line.unitario,
@@ -65,7 +65,7 @@ export async function PUT(
     );
 
     const { data: existingDraft, error: draftLookupError } = await supabase
-      .from("proyecto_presupuestos_gael")
+      .from("proyecto_presupuestos")
       .select("id")
       .eq("proyecto_id", projectId)
       .eq("origen", "martes")
@@ -82,7 +82,7 @@ export async function PUT(
 
     if (draftId) {
       const { error: updateError } = await supabase
-        .from("proyecto_presupuestos_gael")
+        .from("proyecto_presupuestos")
         .update({
           nombre: project.nombre,
           estado: "Borrador Martes",
@@ -97,10 +97,10 @@ export async function PUT(
       }
     } else {
       const { data: createdDraft, error: insertError } = await supabase
-        .from("proyecto_presupuestos_gael")
+        .from("proyecto_presupuestos")
         .insert({
           proyecto_id: projectId,
-          gael_presupuesto_id: null,
+          numero_referencia: null,
           origen: "martes",
           estado_registro: "borrador",
           nombre: project.nombre,
@@ -125,7 +125,7 @@ export async function PUT(
     }
 
     const { error: deleteLinesError } = await supabase
-      .from("proyecto_presupuesto_gael_lineas")
+      .from("proyecto_presupuesto_lineas")
       .delete()
       .eq("presupuesto_id", draftId);
 
@@ -136,11 +136,11 @@ export async function PUT(
     }
 
     const { error: insertLinesError } = await supabase
-      .from("proyecto_presupuesto_gael_lineas")
+      .from("proyecto_presupuesto_lineas")
       .insert(
         lines.map((line, index) => ({
           presupuesto_id: draftId,
-          gael_linea_id: null,
+          linea_externa_id: null,
           categoria: line.categoria,
           concepto: line.concepto,
           cantidad: line.cantidad,

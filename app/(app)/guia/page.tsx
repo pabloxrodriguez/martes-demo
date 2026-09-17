@@ -50,7 +50,7 @@ const modules = [
   {
     title: "Presupuestos",
     description:
-      "Desde la ficha de un proyecto puedes preparar un borrador colaborativo y exportarlo para Gael.",
+      "Desde la ficha de un proyecto puedes preparar, guardar y exportar su presupuesto en Excel.",
     href: "/proyectos",
     icon: FileSpreadsheet,
   },

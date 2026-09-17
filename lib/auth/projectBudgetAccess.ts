@@ -5,7 +5,7 @@ type Person = {
   rol: Role;
 };
 
-type ProjectGaelAccessInput = {
+type ProjectBudgetAccessInput = {
   person: Person | null;
   projectResponsibleId: string | null;
   explicitAccessPersonIds?: string[];
@@ -33,11 +33,11 @@ export function canTransferProjectResponsible({
   );
 }
 
-export function canViewProjectGaelBudgets({
+export function canViewProjectBudgets({
   person,
   projectResponsibleId,
   explicitAccessPersonIds = [],
-}: ProjectGaelAccessInput) {
+}: ProjectBudgetAccessInput) {
   if (!person || person.rol === "lector") {
     return false;
   }
@@ -50,21 +50,15 @@ export function canViewProjectGaelBudgets({
   );
 }
 
-export function canImportProjectGaelBudgets(
-  input: ProjectGaelAccessInput
-) {
-  return canViewProjectGaelBudgets(input);
-}
-
-export function canCreateProjectGaelBudgetDraft(person: Person | null) {
+export function canEditProjectBudget(person: Person | null) {
   return Boolean(person && person.rol !== "lector");
 }
 
-export function canManageProjectGaelBudgetAccess({
+export function canManageProjectBudgetAccess({
   person,
   projectResponsibleId,
 }: Pick<
-  ProjectGaelAccessInput,
+  ProjectBudgetAccessInput,
   "person" | "projectResponsibleId"
 >) {
   if (!person || person.rol === "lector") {

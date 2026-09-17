@@ -337,9 +337,9 @@ export async function getProjectById(id: string) {
           contacto_celular
         )
       ),
-      proyecto_presupuestos_gael (
+      proyecto_presupuestos (
         id,
-        gael_presupuesto_id,
+        numero_referencia,
         origen,
         estado_registro,
         nombre,
@@ -348,9 +348,9 @@ export async function getProjectById(id: string) {
         ucontrol_nombre,
         valor_proyectado,
         fecha_actualizacion,
-        proyecto_presupuesto_gael_lineas (
+        proyecto_presupuesto_lineas (
           id,
-          gael_linea_id,
+          linea_externa_id,
           categoria,
           concepto,
           cantidad,
@@ -362,10 +362,10 @@ export async function getProjectById(id: string) {
           orden
         )
       ),
-      proyecto_presupuesto_gael_accesos (
+      proyecto_presupuesto_accesos (
         id,
         persona_id,
-        personas!proyecto_presupuesto_gael_accesos_persona_id_fkey (
+        personas!proyecto_presupuesto_accesos_persona_id_fkey (
           id,
           nombre,
           rol,
@@ -416,23 +416,23 @@ export async function getProjectById(id: string) {
         venues: one(projectVenue.venues),
       })) ?? [],
 
-    proyecto_presupuestos_gael:
-      data!.proyecto_presupuestos_gael
+    proyecto_presupuestos:
+      data!.proyecto_presupuestos
         ?.map((budget) => ({
           ...budget,
-          proyecto_presupuesto_gael_lineas:
-            budget.proyecto_presupuesto_gael_lineas?.sort(
+          proyecto_presupuesto_lineas:
+            budget.proyecto_presupuesto_lineas?.sort(
               (a, b) => a.orden - b.orden
             ) ?? [],
         }))
         .sort(
           (a, b) =>
-            (a.gael_presupuesto_id ?? 0) -
-            (b.gael_presupuesto_id ?? 0)
+            (a.numero_referencia ?? 0) -
+            (b.numero_referencia ?? 0)
         ) ?? [],
 
-    proyecto_presupuesto_gael_accesos:
-      data!.proyecto_presupuesto_gael_accesos
+    proyecto_presupuesto_accesos:
+      data!.proyecto_presupuesto_accesos
         ?.map((access) => ({
           ...access,
           personas: one(access.personas),
